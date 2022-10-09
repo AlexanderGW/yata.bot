@@ -1,4 +1,5 @@
 import { Exchange } from "./Exchange";
+import { Pair } from "./Pair";
 
 export type ChartData = {
 	change: string[],
@@ -10,6 +11,8 @@ export type ChartData = {
 	low: string[],
 	open: string[],
 	openTime: number[],
+	pair: Pair,
+	timeframe: number, // Seconds
 	tradeCount: number[],
 	volume: string[],
 	weightedAvePrice?: string[],
@@ -25,6 +28,8 @@ export class Chart implements ChartData {
 	low: string[];
 	open: string[];
 	openTime: number[];
+	pair: Pair;
+	timeframe: number;
 	tradeCount: number[];
 	volume: string[];
 	weightedAvePrice?: string[];
@@ -41,6 +46,8 @@ export class Chart implements ChartData {
 		this.low = data.low;
 		this.open = data.open;
 		this.openTime = data.openTime;
+		this.pair = data.pair;
+		this.timeframe = data.timeframe > 0 ? data.timeframe : 0;
 		this.tradeCount = data.tradeCount;
 		this.volume = data.volume;
 		if (data.weightedAvePrice)

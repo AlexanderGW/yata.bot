@@ -1,25 +1,18 @@
 import { Analysis } from "./Analysis";
 import { Chart } from "./Chart";
-import { Pair } from "./Pair";
 
-const talib = require('./talib');
+const talib = require('talib');
 
 export type StrategyData = {
 	analysis: Analysis[],
 	chart: Chart,
 	name?: string,
-	pair: Pair,
-
-	// Seconds
-	timeframe: number,
 }
 
 export class Strategy implements StrategyData {
 	analysis: Analysis[];
 	chart: Chart;
 	name?: string;
-	pair: Pair;
-	timeframe: number;
 
 	constructor (
 		data: StrategyData,
@@ -28,14 +21,32 @@ export class Strategy implements StrategyData {
 		this.chart = data.chart;
 		if (data.name)
 			this.name = data.name;
-		this.pair = data.pair;
-		this.timeframe = data.timeframe > 0 ? data.timeframe : 0;
+	}
+
+	setChart(
+		chart: Chart
+	) {
+		this.chart = chart;
 	}
 
 	execute () {
-		
-		console.log(talib.explain({
-
-		}));
+		let analysis: Analysis;
+		for (let i = 0; i < this.analysis.length; i++) {
+			analysis = this.analysis[i];
+			// console.log(analysis);
+			let talibArgs = {
+				name: analysis.name,
+				startIdx: 0,
+			};
+			let executeOptions = {
+    			...talibArgs,
+				...analysis.config,
+				endIdx: this.chart['close'].length - 1,
+    			inReal: this.chart['close'], // this.chart.config.inReal
+			};
+			// console.log(executeOptions);
+			let result = talib.execute(executeOptions);
+			console.log(result);
+		}
 	}
 }
