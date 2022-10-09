@@ -11,7 +11,7 @@ export type StrategyData = {
 	pair: Pair,
 
 	// Seconds
-	timeframe: number;
+	timeframe: number,
 }
 
 export class Strategy implements StrategyData {

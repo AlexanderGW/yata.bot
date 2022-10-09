@@ -1,12 +1,12 @@
 import { Kraken } from './Exchange/Kraken';
 import { Bot } from './Bot';
-import { State } from './Position';
-import { Asset } from './Asset';
 
 // --------------------------------------------------------
 
 const exchangeKraken = Bot.setExchange({
-	name: 'Kraken'
+	name: 'Kraken',
+	key: '',
+	secret: '',
 });
 console.log(exchangeKraken.name);
 console.log(`exchangeKraken: ${exchangeKraken}`);

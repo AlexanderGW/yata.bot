@@ -3,7 +3,7 @@ import { Exchange } from "./Exchange";
 
 export type ChartData = {
 	exchange: Exchange,
-	candle: Candle[];
+	candle: Candle[],
 };
 
 export class Chart implements ChartData {
