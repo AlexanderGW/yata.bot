@@ -8,25 +8,25 @@ export enum State {
 }
 
 export type PositionData = {
+	amount?: string,
 	exchange: Exchange,
 	pair: Pair,
-	amount?: string,
 	state?: State,
 }
 
 export class Position implements PositionData {
+	amount?: string = '0';
 	exchange: Exchange;
 	pair: Pair;
-	amount?: string = '0';
 	state?: State = State.Open;
 
 	constructor (
 		data: PositionData,
 	) {
-		this.exchange = data.exchange;
-		this.pair = data.pair;
 		if (data.amount)
 			this.amount = data.amount;
+		this.exchange = data.exchange;
+		this.pair = data.pair;
 		if (data.state)
 			this.state = data.state;
 	}
