@@ -1,24 +1,39 @@
-class Exchange {
-	
-}
+import { Kraken } from './Exchange/Kraken';
+import { Bot } from './Bot';
 
-class Pair {
+// --------------------------------------------------------
 
-}
+const exchangeKraken = Bot.setExchange(
+	'Kraken',
+	'',
+	''
+);
+console.log(`exchangeKraken: ${exchangeKraken}`);
+console.log(Bot.getExchangeById(0));
 
-class Position {
-	constructor (
-		exchangeId,
-		pairId,
-	) {
-		this.exchangeId = exchangeId;
-		this.pairId = pairId;
-	}
-}
+let assetBtc = Bot.setAsset(
+	'BTC'
+);
+console.log(`assetBtc: ${assetBtc}`);
+// console.log(Bot.getAssetById(assetBtc));
 
+let assetEth = Bot.setAsset(
+	'ETH'
+);
+console.log(`assetEth: ${assetEth}`);
+// console.log(Bot.getAssetById(assetEth));
 
-let bot = {
-	exchange: [],
-	pair: [],
-	position: [],
-};
+let pairEthBtc = Bot.setPair(
+	assetBtc,
+	assetEth
+);
+console.log(`pairEthBtc: ${pairEthBtc}`);
+// console.log(Bot.getPairById(pairEthBtc));
+
+let pos1 = Bot.setPosition(
+	exchangeKraken,
+	pairEthBtc
+);
+console.log(`pos1Id: ${pos1}`);
+console.log(pos1);
+console.log(pos1.pair);
