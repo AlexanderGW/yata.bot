@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/AlexanderGW/tradebot#readme",
   "dependencies": {
+    "dotenv": "^16.0.3",
     "talib": "^1.1.4"
   }
 }
