@@ -1,0 +1,22 @@
+{
+  "name": "tradebot",
+  "version": "1.0.0",
+  "description": "TBC",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexanderGW/tradebot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AlexanderGW/tradebot/issues"
+  },
+  "homepage": "https://github.com/AlexanderGW/tradebot#readme",
+  "dependencies": {
+    "talib": "^1.1.4"
+  }
+}
