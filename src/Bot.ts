@@ -1,7 +1,7 @@
 import { Exchange, ExchangeData } from './Exchange';
 import { Asset, AssetData } from './Asset';
 import { Pair, PairData } from './Pair';
-import { Position, PositionData, State } from './Position';
+import { Position, PositionData } from './Position';
 
 let exchange: Exchange[] = [];
 let asset: Asset[] = [];

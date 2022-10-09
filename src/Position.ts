@@ -1,11 +1,7 @@
 import { Bot } from "./Bot";
 import { Exchange } from "./Exchange";
 import { Pair } from "./Pair";
-
-export enum State {
-	Open = 1,
-	Closed = 0,
-}
+import { State } from "./State";
 
 export type PositionData = {
 	amount?: string,
