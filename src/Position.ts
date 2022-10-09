@@ -2,16 +2,32 @@ import { Bot } from "./Bot";
 import { Exchange } from "./Exchange";
 import { Pair } from "./Pair";
 
-export class Position {
+export enum State {
+	Open = 1,
+	Closed = 0,
+}
+
+export type PositionData = {
+	exchange: Exchange,
+	pair: Pair,
+	amount?: string,
+	state?: State,
+}
+
+export class Position implements PositionData {
 	exchange: Exchange;
 	pair: Pair;
-	state: number = 0;
+	amount?: string = '0';
+	state?: State = State.Open;
 
 	constructor (
-		exchange: Exchange,
-		pair: Pair,
+		data: PositionData,
 	) {
-		this.exchange = exchange;
-		this.pair = pair;
+		this.exchange = data.exchange;
+		this.pair = data.pair;
+		if (data.amount)
+			this.amount = data.amount;
+		if (data.state)
+			this.state = data.state;
 	}
 }

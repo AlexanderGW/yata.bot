@@ -1,14 +1,18 @@
 import { Asset } from "./Asset";
 
-export class Pair {
+export type PairData = {
+	a: Asset,
+	b: Asset,
+}
+
+export class Pair implements PairData {
 	a: Asset;
 	b: Asset;
 
 	constructor (
-		a: Asset,
-		b: Asset,
+		data: PairData,
 	) {
-		this.a = a;
-		this.b = b;
+		this.a = data.a;
+		this.b = data.b;
 	}
 }

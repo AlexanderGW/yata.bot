@@ -1,13 +1,17 @@
-export class Asset {
-	ticker: string;
+export type AssetData = {
+	name?: string,
+	symbol: string,
+}
+
+export class Asset implements AssetData {
+	name?: string;
+	symbol: string;
 
 	constructor (
-		ticker: string,
+		data: AssetData,
 	) {
-		this.ticker = ticker;
-	}
-
-	setTicker (newTicker: string) {
-		this.ticker = newTicker;
+		this.symbol = data.symbol;
+		if (data.name)
+			this.name = data.name;
 	}
 }

@@ -1,14 +1,35 @@
-import { Exchange } from './Exchange';
-import { Asset } from './Asset';
-import { Pair } from './Pair';
-import { Position } from './Position';
+import { Exchange, ExchangeData } from './Exchange';
+import { Asset, AssetData } from './Asset';
+import { Pair, PairData } from './Pair';
+import { Position, PositionData, State } from './Position';
 
-export let exchange: Exchange[] = [];
-export let asset: Asset[] = [];
-export let pair: Pair[] = [];
-export let position: Position[] = [];
+let exchange: Exchange[] = [];
+let asset: Asset[] = [];
+let pair: Pair[] = [];
+let position: Position[] = [];
+
+enum Level {
+	Info = 0,
+	Warn = 1,
+	Err = 2,
+}
 
 export const Bot = {
+
+	console: function (
+		string: string,
+		level: Level,
+	) {
+		let now = new Date();
+		let consoleString = `${now.toISOString()}: ${string}`;
+
+		if (level === Level.Info)
+			console.log(consoleString);
+		else if (level === Level.Warn)
+			console.warn(consoleString);
+		else
+			console.error(consoleString);
+	},
 
 	getExchangeById: function (
 		id: number
@@ -17,15 +38,13 @@ export const Bot = {
 	},
 
 	setExchange: function (
-		name: string,
-		key: string,
-		secret: string,
+		data: ExchangeData,
 	): Exchange {
 		const id: number = exchange.length;
 		console.log(`setExchangeId: ${id}`);
 
 		exchange[id] = new Exchange(
-			name,
+			data,
 		);
 
 		return exchange[id];
@@ -38,13 +57,17 @@ export const Bot = {
 	},
 
 	setAsset: function (
-		ticker: string,
+		data: AssetData,
 	): Asset {
 		const id: number = asset.length;
 		console.log(`setAssetId: ${id}`);
 
+		// Object.entries(data).forEach((key, val) => {
+		// 	console.log(`${key}: ${val}`);
+		// });
+
 		asset[id] = new Asset(
-			ticker,
+			data,
 		);
 
 		return asset[id];
@@ -57,15 +80,13 @@ export const Bot = {
 	},
 
 	setPair: function (
-		a: Asset,
-		b: Asset,
+		data: PairData,
 	): Pair {
 		const id: number = pair.length;
 		console.log(`setPairId: ${id}`);
 
 		pair[id] = new Pair(
-			a,
-			b,
+			data
 		);
 
 		return pair[id];
@@ -78,15 +99,13 @@ export const Bot = {
 	},
 
 	setPosition: function (
-		exchange: Exchange,
-		pair: Pair,
+		data: PositionData,
 	): Position {
 		const id: number = position.length;
 		console.log(`setPositionId: ${id}`);
 
 		position[id] = new Position(
-			exchange,
-			pair,
+			data,
 		);
 
 		return position[id];
