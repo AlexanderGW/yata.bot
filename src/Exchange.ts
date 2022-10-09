@@ -17,7 +17,7 @@ export interface ExchangeInterface {
 		interval: number,
 	) => void;
 
-	getLatestTicker: (
+	getLatestCandle: (
 		pair: Pair,
 		interval: number,
 	) => void;

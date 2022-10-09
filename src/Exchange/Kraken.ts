@@ -18,5 +18,5 @@ export class Kraken extends Exchange implements ExchangeInterface {
 
 	getPrimer () {}
 
-	getLatestTicker () {}
+	getLatestCandle () {}
 }
