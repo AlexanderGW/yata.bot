@@ -9,6 +9,7 @@ export type CandleData = {
 	openTime: number;
 	tradeCount: number;
 	volume: string;
+	weightedAvePrice: string;
 };
 
 export class Candle implements CandleData {
@@ -22,6 +23,7 @@ export class Candle implements CandleData {
 	openTime: number;
 	tradeCount: number;
 	volume: string;
+	weightedAvePrice: string;
 
 	constructor (
 		data: CandleData,
@@ -36,5 +38,6 @@ export class Candle implements CandleData {
 		this.openTime = data.openTime;
 		this.tradeCount = data.tradeCount;
 		this.volume = data.volume;
+		this.weightedAvePrice = data.weightedAvePrice;
 	}
 }
