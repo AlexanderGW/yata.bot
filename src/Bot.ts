@@ -2,11 +2,17 @@ import { Exchange, ExchangeData } from './Exchange';
 import { Asset, AssetData } from './Asset';
 import { Pair, PairData } from './Pair';
 import { Position, PositionData } from './Position';
+import { Chart, ChartData } from './Chart';
+import { Strategy, StrategyData } from './Strategy';
+import { Analysis, AnalysisData } from './Analysis';
 
-let exchange: Exchange[] = [];
+let analysis: Analysis[] = [];
 let asset: Asset[] = [];
+let chart: Chart[] = [];
+let exchange: Exchange[] = [];
 let pair: Pair[] = [];
 let position: Position[] = [];
+let strategy: Strategy[] = [];
 
 enum Level {
 	Info = 0,
@@ -109,5 +115,62 @@ export const Bot = {
 		);
 
 		return position[id];
+	},
+
+	getAnalysisById: function (
+		id: number
+	) {
+		return analysis[id];
+	},
+
+	setAnalysis: function (
+		data: AnalysisData,
+	): Analysis {
+		const id: number = analysis.length;
+		console.log(`setAnalysisId: ${id}`);
+
+		analysis[id] = new Analysis(
+			data,
+		);
+
+		return analysis[id];
+	},
+
+	getChartById: function (
+		id: number
+	) {
+		return chart[id];
+	},
+
+	setChart: function (
+		data: ChartData,
+	): Chart {
+		const id: number = chart.length;
+		console.log(`setChartId: ${id}`);
+
+		chart[id] = new Chart(
+			data,
+		);
+
+		return chart[id];
+	},
+
+	getStrategyById: function (
+		id: number
+	) {
+		return strategy[id];
+	},
+
+	setStrategy: function (
+		data: StrategyData,
+	): Strategy {
+		const id: number = strategy.length;
+		console.log(`setStrategyId: ${id}`);
+
+		strategy[id] = new Strategy(
+			data,
+		);
+
+		return strategy[id];
 	},
 };
