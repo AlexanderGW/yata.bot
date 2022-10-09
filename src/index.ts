@@ -1,39 +1,41 @@
 import { Kraken } from './Exchange/Kraken';
 import { Bot } from './Bot';
+import { State } from './Position';
+import { Asset } from './Asset';
 
 // --------------------------------------------------------
 
-const exchangeKraken = Bot.setExchange(
-	'Kraken',
-	'',
-	''
-);
+const exchangeKraken = Bot.setExchange({
+	name: 'Kraken'
+});
+console.log(exchangeKraken.name);
 console.log(`exchangeKraken: ${exchangeKraken}`);
 console.log(Bot.getExchangeById(0));
 
-let assetBtc = Bot.setAsset(
-	'BTC'
-);
+let assetBtc = Bot.setAsset({
+	symbol: 'BTC'
+});
 console.log(`assetBtc: ${assetBtc}`);
 // console.log(Bot.getAssetById(assetBtc));
 
-let assetEth = Bot.setAsset(
-	'ETH'
-);
+let assetEth = Bot.setAsset({
+	symbol: 'ETH'
+});
 console.log(`assetEth: ${assetEth}`);
 // console.log(Bot.getAssetById(assetEth));
 
-let pairEthBtc = Bot.setPair(
-	assetBtc,
-	assetEth
-);
+let pairEthBtc = Bot.setPair({
+	a: assetBtc,
+	b: assetEth
+});
 console.log(`pairEthBtc: ${pairEthBtc}`);
 // console.log(Bot.getPairById(pairEthBtc));
 
-let pos1 = Bot.setPosition(
-	exchangeKraken,
-	pairEthBtc
-);
+let pos1 = Bot.setPosition({
+	exchange: exchangeKraken,
+	pair: pairEthBtc,
+	amount: '2.23523552'
+});
 console.log(`pos1Id: ${pos1}`);
 console.log(pos1);
-console.log(pos1.pair);
+console.log(pos1.pair.a.symbol);
