@@ -1,5 +1,9 @@
 import { Kraken } from './Exchange/Kraken';
-import { Bot } from './Bot';
+import { Asset } from './Asset';
+import { Pair } from './Pair';
+import { Analysis } from './Analysis';
+import { Chart } from './Chart';
+import { Strategy } from './Strategy';
 
 // --------------------------------------------------------
 
@@ -8,35 +12,26 @@ const exchangeKraken = new Kraken({
 	key: '',
 	secret: '',
 });
-// const exchangeKraken = Bot.setExchange({
-// 	name: 'Kraken',
-// 	key: '',
-// 	secret: '',
-// });
 // console.log(exchangeKraken.name);
 // console.log(`exchangeKraken: ${exchangeKraken}`);
-// console.log(Bot.getExchangeById(0));
 
-let assetBtc = Bot.setAsset({
+let assetBtc = new Asset({
 	symbol: 'BTC'
 });
 // console.log(`assetBtc: ${assetBtc}`);
-// console.log(Bot.getAssetById(assetBtc));
 
-let assetEth = Bot.setAsset({
+let assetEth = new Asset({
 	symbol: 'ETH'
 });
 // console.log(`assetEth: ${assetEth}`);
-// console.log(Bot.getAssetById(assetEth));
 
-let pairEthBtc = Bot.setPair({
+let pairEthBtc = new Pair({
 	a: assetEth,
 	b: assetBtc
 });
 // console.log(`pairEthBtc: ${pairEthBtc}`);
-// console.log(Bot.getPairById(pairEthBtc));
 
-// let pos1 = Bot.setPosition({
+// let pos1 = new Position({
 // 	exchange: exchangeKraken,
 // 	pair: pairEthBtc,
 // 	amount: '2.23523552'
@@ -45,7 +40,7 @@ let pairEthBtc = Bot.setPair({
 // console.log(pos1);
 // console.log(pos1.pair.a.symbol);
 
-let analysisRsi14 = Bot.setAnalysis({
+let analysisRsi14 = new Analysis({
 	name: 'RSI',
 	config: {
 		inRealField: 'close',
@@ -53,7 +48,7 @@ let analysisRsi14 = Bot.setAnalysis({
 	}
 });
 
-let analysisSma20 = Bot.setAnalysis({
+let analysisSma20 = new Analysis({
 	name: 'SMA',
 	config: {
 		inRealField: 'close',
@@ -62,7 +57,7 @@ let analysisSma20 = Bot.setAnalysis({
 });
 // console.log(analysisSma20.explain());
 
-let analysisBolingerBands = Bot.setAnalysis({
+let analysisBolingerBands = new Analysis({
 	name: 'BBANDS',
 	config: {
 		inRealAnalysis: analysisSma20,
@@ -75,7 +70,7 @@ let analysisBolingerBands = Bot.setAnalysis({
 });
 // console.log(analysisBolingerBands.explain());
 
-// let chartKrakenEthBtc4h = Bot.setChart({
+// let chartKrakenEthBtc4h = new Chart({
 // 	change: ["", ""],
 // 	changePercent: ["", ""],
 // 	close: ["1", "1.5", "1", "2", "1", "2", "1", "1.5", "1", "2", "1", "2", "1", "2", "1", "2", "1", "2", "1", "1.5", "1", "1.5", "1", "2", "1", "1.5", "1", "2"],
@@ -91,7 +86,7 @@ let analysisBolingerBands = Bot.setAnalysis({
 // 	volume: ["", ""],
 // });
 
-let chartKrakenEthBtc4h = Bot.setChart({
+let chartKrakenEthBtc4h = new Chart({
 	exchange: exchangeKraken,
 	pair: pairEthBtc,
 	timeframe: 60
@@ -107,7 +102,7 @@ try {
 	console.error(err);
 }
 
-let strat1 = Bot.setStrategy({
+let strat1 = new Strategy({
 	analysis: [
 		analysisRsi14,
 		analysisSma20,
@@ -122,14 +117,14 @@ try {
 	console.error(err);
 }
 
-// let strat1Result1 = strat1.getResult(analysisRsi14);
-// console.log(strat1Result1);
+let strat1Result1 = strat1.getResult(analysisRsi14);
+console.log(strat1Result1);
 
-// let strat1Result2 = strat1.getResult(analysisSma20);
-// console.log(strat1Result2);
+let strat1Result2 = strat1.getResult(analysisSma20);
+console.log(strat1Result2);
 
-// let strat1Result3 = strat1.getResult(analysisBolingerBands);
-// console.log(strat1Result3);
+let strat1Result3 = strat1.getResult(analysisBolingerBands);
+console.log(strat1Result3);
 
 // strat1.setChart(chartKrakenEthBtc1h);
 // let strat1Result2 = strat1.execute();
