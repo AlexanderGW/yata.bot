@@ -23,7 +23,7 @@ export class Kraken extends Exchange implements ExchangeInterface {
 	translateSymbol (
 		symbol: string,
 	) {
-
+		// TODO: Implement symbol translation (i.e. BTC is XBT on Kraken)
 	}
 
 	primeChart (
@@ -52,6 +52,8 @@ export class Kraken extends Exchange implements ExchangeInterface {
 
 			let pair = 'XXDGXXBT';
 			// TESING
+
+			
 
 			let etlData: ChartCandleData = {
 				close: [],

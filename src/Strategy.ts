@@ -30,12 +30,23 @@ export class Strategy implements StrategyData {
 		this.uuid = uuid();
 	}
 
+	/**
+	 * Replace `Chart` data
+	 * 
+	 * @param chart 
+	 */
 	setChart (
 		chart: Chart
 	) {
 		this.chart = chart;
 	}
 
+	/**
+	 * Return (if exists) previously executed analysis
+	 * 
+	 * @param analysis 
+	 * @returns 
+	 */
 	getResult (
 		analysis: Analysis
 	) {
@@ -46,6 +57,9 @@ export class Strategy implements StrategyData {
 		return false;
 	}
 
+	/**
+	 * Execute all analysis on the strategy
+	 */
 	execute () {
 		let analysis: Analysis;
 		for (let i = 0; i < this.analysis.length; i++) {
@@ -53,6 +67,7 @@ export class Strategy implements StrategyData {
 
 			let inReal: string[];
 
+			// Source the result of previously executed analysis
 			if (analysis.config?.inRealAnalysis) {
 				if (!analysis.config.inRealField)
 					throw ('Analysis dataset input field is unknown.');
@@ -64,6 +79,7 @@ export class Strategy implements StrategyData {
 				inReal = analysisResult.result[analysis.config.inRealField];
 			}
 
+			// Source chart data
 			else if (analysis.config?.inRealField) {
 				inReal = this.chart[analysis.config.inRealField];
 			}
@@ -71,22 +87,20 @@ export class Strategy implements StrategyData {
 			if (!inReal)
 				throw ('Analysis dataset input is empty.');
 
-			if (inReal.length) {
-				let talibArgs = {
-					name: analysis.name,
-					startIdx: 0,
-				};
-				let executeOptions = {
-					...talibArgs,
-					...analysis.config,
-					endIdx: inReal.length - 1,
-					inReal: inReal,
-				};
-				let result = talib.execute(executeOptions);
+			let talibArgs = {
+				name: analysis.name,
+				startIdx: 0,
+			};
+			let executeOptions = {
+				...talibArgs,
+				...analysis.config,
+				endIdx: inReal.length - 1,
+				inReal: inReal,
+			};
+			let result = talib.execute(executeOptions);
 
-				this.result.push(result);
-				this.resultIndex.push(analysis.uuid);
-			}
+			this.result.push(result);
+			this.resultIndex.push(analysis.uuid);
 		}
 	}
 }
