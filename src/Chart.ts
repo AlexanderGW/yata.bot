@@ -4,7 +4,8 @@ import { Pair } from "./Pair";
 export type ChartData = {
 	exchange: Exchange,
 	pair: Pair,
-	timeframe: number, // Seconds
+	pollTime?: number, // Seconds
+	candleTime?: number, // Seconds
 };
 
 export type ChartCandleData = {
@@ -32,7 +33,8 @@ export class Chart implements ChartData, ChartCandleData {
 	open?: string[];
 	openTime?: number[];
 	pair: Pair;
-	timeframe: number;
+	pollTime?: number;
+	candleTime?: number;
 	tradeCount?: number[];
 	volume?: string[];
 	weightedAvePrice?: string[];
@@ -58,7 +60,14 @@ export class Chart implements ChartData, ChartCandleData {
 		if (data.openTime)
 			this.openTime = data.openTime;
 		this.pair = data.pair;
-		this.timeframe = data.timeframe > 0 ? data.timeframe : 0;
+		if (data.pollTime)
+			this.pollTime = data.pollTime > 0 ? data.pollTime : 60;
+		else
+			this.pollTime = 60;
+		if (data.candleTime)
+			this.candleTime = data.candleTime > 0 ? data.candleTime : 3600;
+		else
+			this.candleTime = 3600;
 		if (data.tradeCount)
 			this.tradeCount = data.tradeCount;
 		if (data.volume)
