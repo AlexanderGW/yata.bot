@@ -17,6 +17,10 @@ export type AnalysisData = {
 	name: string,
 }
 
+export type AnalysisResultData = {
+	result: object,
+}
+
 export class Analysis implements AnalysisData {
 	config?: AnalysisConfigData;
 	name: string;

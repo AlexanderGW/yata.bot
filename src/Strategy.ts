@@ -1,6 +1,7 @@
-import { Analysis } from "./Analysis";
+import { Analysis, AnalysisResultData } from "./Analysis";
 import { Chart } from "./Chart";
 import { uuid } from 'uuidv4';
+import { Scenario } from "./Scenario";
 
 const talib = require('talib');
 
@@ -8,6 +9,7 @@ export type StrategyData = {
 	analysis: Analysis[],
 	chart: Chart,
 	name?: string,
+	action: Array<[Scenario, Strategy?]>,
 }
 
 export class Strategy implements StrategyData {
@@ -17,6 +19,7 @@ export class Strategy implements StrategyData {
 	uuid: string;
 	result: object[];
 	resultIndex: string[];
+	action: Array<[Scenario, Strategy?]>;
 
 	constructor (
 		data: StrategyData,
@@ -27,6 +30,7 @@ export class Strategy implements StrategyData {
 			this.name = data.name;
 		this.result = [];
 		this.resultIndex = [];
+		this.action = data.action;
 		this.uuid = uuid();
 	}
 
@@ -62,7 +66,11 @@ export class Strategy implements StrategyData {
 	 */
 	execute () {
 		let analysis: Analysis;
-		for (let i = 0; i < this.analysis.length; i++) {
+		let i: number;
+		let action: [Scenario, Strategy?];
+
+		// Process analysis
+		for (i = 0; i < this.analysis.length; i++) {
 			analysis = this.analysis[i];
 
 			let inReal: string[];
@@ -87,6 +95,7 @@ export class Strategy implements StrategyData {
 			if (!inReal)
 				throw ('Analysis dataset input is empty.');
 
+			// Prepare talib options
 			let talibArgs = {
 				name: analysis.name,
 				startIdx: 0,
@@ -97,10 +106,36 @@ export class Strategy implements StrategyData {
 				endIdx: inReal.length - 1,
 				inReal: inReal,
 			};
+
+			// Execute
 			let result = talib.execute(executeOptions);
 
+			// Store results
 			this.result.push(result);
 			this.resultIndex.push(analysis.uuid);
+		}
+
+		// Process scenarios
+		for (i = 0; i < this.action.length; i++) {
+			action = this.action[i];
+
+			let analysis: Analysis;
+			let result: object | boolean;
+			let testResult: Array<object> = [];
+			for (let i = 0; i < action[0].analysis.length; i++) {
+				analysis = this.analysis[i];
+
+				result = this.getResult(analysis);
+				if (result)
+					testResult.push(result);
+			}
+
+			action[0].test(
+				testResult
+			);
+
+			// Fire strat
+			//action[1]
 		}
 	}
 }

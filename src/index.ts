@@ -4,6 +4,7 @@ import { Pair } from './Pair';
 import { Analysis } from './Analysis';
 import { Chart } from './Chart';
 import { Strategy } from './Strategy';
+import { Scenario } from './Scenario';
 
 // --------------------------------------------------------
 
@@ -111,13 +112,14 @@ let analysisMacd = new Analysis({
 		inRealField: 'close',
 	}
 });
-// console.log(analysisMacd.explain());
+console.log(analysisMacd.explain());
 
 // Create a ETHBTC pair chart, and 1 minute, for Kraken exchange data
 let chartKrakenEthBtc4h = new Chart({
 	exchange: exchangeKraken,
 	pair: pairEthBtc,
-	timeframe: 60 // In seconds
+	pollTime: 300, // 5m in seconds
+	candleTime: 14400 // 4h in seconds
 });
 
 // Push Kraken exchange data to chart (if exchange/chart are compatible)
@@ -129,27 +131,72 @@ try {
 	console.error(err);
 }
 
-// Create new stategy
-let strat1 = new Strategy({
+// Scenario for analysis events
+let scenarioBullishRsiOversold = new Scenario({
+	analysis: [
+		analysisRsi14
+	],
+	name: 'scenarioBullishRsiOversold',
+	condition: [
+		['outReal', '<=', '30'],
+		['outReal', '>', '30'],
+	]
+});
+
+let scenarioBullishMacdCrossover = new Scenario({
+	analysis: [
+		analysisMacd
+	],
+	name: 'scenarioBullishMacdCrossover',
+	condition: [
+		['outMACDHist', '<=', '0'],
+		['outMACDHist', '>', '0'],
+	]
+});
+
+// TODO: Trigger an scenario, on a TA event
+// make an scenario (collection of ok TA metrics) fire a callback? which can contain more complex shite
+// how best to handle this
+// what if we want to check multiple candleTimes, before final decision
+
+let stratFoobar = new Strategy({
 	analysis: [
 		analysisRsi14,
-		analysisEma20,
-		analysisEma100,
-		analysisSma20, // Must execute before `analysisBolingerBands`
-		analysisSma50,
-		analysisSma200,
-		analysisBolingerBands, // Depends on `analysisSma20`
-		analysisMacd,
 	],
-	chart: chartKrakenEthBtc4h
+	chart: chartKrakenEthBtc4h,
+	action: [
+		[scenarioBullishRsiOversold],
+	],
+});
+
+// Create new stategy
+let stratTopLevel = new Strategy({
+	analysis: [
+		// analysisSma20, // Must execute before `analysisBolingerBands`
+		// analysisBolingerBands, // Depends on `analysisSma20` result
+		// analysisEma20,
+		// analysisEma100,
+		analysisMacd,
+		// analysisRsi14,
+		// analysisSma50,
+		// analysisSma200,
+	],
+	chart: chartKrakenEthBtc4h,
+	action: [
+		[scenarioBullishMacdCrossover, stratFoobar]
+	],
 });
 
 // Execute all strategy analysis
 try {
-	strat1.execute();
+	stratTopLevel.execute();
 } catch (err) {
 	console.error(err);
 }
+
+
+
+
 
 // let strat1Result1 = strat1.getResult(analysisRsi14);
 // console.log(strat1Result1);
@@ -163,8 +210,8 @@ try {
 // let strat1Result4 = strat1.getResult(analysisBolingerBands);
 // console.log(strat1Result4);
 
-let strat1Result5 = strat1.getResult(analysisMacd);
-console.log(strat1Result5);
+// let strat1Result5 = strat1.getResult(analysisMacd);
+// console.log(strat1Result5);
 
 // Change chart and run strategy again
 // try {
