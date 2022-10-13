@@ -30,7 +30,11 @@ export class Scenario implements ScenarioData {
 
 		// Walk through data sets
 		let dataset: object;
-		for (let i: number = 0; i < data.length; i++) {
+		for (
+			let i: number = 0;
+			i < data.length;
+			i++
+		) {
 			dataset = data[i];
 
 			// console.log(dataset);
@@ -132,8 +136,8 @@ export class Scenario implements ScenarioData {
 							break;
 						}
 
-						case '=': {
-							if (datapoint = valueB)
+						case '==': {
+							if (datapoint == valueB)
 								conditionMatch++;
 							break;
 						}
