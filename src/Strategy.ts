@@ -115,7 +115,7 @@ export class Strategy implements StrategyData {
 			this.resultIndex.push(analysis.uuid);
 		}
 
-		// Process scenarios
+		// Process actions
 		for (i = 0; i < this.action.length; i++) {
 			action = this.action[i];
 
@@ -130,12 +130,20 @@ export class Strategy implements StrategyData {
 					testResult.push(result);
 			}
 
-			action[0].test(
+			// Test scenario conditions
+			let signal = action[0].test(
 				testResult
 			);
 
-			// Fire strat
-			//action[1]
+			console.log(`signal: ${signal}`);
+
+			// Positive action scenario signal, fire chained strategy
+			// if (signal && action[1])
+				//action[1]
+			
+			// Return action scenario signal
+			// else
+			// 	return signal;
 		}
 	}
 }
