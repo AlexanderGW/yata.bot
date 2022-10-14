@@ -11,7 +11,7 @@ export class Scenario implements ScenarioData {
 	analysis: Analysis[];
 	condition: any;
 	name: string;
-	uuid: string;
+	uuid: string; 
 
 	constructor (
 		data: ScenarioData,
@@ -119,7 +119,7 @@ export class Scenario implements ScenarioData {
 			j < datasetMaxLength;
 			j++
 		) {
-			console.log('test range: ' + (j - conditionDepth) + '-' + j);
+			// console.log('test range: ' + (j - conditionDepth) + '-' + j);
 
 			// Skip data point range depths that are lower than the number of conditions
 			// (not enough data points for backward looking conditions)
@@ -141,7 +141,7 @@ export class Scenario implements ScenarioData {
 				k <= j;
 				k++
 			) {
-				console.log('---------------------');
+				// console.log('---------------------');
 
 				let conditionSetMatch: number = 0;
 
@@ -159,7 +159,7 @@ export class Scenario implements ScenarioData {
 					conditionIdx < condition.length;
 					conditionIdx++
 				) {
-					console.log(`conditionIdx: ${conditionIdx}`);
+					// console.log(`conditionIdx: ${conditionIdx}`);
 					valueA = condition[conditionIdx][0];
 					operator = condition[conditionIdx][1];
 					valueB = condition[conditionIdx][2];
@@ -177,19 +177,6 @@ export class Scenario implements ScenarioData {
 							datapoint = dataset.result[valueA][k];
 
 							switch (operator) {
-								case '<': {
-									if (datapoint < valueB) {
-										console.log('conditionMatch');
-										console.log(`k: ${k}`);
-										console.log(`valueA: ${valueA}`);
-										console.log(`datapoint: ${datapoint}`);
-										console.log(`operator: ${operator}`);
-										console.log(`valueB: ${valueB}`);
-										conditionMatch++;
-									}
-									break;
-								}
-
 								case '<=': {
 									if (datapoint <= valueB) {
 										console.log('conditionMatch');
@@ -205,19 +192,6 @@ export class Scenario implements ScenarioData {
 
 								case '>=': {
 									if (datapoint >= valueB) {
-										console.log('conditionMatch');
-										console.log(`k: ${k}`);
-										console.log(`valueA: ${valueA}`);
-										console.log(`datapoint: ${datapoint}`);
-										console.log(`operator: ${operator}`);
-										console.log(`valueB: ${valueB}`);
-										conditionMatch++;
-									}
-									break;
-								}
-
-								case '>': {
-									if (datapoint > valueB) {
 										console.log('conditionMatch');
 										console.log(`k: ${k}`);
 										console.log(`valueA: ${valueA}`);
@@ -284,7 +258,7 @@ export class Scenario implements ScenarioData {
 					// console.log(`${j}`);
 
 					datasetConditionMatch++;
-					console.log('conditionMatch - total: ' + condition.length);
+					// console.log('conditionMatch - total: ' + condition.length);
 					// return;
 				}
 
@@ -306,7 +280,7 @@ export class Scenario implements ScenarioData {
 				conditionSetIdx++;
 			}
 
-			console.log('-------END SET-------');
+			// console.log('-------END SET-------');
 
 			// All conditions match on this dataset
 			if (datasetConditionMatch === this.condition.length) {

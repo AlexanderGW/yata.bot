@@ -142,7 +142,7 @@ let scenarioBullishRsiOversold = new Scenario({
 			['outReal', '<=', '30'],
 		],
 		[
-			['outReal', '>', '30'],
+			['outReal', '>=', '30'],
 		],
 	]
 });
@@ -161,8 +161,8 @@ let scenarioBullishMacdCrossover = new Scenario({
 
 		// Latest candle
 		[
-			['outMACDHist', '>', '0'],
-			['outMACDHist', '<', '4'],
+			['outMACDHist', '>=', '0'],
+			['outMACDHist', '<=', '4'],
 		],
 	]
 });
