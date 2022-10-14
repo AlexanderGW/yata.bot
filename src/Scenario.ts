@@ -67,9 +67,6 @@ export class Scenario implements ScenarioData {
 				) {
 					dataset = data[i];
 
-					// console.log(dataset);
-					// console.log(condition);
-
 					// Check field exists within result dataset
 					// LOOP THRU DATASETS TO FIND THE FIELD
 					if (dataset.result[valueA]) {
@@ -87,10 +84,6 @@ export class Scenario implements ScenarioData {
 		if (conditionMatch < this.condition.length)
 			throw ('Scenario conditions are not compatible with dataset.');
 
-		// console.log(dataset.result[valueA]);
-
-// console.log(conditionMatch);return;
-
 		// Walk through field values, on result dataset
 		let startPoint;
 
@@ -100,17 +93,7 @@ export class Scenario implements ScenarioData {
 		// TODO: Testing latest data points only
 		// startPoint = dataset.result[valueA].length - this.condition.length;
 
-
-		// startPoint = 680;
-
-
 		let conditionDepth: number = (this.condition.length - 1);
-
-		// Reset, reuse connection index variable.
-		// conditionSetIdx = 0;
-
-
-		// let scenarioMatch: number = 0;
 
 		// Walk the data points, from the required view point
 		// (number of conditions, minus 1)
@@ -229,27 +212,8 @@ export class Scenario implements ScenarioData {
 									break;
 								}
 							}
-
-							// Increment condition index
-							// conditionSetIdx++;
-
-							// All conditions match on this dataset
-							// if (conditionMatch === condition.length) {
-							// 	console.log(conditionMatch === condition.length);
-
-							// 	for (
-							// 		let l: number = (j - conditionDepth);
-							// 		l <= j;
-							// 		l++
-							// 	) {
-							// 		console.log(dataset.result[valueA][l]);
-							// 	}
-
-							// 	datasetConditionMatch++;
-							// }
 						}
 					}
-					// console.log('---------------------');
 				}
 
 				// All conditions match on this dataset
@@ -258,24 +222,7 @@ export class Scenario implements ScenarioData {
 					// console.log(`${j}`);
 
 					datasetConditionMatch++;
-					// console.log('conditionMatch - total: ' + condition.length);
-					// return;
 				}
-
-				// All conditions match on this dataset
-				// if (conditionMatch === this.condition.length) {
-				// 	console.log(conditionMatch === this.condition.length);
-
-				// 	for (
-				// 		let l: number = (j - conditionDepth);
-				// 		l <= j;
-				// 		l++
-				// 	) {
-				// 		console.log(dataset.result[valueA][l]);
-				// 	}
-
-				// 	datasetConditionMatch++;
-				// }
 
 				conditionSetIdx++;
 			}
@@ -296,208 +243,6 @@ export class Scenario implements ScenarioData {
 			}
 		}
 
-
-
 		return scenarioMatch;
-
-
-
-
-
-
-
-		// Walk the data points, from the required view point
-		// (number of conditions, minus 1)
-		// for (
-		// 	let j: number = startPoint;
-		// 	j < dataset.result[valueA].length; // TODO: Better way to count total data points?
-		// 	j++
-		// ) {
-		// 	// Skip data point range depths that are lower than the number of conditions
-		// 	// (not enough data points for backward looking conditions)
-		// 	if (j < conditionDepth)
-		// 		continue;
-
-		// 	// 
-		// 	console.log((j - conditionDepth) + '-' + j);
-
-			
-		// }
-
-
-
-
-
-
-
-
-
-		// Walk through data sets
-		// let dataset: object;
-		// for (
-		// 	let i: number = 0;
-		// 	i < data.length;
-		// 	i++
-		// ) {
-		// 	dataset = data[i];
-
-		// 	// console.log(dataset);
-		// 	// console.log(this.condition);
-
-			
-		// }
-
-		// return datasetConditionMatch;
 	}
-
-	// test (
-	// 	data: Array<object>
-	// ) {
-	// 	// Increments if all conditions are met, on a dataset
-	// 	let datasetConditionMatch: number = 0;
-
-	// 	// Walk through data sets
-	// 	let dataset: object;
-	// 	for (
-	// 		let i: number = 0;
-	// 		i < data.length;
-	// 		i++
-	// 	) {
-	// 		dataset = data[i];
-
-	// 		// console.log(dataset);
-	// 		// console.log(this.condition);
-
-	// 		let conditionMatch: number = 0;
-	// 		let valueA: string;
-	// 		let operator: string;
-	// 		let valueB: string;
-
-	// 		// Counting condition index
-	// 		let conditionSetIdx: number = 0;
-
-	// 		// Walk conditions and validate fields against dataset
-	// 		for (conditionSetIdx = 0; conditionSetIdx < this.condition.length; conditionSetIdx++) {
-	// 			valueA = this.condition[conditionSetIdx][0];
-	// 			operator = this.condition[conditionSetIdx][1];
-	// 			valueB = this.condition[conditionSetIdx][2];
-
-	// 			// Check field exists within result dataset
-	// 			if (dataset.result[valueA])
-	// 				conditionMatch++;
-				
-	// 			// TODO: Throw on missing field in dataset?
-	// 		}
-
-	// 		if (conditionMatch < this.condition.length)
-	// 			throw ('Scenario conditions are not compatible with dataset.');
-
-	// 		// console.log(dataset.result[valueA]);
-
-	// 		// Walk through field values, on result dataset
-	// 		let startPoint;
-
-	// 		// TODO: Back testing all data points, start from beginning
-	// 		startPoint = 0;
-
-	// 		// TODO: Testing latest data points only
-	// 		// startPoint = dataset.result[valueA].length - this.condition.length;
-
-	// 		let conditionDepth: number = (this.condition.length - 1);
-
-	// 		// Walk the data points, from the required view point
-	// 		// (number of conditions, minus 1)
-	// 		for (
-	// 			let j: number = startPoint;
-	// 			j < dataset.result[valueA].length; // TODO: Better way to count total data points?
-	// 			j++
-	// 		) {
-	// 			// Skip data point range depths that are lower than the number of conditions
-	// 			// (not enough data points for backward looking conditions)
-	// 			if (j < conditionDepth)
-	// 				continue;
-
-	// 			// 
-	// 			console.log((j - conditionDepth) + '-' + j);
-
-	// 			// Reset, reuse connection match variable
-	// 			conditionMatch = 0;
-
-	// 			// Reset, reuse connection index variable.
-	// 			conditionSetIdx = 0;
-
-	// 			// Step through data points, looking for a full set of condition matches
-	// 			let datapoint;
-	// 			for (
-	// 				let k: number = (j - conditionDepth);
-	// 				k <= j;
-	// 				k++
-	// 			) {
-	// 				valueA = this.condition[conditionSetIdx][0];
-	// 				operator = this.condition[conditionSetIdx][1];
-	// 				valueB = this.condition[conditionSetIdx][2];
-
-	// 				datapoint = dataset.result[valueA][k];
-
-	// 				switch (operator) {
-	// 					case '<': {
-	// 						if (datapoint < valueB)
-	// 							conditionMatch++;
-	// 						break;
-	// 					}
-
-	// 					case '<=': {
-	// 						if (datapoint <= valueB)
-	// 							conditionMatch++;
-	// 						break;
-	// 					}
-
-	// 					case '>=': {
-	// 						if (datapoint >= valueB)
-	// 							conditionMatch++;
-	// 						break;
-	// 					}
-
-	// 					case '>': {
-	// 						if (datapoint > valueB)
-	// 							conditionMatch++;
-	// 						break;
-	// 					}
-
-	// 					case '==': {
-	// 						if (datapoint == valueB)
-	// 							conditionMatch++;
-	// 						break;
-	// 					}
-
-	// 					case '!=': {
-	// 						if (datapoint != valueB)
-	// 							conditionMatch++;
-	// 						break;
-	// 					}
-	// 				}
-
-	// 				// Increment condition index
-	// 				conditionSetIdx++;
-	// 			}
-
-	// 			// All conditions match on this dataset
-	// 			if (conditionMatch === this.condition.length) {
-	// 				console.log(conditionMatch === this.condition.length);
-
-	// 				for (
-	// 					let l: number = (j - conditionDepth);
-	// 					l <= j;
-	// 					l++
-	// 				) {
-	// 					console.log(dataset.result[valueA][l]);
-	// 				}
-
-	// 				datasetConditionMatch++;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	return datasetConditionMatch;
-	// }
 }
