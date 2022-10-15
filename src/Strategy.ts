@@ -131,19 +131,14 @@ export class Strategy implements StrategyData {
 			}
 
 			// Test scenario conditions
-			let signal = action[0].test(
-				testResult
-			);
+			let signal = action[0].test({
+				analysisData: testResult,
 
-			console.log(`signal: ${signal}`);
+				// Optional `Strategy` to execute on a `Scenario` match
+				strategy: action[1],
+			});
 
-			// Positive action scenario signal, fire chained strategy
-			// if (signal && action[1])
-				//action[1]
-			
-			// Return action scenario signal
-			// else
-			// 	return signal;
+			console.log(`Strategy '${this.name}' scenario matches: ${signal}`);
 		}
 	}
 }

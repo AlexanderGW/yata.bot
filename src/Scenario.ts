@@ -1,10 +1,16 @@
 import { uuid } from 'uuidv4';
 import { Analysis, AnalysisResultData } from './Analysis';
+import { Strategy } from './Strategy';
 
 export type ScenarioData = {
 	analysis: Analysis[],
 	name: string,
 	condition: Array<Array<[string, string, string]>>,
+}
+
+export type ScenarioTestData = {
+	analysisData: Array<object>,
+	strategy?: Strategy,
 }
 
 export class Scenario implements ScenarioData {
@@ -23,7 +29,7 @@ export class Scenario implements ScenarioData {
 	}
 
 	test (
-		data: Array<object>
+		data: ScenarioTestData,
 	) {
 		// Increments if all conditions are met, on a dataset
 		let scenarioMatch: number = 0;
@@ -62,14 +68,15 @@ export class Scenario implements ScenarioData {
 				let dataset: object;
 				for (
 					let i: number = 0;
-					i < data.length;
+					i < data.analysisData.length;
 					i++
 				) {
-					dataset = data[i];
+					dataset = data.analysisData[i];
 
 					// Check field exists within result dataset
 					// LOOP THRU DATASETS TO FIND THE FIELD
 					if (dataset.result[valueA]) {
+						// console.log(dataset.result[valueA]);
 						if (dataset.result[valueA].length > datasetMaxLength)
 							datasetMaxLength = dataset.result[valueA].length;
 						
@@ -115,7 +122,7 @@ export class Scenario implements ScenarioData {
 			conditionSetIdx = 0;
 
 			// Increments if all conditions are met, on a dataset
-			let datasetConditionMatch: number = 0;
+			let conditionSetMatch: number = 0;
 
 			// Step through data points, looking for a full set of condition matches
 			let datapoint;
@@ -125,8 +132,6 @@ export class Scenario implements ScenarioData {
 				k++
 			) {
 				// console.log('---------------------');
-
-				let conditionSetMatch: number = 0;
 
 				// console.log(`conditionSetIdx: ${conditionSetIdx}`);
 				let condition = this.condition[conditionSetIdx];
@@ -151,13 +156,15 @@ export class Scenario implements ScenarioData {
 					let dataset: object;
 					for (
 						let i: number = 0;
-						i < data.length;
+						i < data.analysisData.length;
 						i++
 					) {
-						dataset = data[i];
+						dataset = data.analysisData[i];
 						if (dataset.result[valueA]) {
 							// console.log(dataset.result[valueA][k]);
-							datapoint = dataset.result[valueA][k];
+							datapoint = Number.parseFloat(
+								dataset.result[valueA][k]
+							).toFixed(30);
 
 							switch (operator) {
 								case '<=': {
@@ -221,7 +228,7 @@ export class Scenario implements ScenarioData {
 				if (conditionMatch === condition.length) {
 					// console.log(`${j}`);
 
-					datasetConditionMatch++;
+					conditionSetMatch++;
 				}
 
 				conditionSetIdx++;
@@ -230,16 +237,23 @@ export class Scenario implements ScenarioData {
 			// console.log('-------END SET-------');
 
 			// All conditions match on this dataset
-			if (datasetConditionMatch === this.condition.length) {
-				// console.log(datasetConditionMatch === this.condition.length);
-
-				// FULL MATCH
-				console.log('datasetConditionMatch');
+			if (conditionSetMatch === this.condition.length) {
+				console.log('conditionSetMatch');
 				console.log(`${j-1}-${j}`);
-				console.log(data[0].result['outMACDHist'][(j-1)]);
-				console.log(data[0].result['outMACDHist'][j]);
+				console.log(Number.parseFloat(
+					data.analysisData[0].result['outMACDHist'][(j-1)]
+				).toFixed(30));
+				console.log(Number.parseFloat(
+					data.analysisData[0].result['outMACDHist'][j]
+				).toFixed(30));
 
 				scenarioMatch++;
+
+				// Execute chained strategy, if provided
+				if (data.strategy) {
+					console.log(`Scenario '${this.name}' triggered strategy '${data.strategy.name}'`);
+					data.strategy.execute();
+				}
 			}
 		}
 
