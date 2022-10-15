@@ -4,6 +4,8 @@ import { Exchange, ExchangeData, ExchangeInterface } from '../Exchange';
 const fs = require('fs');
 
 export class Kraken extends Exchange implements ExchangeInterface {
+
+	// Omitting 4th char prefix of `X`, added on `pair` assignment
 	symbols = {
 		BTC: 'XBT',
 	};
@@ -23,37 +25,56 @@ export class Kraken extends Exchange implements ExchangeInterface {
 	translateSymbol (
 		symbol: string,
 	) {
-		// TODO: Implement symbol translation (i.e. BTC is XBT on Kraken)
+		if (this.symbols[symbol])
+			return this.symbols[symbol];
+
+		return symbol;
 	}
 
-	primeChart (
+	async primeChart (
 		chart: Chart,
 	) {
 		if (!this.compat(chart))
 			throw ('This chart belongs to a different exchange.');
 
 		try {
-			// response = await this.handle?.api(
+			let assetASymbol = this.translateSymbol(chart.pair.a.symbol);
+			let assetBSymbol = this.translateSymbol(chart.pair.b.symbol);
 
-			// 	// Type
-			// 	'OHLC',
+			// All response assets are prefixed with an `X`. Add one to ease lookups
+			let pair = `X${assetASymbol}X${assetBSymbol}`;
 
-			// 	// Options
-			// 	{
-			// 		pair: `${chart.pair.a}${chart.pair.b}`
-			// 	}
-			// );
+			// Default to 900 seconds (15 min)
+			if (!chart.candleTime)
+				chart.candleTime = 900;
 
-			// TESTNG
-			let response: any = fs.readFileSync('./storage/test.json', 'utf8', function (err: object,data: object) {
-                if (err) console.error(err);
-            });
-            let responseJson = JSON.parse(response);
+			// Kraken intervals are in minutes
+			let interval = chart.candleTime / 60;
 
-			let pair = 'XXDGXXBT';
-			// TESING
+			// TODO: Check exisiting data points, and adjust to continue from last on storage
+			let maxCandles = 720;
 
-			
+			// Default to the last 100 data points (candles), round down to nearest day start
+			let date = new Date();
+			date.setTime(date.getTime() - ((chart.candleTime * maxCandles) * 1000));
+			date.setUTCHours(0);
+			date.setUTCMinutes(0);
+			date.setUTCSeconds(0);
+
+			let since = date.getTime() / 1000;
+
+			let responseJson: any = await this.handle?.api(
+
+				// Type
+				'OHLC',
+
+				// Options
+				{
+					interval: interval,
+					pair: pair,
+					since: since,
+				}
+			);
 
 			let etlData: ChartCandleData = {
 				close: [],
