@@ -239,13 +239,13 @@ export class Scenario implements ScenarioData {
 			// All conditions match on this dataset
 			if (conditionSetMatch === this.condition.length) {
 				console.log('conditionSetMatch');
-				console.log(`${j-1}-${j}`);
-				console.log(Number.parseFloat(
-					data.analysisData[0].result['outMACDHist'][(j-1)]
-				).toFixed(30));
-				console.log(Number.parseFloat(
-					data.analysisData[0].result['outMACDHist'][j]
-				).toFixed(30));
+				// console.log(`${j-1}-${j}`);
+				// console.log(Number.parseFloat(
+				// 	data.analysisData[0].result['outMACDHist'][(j-1)]
+				// ).toFixed(30));
+				// console.log(Number.parseFloat(
+				// 	data.analysisData[0].result['outMACDHist'][j]
+				// ).toFixed(30));
 
 				scenarioMatch++;
 

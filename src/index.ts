@@ -1,3 +1,5 @@
+import * as dotenv from 'dotenv';
+
 import { Kraken } from './Exchange/Kraken';
 import { Asset } from './Asset';
 import { Pair } from './Pair';
@@ -6,13 +8,17 @@ import { Chart } from './Chart';
 import { Strategy } from './Strategy';
 import { Scenario } from './Scenario';
 
+dotenv.config();
+
+const fs = require('fs');
+
 // --------------------------------------------------------
 
 // Create Kraken exchange client
 const exchangeKraken = new Kraken({
 	name: 'Kraken',
-	key: '',
-	secret: '',
+	key: process.env.KRAKEN_CLIENT_KEY,
+	secret: process.env.KRAKEN_CLIENT_SECRET,
 });
 
 // Create ETH asset
@@ -30,6 +36,43 @@ let pairEthBtc = new Pair({
 	a: assetEth,
 	b: assetBtc
 });
+
+// Create a ETHBTC pair chart, and 1 minute, for Kraken exchange data
+let chartKrakenEthBtc4h = new Chart({
+	exchange: exchangeKraken,
+	pair: pairEthBtc,
+	pollTime: 300, // 5m in seconds
+	candleTime: 14400 // 4h in seconds
+});
+
+// Push Kraken exchange data to chart (if exchange/chart are compatible)
+try {
+	// Request from Kraken
+	// exchangeKraken.primeChart(
+	// 	chartKrakenEthBtc4h
+	// );
+
+	// Load from storage
+	let response: any = fs.readFileSync(
+		'./storage/Kraken/ETHBTC/2022/10/15/Kraken-ETHBTC-2022-10-15-20-21-08.json',
+		'utf8',
+		function (err: object,data: object) {
+	    	if (err)
+				console.error(err);
+		}
+	);
+
+	let responseJson = JSON.parse(response);
+	if (responseJson) {
+		exchangeKraken.refreshChart(
+			chartKrakenEthBtc4h,
+			responseJson,
+		);
+	}
+	// console.log(response);
+} catch (err) {
+	console.error(err);
+}
 
 // Create an existing position on exchange
 // let pos1 = new Position({
@@ -112,46 +155,25 @@ let analysisMacd = new Analysis({
 		inRealField: 'close',
 	}
 });
-console.log(analysisMacd.explain());
-
-// Create a ETHBTC pair chart, and 1 minute, for Kraken exchange data
-let chartKrakenEthBtc4h = new Chart({
-	exchange: exchangeKraken,
-	pair: pairEthBtc,
-	pollTime: 300, // 5m in seconds
-	candleTime: 14400 // 4h in seconds
-});
-
-// Push Kraken exchange data to chart (if exchange/chart are compatible)
-try {
-	exchangeKraken.primeChart(
-		chartKrakenEthBtc4h
-	);
-} catch (err) {
-	console.error(err);
-}
+// console.log(analysisMacd.explain());
 
 // Scenario for analysis events
 let scenarioBullishRsiOversold = new Scenario({
 	analysis: [
 		analysisRsi14
 	],
-	name: 'scenarioBullishRsiOversold',
 	condition: [
 		[
 			['outReal', '<=', '30'],
 		],
-		[
-			['outReal', '>=', '30'],
-		],
-	]
+	],
+	name: 'scenarioBullishRsiOversold',
 });
 
 let scenarioBullishMacdCrossover = new Scenario({
 	analysis: [
 		analysisMacd
 	],
-	name: 'scenarioBullishMacdCrossover',
 	condition: [
 
 		// Previous candle
@@ -162,9 +184,12 @@ let scenarioBullishMacdCrossover = new Scenario({
 		// Latest candle
 		[
 			['outMACDHist', '>=', '0'],
-			['outMACDHist', '<=', '4'],
+			['outMACDHist', '<=', '2'],
 		],
+
+		// outMACD, outMACDSignal, outMACDHist
 	]
+	name: 'scenarioBullishMacdCrossover',
 });
 
 // TODO: Trigger an scenario, on a TA event
@@ -173,17 +198,21 @@ let scenarioBullishMacdCrossover = new Scenario({
 // what if we want to check multiple candleTimes, before final decision
 
 let stratFoobar = new Strategy({
+	action: [
+		[scenarioBullishRsiOversold],
+	],
 	analysis: [
 		analysisRsi14,
 	],
 	chart: chartKrakenEthBtc4h,
-	action: [
-		[scenarioBullishRsiOversold],
-	],
+	name: 'stratFoobar',
 });
 
 // Create new stategy
 let stratTopLevel = new Strategy({
+	action: [
+		[scenarioBullishMacdCrossover, stratFoobar]
+	],
 	analysis: [
 		// analysisSma20, // Must execute before `analysisBolingerBands`
 		// analysisBolingerBands, // Depends on `analysisSma20` result
@@ -195,9 +224,7 @@ let stratTopLevel = new Strategy({
 		// analysisSma200,
 	],
 	chart: chartKrakenEthBtc4h,
-	action: [
-		[scenarioBullishMacdCrossover, stratFoobar]
-	],
+	name: 'stratTopLevel',
 });
 
 // Execute all strategy analysis

@@ -87,6 +87,7 @@ export class Kraken extends Exchange implements ExchangeInterface {
 				weightedAvePrice: [],
 			};
 
+			// Extract, transform, load response to chart
 			for (let i = 0; i < responseJson.result[pair].length; i++) {
 				let p: any = responseJson.result[pair][i];
 				// console.log(p[0]);return;
@@ -101,7 +102,6 @@ export class Kraken extends Exchange implements ExchangeInterface {
 			}
 			// console.log(etlData);return;
 
-			// Extract, transform, load response to chart
 			this.refreshChart(
 				chart,
 				etlData,
