@@ -163,8 +163,15 @@ let scenarioBullishRsiOversold = new Scenario({
 		analysisRsi14
 	],
 	condition: [
+
+		// Previous candle
 		[
 			['outReal', '<=', '30'],
+		],
+
+		// Latest candle
+		[
+			['outReal', '>=', '30'],
 		],
 	],
 	name: 'scenarioBullishRsiOversold',
@@ -178,17 +185,16 @@ let scenarioBullishMacdCrossover = new Scenario({
 
 		// Previous candle
 		[
-			['outMACDHist', '<=', '0'],
+			['outMACDHist', '<', '0'],
 		],
 
 		// Latest candle
 		[
 			['outMACDHist', '>=', '0'],
-			['outMACDHist', '<=', '2'],
 		],
 
 		// outMACD, outMACDSignal, outMACDHist
-	]
+	],
 	name: 'scenarioBullishMacdCrossover',
 });
 
@@ -211,7 +217,8 @@ let stratFoobar = new Strategy({
 // Create new stategy
 let stratTopLevel = new Strategy({
 	action: [
-		[scenarioBullishMacdCrossover, stratFoobar]
+		// [scenarioBullishMacdCrossover, stratFoobar],
+		[scenarioBullishMacdCrossover],
 	],
 	analysis: [
 		// analysisSma20, // Must execute before `analysisBolingerBands`

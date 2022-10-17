@@ -69,6 +69,9 @@ export class Strategy implements StrategyData {
 		let i: number;
 		let action: [Scenario, Strategy?];
 
+		// The shortest result data set length
+		let resultMaxLength: number = 0;
+
 		// Process analysis
 		for (i = 0; i < this.analysis.length; i++) {
 			analysis = this.analysis[i];
@@ -110,6 +113,16 @@ export class Strategy implements StrategyData {
 			// Execute
 			let result = talib.execute(executeOptions);
 
+			// Track the shortest data set
+			if (
+				resultMaxLength === 0
+				|| (
+					result.nbElement > 0
+					&& result.nbElement < resultMaxLength
+				)
+			)
+				resultMaxLength = result.nbElement;
+
 			// Store results
 			this.result.push(result);
 			this.resultIndex.push(analysis.uuid);
@@ -119,26 +132,58 @@ export class Strategy implements StrategyData {
 		for (i = 0; i < this.action.length; i++) {
 			action = this.action[i];
 
+			// Add specified analysis results, to the test dataset
 			let analysis: Analysis;
 			let result: object | boolean;
-			let testResult: Array<object> = [];
+			let analysisData: Array<[Analysis, object]> = [];
 			for (let i = 0; i < action[0].analysis.length; i++) {
 				analysis = this.analysis[i];
 
 				result = this.getResult(analysis);
 				if (result)
-					testResult.push(result);
+					analysisData.push([analysis, result]);
 			}
 
 			// Test scenario conditions
 			let signal = action[0].test({
-				analysisData: testResult,
+				analysisData: analysisData,
+
+				datasetMaxLength: this.chart.open.length,
+				resultMaxLength: resultMaxLength,
 
 				// Optional `Strategy` to execute on a `Scenario` match
 				strategy: action[1],
 			});
 
-			console.log(`Strategy '${this.name}' scenario matches: ${signal}`);
+			// Console log details on matched data points
+			console.info(`Strategy '${this.name}' scenario '${action[0].name}' matches: ${signal.length}`);
+
+			let signalTimes: string[] = [];
+			let timeField: string = '';
+
+			if (this.chart['openTime'])
+				timeField = 'openTime';
+			else if (this.chart['closeTime'])
+				timeField = 'closeTime';
+
+			if (this.chart[timeField]) {
+				for (let j = 0; j < signal.length; j++) {
+					let k = signal[j];
+					// console.log(analysisData[0][1].nbElement);
+					let l = k + (this.chart.open.length - resultMaxLength));
+					// console.log(`highestStartIndex: ${highestStartIndex}`);
+					let date = new Date(parseInt(this.chart[timeField][l]) * 1000);
+					signalTimes.push(date.toISOString());
+					console.log(date.toISOString());
+					console.log(analysisData[0][1].result['outMACDHist'][(k-1)]);
+					console.log(analysisData[0][1].result['outMACDHist'][k]);
+				}
+			}
+
+			// console.log(this.chart.open.length);
+			// console.log(analysisData[0][1].result['outMACDHist'].length);
+
+			// console.log(`Data point matches (by field: ${timeField.length ? timeField : 'index'}): ${signalTimes.length ? signalTimes.join(', ') : signal.join(', ')}`);
 		}
 	}
 }

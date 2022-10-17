@@ -9,7 +9,9 @@ export type ScenarioData = {
 }
 
 export type ScenarioTestData = {
-	analysisData: Array<object>,
+	analysisData: Array<[Analysis, object]>,
+	datasetMaxLength: number,
+	resultMaxLength: number,
 	strategy?: Strategy,
 }
 
@@ -32,9 +34,7 @@ export class Scenario implements ScenarioData {
 		data: ScenarioTestData,
 	) {
 		// Increments if all conditions are met, on a dataset
-		let scenarioMatch: number = 0;
-
-		let datasetMaxLength: number = 0;
+		let scenarioMatch: number[] = [];
 
 		let conditionMatch: number = 0;
 		let valueA: string;
@@ -65,21 +65,20 @@ export class Scenario implements ScenarioData {
 				valueB = condition[conditionIdx][2];
 				
 				// Walk through datasets
+				let analysis: object;
 				let dataset: object;
 				for (
 					let i: number = 0;
 					i < data.analysisData.length;
 					i++
 				) {
-					dataset = data.analysisData[i];
+					analysis = data.analysisData[i][0];
+					dataset = data.analysisData[i][1];
 
 					// Check field exists within result dataset
 					// LOOP THRU DATASETS TO FIND THE FIELD
 					if (dataset.result[valueA]) {
 						// console.log(dataset.result[valueA]);
-						if (dataset.result[valueA].length > datasetMaxLength)
-							datasetMaxLength = dataset.result[valueA].length;
-						
 						conditionMatch++;
 					}
 					
@@ -92,10 +91,14 @@ export class Scenario implements ScenarioData {
 			throw ('Scenario conditions are not compatible with dataset.');
 
 		// Walk through field values, on result dataset
-		let startPoint;
+		let startPoint: number;
 
 		// TODO: Back testing all data points, start from beginning
 		startPoint = 0;
+
+		startPoint = data.datasetMaxLength - data.resultMaxLength;
+
+		console.log(`startPoint: ${startPoint}`);
 
 		// TODO: Testing latest data points only
 		// startPoint = dataset.result[valueA].length - this.condition.length;
@@ -104,9 +107,10 @@ export class Scenario implements ScenarioData {
 
 		// Walk the data points, from the required view point
 		// (number of conditions, minus 1)
+		console.log(`Ranging: ${startPoint}-${data.datasetMaxLength}`);
 		for (
 			let j: number = startPoint;
-			j < datasetMaxLength;
+			j < data.datasetMaxLength;
 			j++
 		) {
 			// console.log('test range: ' + (j - conditionDepth) + '-' + j);
@@ -159,22 +163,47 @@ export class Scenario implements ScenarioData {
 						i < data.analysisData.length;
 						i++
 					) {
-						dataset = data.analysisData[i];
+						dataset = data.analysisData[i][1];
 						if (dataset.result[valueA]) {
 							// console.log(dataset.result[valueA][k]);
 							datapoint = Number.parseFloat(
 								dataset.result[valueA][k]
-							).toFixed(30);
+							).toFixed(10);
 
 							switch (operator) {
+								case '<': {
+									if (datapoint < valueB) {
+										// console.log('conditionMatch');
+										// console.log(`k: ${k}`);
+										// console.log(`valueA: ${valueA}`);
+										// console.log(`datapoint: ${datapoint}`);
+										// console.log(`operator: ${operator}`);
+										// console.log(`valueB: ${valueB}`);
+										conditionMatch++;
+									}
+									break;
+								}
 								case '<=': {
 									if (datapoint <= valueB) {
-										console.log('conditionMatch');
-										console.log(`k: ${k}`);
-										console.log(`valueA: ${valueA}`);
-										console.log(`datapoint: ${datapoint}`);
-										console.log(`operator: ${operator}`);
-										console.log(`valueB: ${valueB}`);
+										// console.log('conditionMatch');
+										// console.log(`k: ${k}`);
+										// console.log(`valueA: ${valueA}`);
+										// console.log(`datapoint: ${datapoint}`);
+										// console.log(`operator: ${operator}`);
+										// console.log(`valueB: ${valueB}`);
+										conditionMatch++;
+									}
+									break;
+								}
+
+								case '>': {
+									if (datapoint > valueB) {
+										// console.log('conditionMatch');
+										// console.log(`k: ${k}`);
+										// console.log(`valueA: ${valueA}`);
+										// console.log(`datapoint: ${datapoint}`);
+										// console.log(`operator: ${operator}`);
+										// console.log(`valueB: ${valueB}`);
 										conditionMatch++;
 									}
 									break;
@@ -182,12 +211,12 @@ export class Scenario implements ScenarioData {
 
 								case '>=': {
 									if (datapoint >= valueB) {
-										console.log('conditionMatch');
-										console.log(`k: ${k}`);
-										console.log(`valueA: ${valueA}`);
-										console.log(`datapoint: ${datapoint}`);
-										console.log(`operator: ${operator}`);
-										console.log(`valueB: ${valueB}`);
+										// console.log('conditionMatch');
+										// console.log(`k: ${k}`);
+										// console.log(`valueA: ${valueA}`);
+										// console.log(`datapoint: ${datapoint}`);
+										// console.log(`operator: ${operator}`);
+										// console.log(`valueB: ${valueB}`);
 										conditionMatch++;
 									}
 									break;
@@ -195,12 +224,12 @@ export class Scenario implements ScenarioData {
 
 								case '==': {
 									if (datapoint == valueB) {
-										console.log('conditionMatch');
-										console.log(`k: ${k}`);
-										console.log(`valueA: ${valueA}`);
-										console.log(`datapoint: ${datapoint}`);
-										console.log(`operator: ${operator}`);
-										console.log(`valueB: ${valueB}`);
+										// console.log('conditionMatch');
+										// console.log(`k: ${k}`);
+										// console.log(`valueA: ${valueA}`);
+										// console.log(`datapoint: ${datapoint}`);
+										// console.log(`operator: ${operator}`);
+										// console.log(`valueB: ${valueB}`);
 										conditionMatch++;
 									}
 									break;
@@ -208,12 +237,12 @@ export class Scenario implements ScenarioData {
 
 								case '!=': {
 									if (datapoint != valueB) {
-										console.log('conditionMatch');
-										console.log(`k: ${k}`);
-										console.log(`valueA: ${valueA}`);
-										console.log(`datapoint: ${datapoint}`);
-										console.log(`operator: ${operator}`);
-										console.log(`valueB: ${valueB}`);
+										// console.log('conditionMatch');
+										// console.log(`k: ${k}`);
+										// console.log(`valueA: ${valueA}`);
+										// console.log(`datapoint: ${datapoint}`);
+										// console.log(`operator: ${operator}`);
+										// console.log(`valueB: ${valueB}`);
 										conditionMatch++;
 									}
 									break;
@@ -227,7 +256,6 @@ export class Scenario implements ScenarioData {
 				// console.log(condition.length);
 				if (conditionMatch === condition.length) {
 					// console.log(`${j}`);
-
 					conditionSetMatch++;
 				}
 
@@ -241,19 +269,23 @@ export class Scenario implements ScenarioData {
 				console.log('conditionSetMatch');
 				// console.log(`${j-1}-${j}`);
 				// console.log(Number.parseFloat(
-				// 	data.analysisData[0].result['outMACDHist'][(j-1)]
-				// ).toFixed(30));
+				// 	data.analysisData[0][1].result['outMACDHist'][(j-1)]
+				// ).toFixed(10));
 				// console.log(Number.parseFloat(
-				// 	data.analysisData[0].result['outMACDHist'][j]
-				// ).toFixed(30));
+				// 	data.analysisData[0][1].result['outMACDHist'][j]
+				// ).toFixed(10));
 
-				scenarioMatch++;
+				scenarioMatch.push(j);
+				console.log(`j: ${j}`);
+
+				// console.log(data.analysisData[0][1].result['outReal'][(j-1)]);
+				// console.log(data.analysisData[0][1].result['outReal'][j]);
 
 				// Execute chained strategy, if provided
-				if (data.strategy) {
-					console.log(`Scenario '${this.name}' triggered strategy '${data.strategy.name}'`);
-					data.strategy.execute();
-				}
+				// if (data.strategy) {
+				// 	console.log(`Scenario '${this.name}' triggered strategy '${data.strategy.name}'`);
+				// 	data.strategy.execute();
+				// }
 			}
 		}
 
