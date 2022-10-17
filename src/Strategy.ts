@@ -171,12 +171,12 @@ export class Strategy implements StrategyData {
 					let k = signal[j];
 					// console.log(analysisData[0][1].nbElement);
 					let l = k + (this.chart.open.length - resultMaxLength));
-					// console.log(`highestStartIndex: ${highestStartIndex}`);
 					let date = new Date(parseInt(this.chart[timeField][l]) * 1000);
 					signalTimes.push(date.toISOString());
 					console.log(date.toISOString());
-					console.log(analysisData[0][1].result['outMACDHist'][(k-1)]);
-					console.log(analysisData[0][1].result['outMACDHist'][k]);
+					// console.log(analysisData[0][1].result['outMACDHist'][(k-1)]);
+					// console.log(analysisData[0][1].result['outMACDHist'][k]);
+					// console.log(Object.keys(analysisData[l][1].result));
 				}
 			}
 

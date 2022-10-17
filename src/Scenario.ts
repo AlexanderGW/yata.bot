@@ -94,8 +94,7 @@ export class Scenario implements ScenarioData {
 		let startPoint: number;
 
 		// TODO: Back testing all data points, start from beginning
-		startPoint = 0;
-
+		// Move forward to the last starting analysis result set
 		startPoint = data.datasetMaxLength - data.resultMaxLength;
 
 		console.log(`startPoint: ${startPoint}`);
@@ -266,7 +265,7 @@ export class Scenario implements ScenarioData {
 
 			// All conditions match on this dataset
 			if (conditionSetMatch === this.condition.length) {
-				console.log('conditionSetMatch');
+				// console.log('conditionSetMatch');
 				// console.log(`${j-1}-${j}`);
 				// console.log(Number.parseFloat(
 				// 	data.analysisData[0][1].result['outMACDHist'][(j-1)]
@@ -276,16 +275,16 @@ export class Scenario implements ScenarioData {
 				// ).toFixed(10));
 
 				scenarioMatch.push(j);
-				console.log(`j: ${j}`);
+				// console.log(`j: ${j}`);
 
 				// console.log(data.analysisData[0][1].result['outReal'][(j-1)]);
 				// console.log(data.analysisData[0][1].result['outReal'][j]);
 
 				// Execute chained strategy, if provided
-				// if (data.strategy) {
-				// 	console.log(`Scenario '${this.name}' triggered strategy '${data.strategy.name}'`);
-				// 	data.strategy.execute();
-				// }
+				if (data.strategy) {
+					console.log(`Scenario '${this.name}' triggered strategy '${data.strategy.name}'`);
+					data.strategy.execute();
+				}
 			}
 		}
 

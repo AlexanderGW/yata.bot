@@ -217,8 +217,8 @@ let stratFoobar = new Strategy({
 // Create new stategy
 let stratTopLevel = new Strategy({
 	action: [
-		// [scenarioBullishMacdCrossover, stratFoobar],
-		[scenarioBullishMacdCrossover],
+		[scenarioBullishMacdCrossover, stratFoobar],
+		// [scenarioBullishMacdCrossover],
 	],
 	analysis: [
 		// analysisSma20, // Must execute before `analysisBolingerBands`
