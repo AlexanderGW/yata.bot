@@ -1,5 +1,6 @@
 import { uuid } from 'uuidv4';
 import { Analysis, AnalysisResultData } from './Analysis';
+import { Chart } from './Chart';
 import { Strategy } from './Strategy';
 
 export type ScenarioData = {
@@ -9,8 +10,8 @@ export type ScenarioData = {
 }
 
 export type ScenarioTestData = {
+	chart: Chart,
 	analysisData: Array<[Analysis, object]>,
-	datasetMaxLength: number,
 	resultMaxLength: number,
 	strategy?: Strategy,
 }
@@ -63,26 +64,31 @@ export class Scenario implements ScenarioData {
 				valueA = condition[conditionIdx][0];
 				operator = condition[conditionIdx][1];
 				valueB = condition[conditionIdx][2];
-				
-				// Walk through datasets
-				let analysis: object;
-				let dataset: object;
-				for (
-					let i: number = 0;
-					i < data.analysisData.length;
-					i++
-				) {
-					analysis = data.analysisData[i][0];
-					dataset = data.analysisData[i][1];
 
-					// Check field exists within result dataset
-					// LOOP THRU DATASETS TO FIND THE FIELD
-					if (dataset.result[valueA]) {
-						// console.log(dataset.result[valueA]);
-						conditionMatch++;
+				if (data.chart[valueA]) {
+					conditionMatch++;
+				} else {
+
+					// Walk through datasets
+					let analysis: object;
+					let dataset: object;
+					for (
+						let i: number = 0;
+						i < data.analysisData.length;
+						i++
+					) {
+						analysis = data.analysisData[i][0];
+						dataset = data.analysisData[i][1];
+
+						// Check field exists within result dataset
+						// LOOP THRU DATASETS TO FIND THE FIELD
+						if (dataset.result[valueA]) {
+							// console.log(dataset.result[valueA]);
+							conditionMatch++;
+						}
+						
+						// TODO: Throw on missing field in dataset?
 					}
-					
-					// TODO: Throw on missing field in dataset?
 				}
 			}
 		}
@@ -95,7 +101,7 @@ export class Scenario implements ScenarioData {
 
 		// TODO: Back testing all data points, start from beginning
 		// Move forward to the last starting analysis result set
-		startPoint = data.datasetMaxLength - data.resultMaxLength;
+		startPoint = data.chart.open.length - data.resultMaxLength;
 
 		console.log(`startPoint: ${startPoint}`);
 
@@ -106,10 +112,10 @@ export class Scenario implements ScenarioData {
 
 		// Walk the data points, from the required view point
 		// (number of conditions, minus 1)
-		console.log(`Ranging: ${startPoint}-${data.datasetMaxLength}`);
+		console.log(`Ranging: ${startPoint}-${data.chart.open.length}`);
 		for (
 			let j: number = startPoint;
-			j < data.datasetMaxLength;
+			j < data.chart.open.length;
 			j++
 		) {
 			// console.log('test range: ' + (j - conditionDepth) + '-' + j);
@@ -128,7 +134,6 @@ export class Scenario implements ScenarioData {
 			let conditionSetMatch: number = 0;
 
 			// Step through data points, looking for a full set of condition matches
-			let datapoint;
 			for (
 				let k: number = (j - conditionDepth);
 				k <= j;
@@ -156,19 +161,24 @@ export class Scenario implements ScenarioData {
 					valueB = condition[conditionIdx][2];
 					
 					// Walk through datasets
-					let dataset: object;
 					for (
 						let i: number = 0;
 						i < data.analysisData.length;
 						i++
 					) {
-						dataset = data.analysisData[i][1];
-						if (dataset.result[valueA]) {
-							// console.log(dataset.result[valueA][k]);
+						let datapoint;
+						if (data.analysisData[i][1].result[valueA]) {
+							// console.log(data.analysisData[i][1].result[valueA][k]);
 							datapoint = Number.parseFloat(
-								dataset.result[valueA][k]
+								data.analysisData[i][1].result[valueA][k]
 							).toFixed(10);
+						} else if(data.chart[valueA]) {
+							datapoint = Number.parseFloat(
+								data.chart[valueA][k]
+							).toFixed(10);
+						}
 
+						if (datapoint) {
 							switch (operator) {
 								case '<': {
 									if (datapoint < valueB) {
@@ -274,8 +284,13 @@ export class Scenario implements ScenarioData {
 				// 	data.analysisData[0][1].result['outMACDHist'][j]
 				// ).toFixed(10));
 
-				scenarioMatch.push(j);
-				// console.log(`j: ${j}`);
+				let k = j + startPoint;
+
+				scenarioMatch.push(k);
+				console.log(`k: ${k}`);
+				
+				let date = new Date(parseInt(data.chart.openTime[k]) * 1000);
+						console.log(`dpDate: ${date.toISOString()}`);
 
 				// console.log(data.analysisData[0][1].result['outReal'][(j-1)]);
 				// console.log(data.analysisData[0][1].result['outReal'][j]);

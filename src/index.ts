@@ -171,6 +171,7 @@ let scenarioBullishRsiOversold = new Scenario({
 
 		// Latest candle
 		[
+			['open', '<=', '0.067'],
 			['outReal', '>=', '30'],
 		],
 	],
@@ -236,7 +237,7 @@ let stratTopLevel = new Strategy({
 
 // Execute all strategy analysis
 try {
-	stratTopLevel.execute();
+	stratFoobar.execute();
 } catch (err) {
 	console.error(err);
 }
