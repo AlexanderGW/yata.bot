@@ -1,12 +1,12 @@
 import * as dotenv from 'dotenv';
 
-import { Kraken } from './Exchange/Kraken';
-import { Asset } from './Asset';
-import { Pair } from './Pair';
-import { Analysis } from './Analysis';
-import { Chart } from './Chart';
-import { Strategy } from './Strategy';
-import { Scenario } from './Scenario';
+import { Kraken } from './Bot/Exchange/Kraken';
+import { Asset } from './Bot/Asset';
+import { Pair } from './Bot/Pair';
+import { Analysis } from './Bot/Analysis';
+import { Chart } from './Bot/Chart';
+import { Strategy } from './Bot/Strategy';
+import { Scenario } from './Bot/Scenario';
 
 dotenv.config();
 
@@ -70,7 +70,6 @@ try {
 			responseJson,
 		);
 	}
-	// console.log(response);
 } catch (err) {
 	console.error(err);
 }
@@ -82,7 +81,7 @@ try {
 // 	amount: '2.23523552'
 // });
 
-// Relative Strength Index (RSI) 100
+// Relative Strength Index (RSI) 14
 let analysisRsi14 = new Analysis({
 	name: 'RSI',
 	config: {

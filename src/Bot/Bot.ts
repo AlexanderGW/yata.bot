@@ -8,7 +8,7 @@ export const Bot = {
 
 	console: function (
 		string: string,
-		level: Level,
+		level?: Level,
 	) {
 		let now = new Date();
 		let consoleString = `${now.toISOString()}: ${string}`;
