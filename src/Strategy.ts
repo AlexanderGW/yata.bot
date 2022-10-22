@@ -154,7 +154,7 @@ export class Strategy implements StrategyData {
 
 			// Test scenario conditions against analysis, or candle metrics
 			try {
-				let signal = action[0].test({
+				let signal: any = action[0].test({
 					chart: this.chart,
 					analysisData: analysisData,
 	
@@ -167,17 +167,39 @@ export class Strategy implements StrategyData {
 				// Console log details on matched data points
 				console.info(`Strategy '${this.name}' scenario '${action[0].name}' analysis matches: ${signal.length}`);
 	
-				if (this.chart[timeField]) {
+				// if (this.chart[timeField]) {
+				// 	for (let j = 0; j < signal.length; j++) {
+				// 		let k = signal[j];
+				// 		// console.log(analysisData[0][1].nbElement);
+				// 		// let l = k + (this.chart.open.length - resultMaxLength));
+				// 		let date = new Date(parseInt(this.chart[timeField][k]) * 1000);
+				// 		signalTimes.push(date.toISOString());
+				// 		console.log(date.toISOString());
+				// 		// console.log(analysisData[0][1].result['outMACDHist'][(k-1)]);
+				// 		// console.log(analysisData[0][1].result['outMACDHist'][k]);
+				// 		// console.log(Object.keys(analysisData[l][1].result));
+				// 	}
+				// }
+
+				// console.log(signal);
+				if (signal) {
 					for (let j = 0; j < signal.length; j++) {
-						let k = signal[j];
-						// console.log(analysisData[0][1].nbElement);
-						// let l = k + (this.chart.open.length - resultMaxLength));
-						let date = new Date(parseInt(this.chart[timeField][k]) * 1000);
+						let latestCandle = signal[j].length - 1;
+						let matchFirstCond = signal[j][latestCandle][0];
+						let date = new Date(parseInt(this.chart[timeField][matchFirstCond.k]) * 1000);
 						signalTimes.push(date.toISOString());
 						console.log(date.toISOString());
-						// console.log(analysisData[0][1].result['outMACDHist'][(k-1)]);
-						// console.log(analysisData[0][1].result['outMACDHist'][k]);
-						// console.log(Object.keys(analysisData[l][1].result));
+						// let k = signal[j];
+						for (let l = 0; l < signal[j].length; l++) {
+							let m = signal[j][l];
+							// console.log(analysisData[0][1].nbElement);
+							// let l = k + (this.chart.open.length - resultMaxLength));
+							// console.log(m);
+							// console.log(this.chart.open[matchFirstCond.k]);
+							// console.log(analysisData[0][1].result['outMACDHist'][(k-1)]);
+							// console.log(analysisData[0][1].result['outMACDHist'][k]);
+							// console.log(Object.keys(analysisData[l][1].result));
+						}
 					}
 				}
 	
