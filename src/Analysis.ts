@@ -3,6 +3,7 @@ import { uuid } from 'uuidv4';
 const talib = require('talib');
 
 export type AnalysisConfigData = {
+	startIndex?: number,
 	inReal?: string[],
 	inRealAnalysis?: Analysis,
 	inRealField?: string,
@@ -31,7 +32,9 @@ export class Analysis implements AnalysisData {
 	) {
 		this.name = data.name;
 
-		let config: any = {};
+		let config: any = {
+			startIndex: 0,
+		};
 
 		let explain = talib.explain(this.name);
 		if (explain) {
