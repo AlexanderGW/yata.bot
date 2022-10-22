@@ -3,10 +3,10 @@ import * as dotenv from 'dotenv';
 import { Kraken } from './Bot/Exchange/Kraken';
 import { Asset } from './Bot/Asset';
 import { Pair } from './Bot/Pair';
-import { Analysis } from './Bot/Analysis';
 import { Chart } from './Bot/Chart';
 import { Strategy } from './Bot/Strategy';
-import { Scenario } from './Bot/Scenario';
+import { BolingerOverreach, BullishMacdCrossover, BullishRsiOversold, Sma20CrossUp } from './Helper/Scenario';
+import { BolingerBands20, Macd, Rsi14, Sma20 } from './Helper/Analysis';
 
 dotenv.config();
 
@@ -81,197 +81,13 @@ try {
 // 	amount: '2.23523552'
 // });
 
-// Relative Strength Index (RSI) 14
-let analysisRsi14 = new Analysis({
-	name: 'RSI',
-	config: {
-		inRealField: 'close',
-		optInTimePeriod: 14,
-		startIndex: 14,
-	}
-});
-// console.log(analysisRsi14.explain());
-
-// Exponential Moving Average (SMA) 20
-let analysisEma20 = new Analysis({
-	name: 'EMA',
-	config: {
-		inRealField: 'close',
-		optInTimePeriod: 20,
-	}
-});
-// console.log(analysisEma20.explain());
-
-// Exponential Moving Average (SMA) 100
-let analysisEma100 = new Analysis({
-	name: 'EMA',
-	config: {
-		inRealField: 'close',
-		optInTimePeriod: 100,
-	}
-});
-
-// Simple Moving Average (SMA) 20
-let analysisSma20 = new Analysis({
-	name: 'SMA',
-	config: {
-		inRealField: 'close',
-		optInTimePeriod: 20,
-		// startIndex: 20,
-	}
-});
-// console.log(analysisSma20.explain());
-
-// Simple Moving Average (SMA) 50
-let analysisSma50 = new Analysis({
-	name: 'SMA',
-	config: {
-		inRealField: 'close',
-		optInTimePeriod: 50,
-	}
-});
-
-// Simple Moving Average (SMA) 200
-let analysisSma200 = new Analysis({
-	name: 'SMA',
-	config: {
-		inRealField: 'close',
-		optInTimePeriod: 200,
-	}
-});
-
-// Bolinger Bands (dependent on SMA20 result)
-let analysisBolingerBands = new Analysis({
-	name: 'BBANDS',
-	config: {
-		inRealAnalysis: analysisSma20,
-		inRealField: 'outReal',
-		optInTimePeriod: 20,
-		startIndex: 21,
-	}
-});
-// console.log(analysisBolingerBands.explain());
-
-// Moving Average Convergence/Divergence (MACD) with defaults
-let analysisMacd = new Analysis({
-	name: 'MACD',
-	config: {
-		inRealField: 'close',
-	}
-});
-// console.log(analysisMacd.explain());
-
-// Scenario for analysis events
-let scenarioBullishRsiOversold = new Scenario({
-	analysis: [
-		analysisRsi14
-	],
-	condition: [
-
-		// Previous candle
-		[
-			['outReal', '<=', 30],
-		],
-
-		// Latest candle
-		[
-			// ['open', '<=', 0.067],
-			['outReal', '>=', 30],
-		],
-	],
-	name: 'scenarioBullishRsiOversold',
-});
-
-let scenarioBullishMacdCrossover = new Scenario({
-	analysis: [
-		analysisMacd
-	],
-	condition: [
-
-		// Previous candle
-		[
-			['outMACDHist', '<', 0],
-		],
-
-		// Latest candle
-		[
-			['outMACDHist', '>=', 0],
-		],
-
-		// Fields: outMACD, outMACDSignal, outMACDHist
-	],
-	name: 'scenarioBullishMacdCrossover',
-});
-
-let scenarioBolingerOverreach = new Scenario({
-	analysis: [
-		analysisSma20, // Must execute before `analysisBolingerBands`
-		analysisBolingerBands, // Depends on `analysisSma20` result
-	],
-	condition: [
-
-		// Three candles back
-		[
-			['close', '<', 'outRealLowerBand'],
-		],
-
-		// Two...
-		[
-			['close', '<', 'outRealLowerBand'],
-		],
-
-		// Previous candle
-		[
-			['close', '<', 'outRealLowerBand'],
-		],
-
-		// Latest candle
-		[
-			['close', '>=', 'outRealLowerBand'],
-		],
-
-		// Fields: outRealUpperBand, outRealLowerBand, outRealMiddleBand
-	],
-	name: 'scenarioBolingerOverreach',
-});
-
-// Candles closing about the 20 SMA
-let scenarioSma20CrossUp = new Scenario({
-	analysis: [
-		analysisSma20,
-	],
-	condition: [
-
-		// Latest candle
-		[
-			['close', '<', 'outReal'],
-		],
-
-		// Latest candle
-		[
-			['close', '<', 'outReal'],
-		],
-
-		// Latest candle
-		[
-			['close', '>=', 'outReal'],
-		],
-
-		// Latest candle
-		[
-			['close', '>=', 'outReal'],
-		],
-	],
-	name: 'scenarioSma20CrossUp',
-});
-
 // RSI crossing upward into 30 range
 let stratBullishRsiOversold = new Strategy({
 	action: [
-		[scenarioBullishRsiOversold],
+		[BullishRsiOversold],
 	],
 	analysis: [
-		analysisRsi14,
+		Rsi14,
 	],
 	chart: chartKrakenEthBtc4h,
 	name: 'stratBullishRsiOversold',
@@ -280,11 +96,11 @@ let stratBullishRsiOversold = new Strategy({
 // MACD crossing upward
 let stratBullishMacdCrossover = new Strategy({
 	action: [
-		[scenarioBullishMacdCrossover, stratBullishRsiOversold],
+		[BullishMacdCrossover, stratBullishRsiOversold],
 		// [scenarioBullishMacdCrossover],
 	],
 	analysis: [
-		analysisMacd,
+		Macd,
 	],
 	chart: chartKrakenEthBtc4h,
 	name: 'stratBullishMacdCrossover',
@@ -292,12 +108,12 @@ let stratBullishMacdCrossover = new Strategy({
 
 let stratBolingerOverreach = new Strategy({
 	action: [
-		[scenarioBolingerOverreach, stratBullishRsiOversold],
-		// [scenarioBolingerOverreach],
+		[BolingerOverreach, stratBullishRsiOversold],
+		// [BolingerOverreach],
 	],
 	analysis: [
-		analysisSma20, // Must execute before `analysisBolingerBands`
-		analysisBolingerBands, // Depends on `analysisSma20` result
+		Sma20, // Must execute before `BolingerBands20`
+		BolingerBands20, // Depends on `Sma20` result
 	],
 	chart: chartKrakenEthBtc4h,
 	name: 'stratBolingerOverreach',
@@ -305,10 +121,10 @@ let stratBolingerOverreach = new Strategy({
 
 let stratSma20CrossUp = new Strategy({
 	action: [
-		[scenarioSma20CrossUp],
+		[Sma20CrossUp],
 	],
 	analysis: [
-		analysisSma20,
+		Sma20,
 	],
 	chart: chartKrakenEthBtc4h,
 	name: 'stratBolingerOverreach',
