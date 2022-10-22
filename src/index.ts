@@ -12,7 +12,8 @@ dotenv.config();
 
 const fs = require('fs');
 
-// --------------------------------------------------------
+// TODO: Monitor strategy signals within a timeframe; At Nth, trigger buy, sell, SL, etc.
+// TODO: Currently parses the entire dataset, implement a progressive chart for active strategies.
 
 // Create Kraken exchange client
 const exchangeKraken = new Kraken({
@@ -54,7 +55,7 @@ try {
 
 	// Load from storage
 	let response: any = fs.readFileSync(
-		'./storage/Kraken/ETHBTC/2022/10/15/Kraken-ETHBTC-2022-10-15-20-21-08.json',
+		'./test/2022-10-15-ethbtc-4h-700.json',
 		'utf8',
 		function (err: object,data: object) {
 	    	if (err)
@@ -87,6 +88,7 @@ let analysisRsi14 = new Analysis({
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 14,
+		startIndex: 14,
 	}
 });
 // console.log(analysisRsi14.explain());
@@ -116,6 +118,7 @@ let analysisSma20 = new Analysis({
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 20,
+		// startIndex: 20,
 	}
 });
 // console.log(analysisSma20.explain());
@@ -144,6 +147,8 @@ let analysisBolingerBands = new Analysis({
 	config: {
 		inRealAnalysis: analysisSma20,
 		inRealField: 'outReal',
+		optInTimePeriod: 20,
+		startIndex: 21,
 	}
 });
 // console.log(analysisBolingerBands.explain());
@@ -166,13 +171,13 @@ let scenarioBullishRsiOversold = new Scenario({
 
 		// Previous candle
 		[
-			['outReal', '<=', '30'],
+			['outReal', '<=', 30],
 		],
 
 		// Latest candle
 		[
-			['open', '<=', '0.067'],
-			['outReal', '>=', '30'],
+			// ['open', '<=', 0.067],
+			['outReal', '>=', 30],
 		],
 	],
 	name: 'scenarioBullishRsiOversold',
@@ -186,25 +191,83 @@ let scenarioBullishMacdCrossover = new Scenario({
 
 		// Previous candle
 		[
-			['outMACDHist', '<', '0'],
+			['outMACDHist', '<', 0],
 		],
 
 		// Latest candle
 		[
-			['outMACDHist', '>=', '0'],
+			['outMACDHist', '>=', 0],
 		],
 
-		// outMACD, outMACDSignal, outMACDHist
+		// Fields: outMACD, outMACDSignal, outMACDHist
 	],
 	name: 'scenarioBullishMacdCrossover',
 });
 
-// TODO: Trigger an scenario, on a TA event
-// make an scenario (collection of ok TA metrics) fire a callback? which can contain more complex shite
-// how best to handle this
-// what if we want to check multiple candleTimes, before final decision
+let scenarioBolingerOverreach = new Scenario({
+	analysis: [
+		analysisSma20, // Must execute before `analysisBolingerBands`
+		analysisBolingerBands, // Depends on `analysisSma20` result
+	],
+	condition: [
 
-let stratFoobar = new Strategy({
+		// Three candles back
+		[
+			['close', '<', 'outRealLowerBand'],
+		],
+
+		// Two...
+		[
+			['close', '<', 'outRealLowerBand'],
+		],
+
+		// Previous candle
+		[
+			['close', '<', 'outRealLowerBand'],
+		],
+
+		// Latest candle
+		[
+			['close', '>=', 'outRealLowerBand'],
+		],
+
+		// Fields: outRealUpperBand, outRealLowerBand, outRealMiddleBand
+	],
+	name: 'scenarioBolingerOverreach',
+});
+
+// Candles closing about the 20 SMA
+let scenarioSma20CrossUp = new Scenario({
+	analysis: [
+		analysisSma20,
+	],
+	condition: [
+
+		// Latest candle
+		[
+			['close', '<', 'outReal'],
+		],
+
+		// Latest candle
+		[
+			['close', '<', 'outReal'],
+		],
+
+		// Latest candle
+		[
+			['close', '>=', 'outReal'],
+		],
+
+		// Latest candle
+		[
+			['close', '>=', 'outReal'],
+		],
+	],
+	name: 'scenarioSma20CrossUp',
+});
+
+// RSI crossing upward into 30 range
+let stratBullishRsiOversold = new Strategy({
 	action: [
 		[scenarioBullishRsiOversold],
 	],
@@ -212,60 +275,52 @@ let stratFoobar = new Strategy({
 		analysisRsi14,
 	],
 	chart: chartKrakenEthBtc4h,
-	name: 'stratFoobar',
+	name: 'stratBullishRsiOversold',
 });
 
-// Create new stategy
-let stratTopLevel = new Strategy({
+// MACD crossing upward
+let stratBullishMacdCrossover = new Strategy({
 	action: [
-		[scenarioBullishMacdCrossover, stratFoobar],
+		[scenarioBullishMacdCrossover, stratBullishRsiOversold],
 		// [scenarioBullishMacdCrossover],
 	],
 	analysis: [
-		// analysisSma20, // Must execute before `analysisBolingerBands`
-		// analysisBolingerBands, // Depends on `analysisSma20` result
-		// analysisEma20,
-		// analysisEma100,
 		analysisMacd,
-		// analysisRsi14,
-		// analysisSma50,
-		// analysisSma200,
 	],
 	chart: chartKrakenEthBtc4h,
-	name: 'stratTopLevel',
+	name: 'stratBullishMacdCrossover',
+});
+
+let stratBolingerOverreach = new Strategy({
+	action: [
+		[scenarioBolingerOverreach, stratBullishRsiOversold],
+		// [scenarioBolingerOverreach],
+	],
+	analysis: [
+		analysisSma20, // Must execute before `analysisBolingerBands`
+		analysisBolingerBands, // Depends on `analysisSma20` result
+	],
+	chart: chartKrakenEthBtc4h,
+	name: 'stratBolingerOverreach',
+});
+
+let stratSma20CrossUp = new Strategy({
+	action: [
+		[scenarioSma20CrossUp],
+	],
+	analysis: [
+		analysisSma20,
+	],
+	chart: chartKrakenEthBtc4h,
+	name: 'stratBolingerOverreach',
 });
 
 // Execute all strategy analysis
 try {
-	stratFoobar.execute();
+	// stratBullishMacdCrossover.execute();
+	stratBullishRsiOversold.execute();
+	// stratBolingerOverreach.execute();
+	// stratSma20CrossUp.execute();
 } catch (err) {
 	console.error(err);
 }
-
-
-
-
-
-// let strat1Result1 = strat1.getResult(analysisRsi14);
-// console.log(strat1Result1);
-
-// let strat1Result2 = strat1.getResult(analysisSma50);
-// console.log(strat1Result2);
-
-// let strat1Result3 = strat1.getResult(analysisSma200);
-// console.log(strat1Result3);
-
-// let strat1Result4 = strat1.getResult(analysisBolingerBands);
-// console.log(strat1Result4);
-
-// let strat1Result5 = strat1.getResult(analysisMacd);
-// console.log(strat1Result5);
-
-// Change chart and run strategy again
-// try {
-// 	strat1.setChart(chartKrakenEthBtc1h); // i.e. ETHBTC at 1 hour intervals
-// 	strat1.execute();
-// } catch (err) {
-// 	console.error(err);
-// }
-// console.log(strat1Result2);
