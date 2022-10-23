@@ -69,9 +69,6 @@ export class Strategy implements StrategyData {
 		let i: number;
 		let action: [Scenario, Strategy?];
 
-		// The shortest result data set length
-		let resultMaxLength: number = 0;
-
 		// Process analysis
 		for (i = 0; i < this.analysis.length; i++) {
 			analysis = this.analysis[i];
@@ -113,16 +110,6 @@ export class Strategy implements StrategyData {
 			// Execute
 			let result = talib.execute(executeOptions);
 
-			// Track the shortest data set
-			if (
-				resultMaxLength === 0
-				|| (
-					result.nbElement > 0
-					&& result.nbElement < resultMaxLength
-				)
-			)
-				resultMaxLength = result.nbElement;
-
 			// Store results
 			this.result.push(result);
 			this.resultIndex.push(analysis.uuid);
@@ -157,8 +144,6 @@ export class Strategy implements StrategyData {
 				let signal: any = action[0].test({
 					chart: this.chart,
 					analysisData: analysisData,
-	
-					resultMaxLength: resultMaxLength,
 	
 					// Optional `Strategy` to execute on a `Scenario` match
 					strategy: action[1],
