@@ -1,5 +1,5 @@
 import { Scenario } from "../Bot/Scenario";
-import { BolingerBands20, Macd, Rsi14, Sma20 } from "../Helper/Analysis";
+import { BollingerBands20, Macd, Rsi14, Sma20 } from "../Helper/Analysis";
 
 // Scenario for analysis events
 export const BullishRsiOversold = new Scenario({
@@ -43,10 +43,10 @@ export const BullishMacdCrossover = new Scenario({
 	name: 'scenarioBullishMacdCrossover',
 });
 
-export const BolingerOverreach = new Scenario({
+export const BollingerBullishLowerCross = new Scenario({
 	analysis: [
-		Sma20, // Must execute before `BolingerBands20`
-		BolingerBands20, // Depends on `Sma20` result
+		Sma20, // Must execute before `BollingerBands20`
+		BollingerBands20, // Depends on `Sma20` result
 	],
 	condition: [
 
@@ -72,7 +72,7 @@ export const BolingerOverreach = new Scenario({
 
 		// Fields: outRealUpperBand, outRealLowerBand, outRealMiddleBand
 	],
-	name: 'scenarioBolingerOverreach',
+	name: 'scenarioBollingerBullishLowerCross',
 });
 
 // Candles closing about the 20 SMA

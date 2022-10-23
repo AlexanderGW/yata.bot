@@ -5,8 +5,8 @@ import { Asset } from './Bot/Asset';
 import { Pair } from './Bot/Pair';
 import { Chart } from './Bot/Chart';
 import { Strategy } from './Bot/Strategy';
-import { BolingerOverreach, BullishMacdCrossover, BullishRsiOversold, Sma20CrossUp } from './Helper/Scenario';
-import { BolingerBands20, Macd, Rsi14, Sma20 } from './Helper/Analysis';
+import { BollingerBullishLowerCross, BullishMacdCrossover, BullishRsiOversold, Sma20CrossUp } from './Helper/Scenario';
+import { BollingerBands20, Macd, Rsi14, Sma20 } from './Helper/Analysis';
 
 dotenv.config();
 
@@ -96,6 +96,8 @@ let stratBullishRsiOversold = new Strategy({
 // MACD crossing upward
 let stratBullishMacdCrossover = new Strategy({
 	action: [
+
+		// Trigger another strategy, if this scenario matches
 		[BullishMacdCrossover, stratBullishRsiOversold],
 		// [scenarioBullishMacdCrossover],
 	],
@@ -106,17 +108,18 @@ let stratBullishMacdCrossover = new Strategy({
 	name: 'stratBullishMacdCrossover',
 });
 
-let stratBolingerOverreach = new Strategy({
+let stratBollingerBullishLowerCross = new Strategy({
 	action: [
-		[BolingerOverreach, stratBullishRsiOversold],
-		// [BolingerOverreach],
+
+		// Trigger another strategy, if this scenario matches
+		[BollingerBullishLowerCross, stratBullishRsiOversold],
 	],
 	analysis: [
-		Sma20, // Must execute before `BolingerBands20`
-		BolingerBands20, // Depends on `Sma20` result
+		Sma20, // Must execute before `BollingerBands20`
+		BollingerBands20, // Depends on `Sma20` result
 	],
 	chart: chartKrakenEthBtc4h,
-	name: 'stratBolingerOverreach',
+	name: 'stratBollingerBullishLowerCross',
 });
 
 let stratSma20CrossUp = new Strategy({
@@ -127,14 +130,14 @@ let stratSma20CrossUp = new Strategy({
 		Sma20,
 	],
 	chart: chartKrakenEthBtc4h,
-	name: 'stratBolingerOverreach',
+	name: 'stratBollingerBullishLowerCross',
 });
 
 // Execute all strategy analysis
 try {
 	// stratBullishMacdCrossover.execute();
-	stratBullishRsiOversold.execute();
-	// stratBolingerOverreach.execute();
+	// stratBullishRsiOversold.execute();
+	stratBollingerBullishLowerCross.execute();
 	// stratSma20CrossUp.execute();
 } catch (err) {
 	console.error(err);

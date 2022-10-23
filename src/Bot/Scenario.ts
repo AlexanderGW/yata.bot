@@ -12,7 +12,6 @@ export type ScenarioData = {
 export type ScenarioTestData = {
 	chart: Chart,
 	analysisData: Array<[Analysis, object]>,
-	resultMaxLength: number,
 	strategy?: Strategy,
 }
 
@@ -145,8 +144,6 @@ export class Scenario implements ScenarioData {
 		let startPoint: number;
 
 		// TODO: Back testing all data points, start from beginning
-		// Move forward to the last starting analysis result set
-		// startPoint = data.chart.open.length - data.resultMaxLength;
 		startPoint = 0;
 
 		console.log(`startPoint: ${startPoint}`);
@@ -364,7 +361,7 @@ export class Scenario implements ScenarioData {
 					}
 				}
 
-				// All conditions match on this dataset
+				// All conditions within the set, match on this data frame
 				if (conditionMatch.length === condition.length) {
 					conditionSetMatch.push(conditionMatch);
 				}
@@ -372,7 +369,7 @@ export class Scenario implements ScenarioData {
 				conditionSetIdx++;
 			}
 
-			// All conditions match on this dataset
+			// All scenario condition sets, match on this data frame range
 			if (conditionSetMatch.length === this.condition.length) {
 				scenarioMatch.push(conditionSetMatch);
 

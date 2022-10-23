@@ -59,8 +59,8 @@ export const Sma200 = new Analysis({
 	}
 });
 
-// Bolinger Bands (dependent on SMA20 result)
-export const BolingerBands20 = new Analysis({
+// Bollinger Bands (dependent on SMA20 result)
+export const BollingerBands20 = new Analysis({
 	name: 'BBANDS',
 	config: {
 		inRealAnalysis: Sma20,
@@ -69,7 +69,7 @@ export const BolingerBands20 = new Analysis({
 		startIndex: 21,
 	}
 });
-// console.log(analysisBolingerBands.explain());
+// console.log(analysisBollingerBands.explain());
 
 // Moving Average Convergence/Divergence (MACD) with defaults
 export const Macd = new Analysis({
