@@ -12,9 +12,6 @@ dotenv.config();
 
 const fs = require('fs');
 
-// TODO: Monitor strategy signals within a timeframe; At Nth, trigger buy, sell, SL, etc.
-// TODO: Currently parses the entire dataset, implement a progressive chart for active strategies.
-
 // Create Kraken exchange client
 const exchangeKraken = new Kraken({
 	name: 'Kraken',

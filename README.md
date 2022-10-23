@@ -3,6 +3,12 @@ Still in very early stages of development. Leveraging the `talib` library, via [
 
 Following a concept of strategies, which look for scenarios (definable sets of conditions over a number of data frames) on chart and/or technical analysis; firing events (such as buy, sell, SL, etc.), based on the number of signals within a given time frame.
 
+## Todo
+
+- Monitor strategy signals within a timeframe; At Nth, trigger buy, sell, SL, etc.
+- Implement a progressive chart for active strategies (currently parses the entire dataset).
+- Implement JSON/YAML support
+
 ## Development
 ```
 tsc --watch
