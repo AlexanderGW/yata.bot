@@ -144,7 +144,7 @@ export class Strategy implements StrategyData {
 					analysisData.push([analysis, result]);
 			}
 
-			let signalTimes: string[] = [];
+			// let signalTimes: string[] = [];
 			let timeField: string = '';
 
 			if (this.chart['openTime'])
@@ -166,47 +166,23 @@ export class Strategy implements StrategyData {
 	
 				// Console log details on matched data points
 				console.info(`Strategy '${this.name}' scenario '${action[0].name}' analysis matches: ${signal.length}`);
-	
-				// if (this.chart[timeField]) {
-				// 	for (let j = 0; j < signal.length; j++) {
-				// 		let k = signal[j];
-				// 		// console.log(analysisData[0][1].nbElement);
-				// 		// let l = k + (this.chart.open.length - resultMaxLength));
-				// 		let date = new Date(parseInt(this.chart[timeField][k]) * 1000);
-				// 		signalTimes.push(date.toISOString());
-				// 		console.log(date.toISOString());
-				// 		// console.log(analysisData[0][1].result['outMACDHist'][(k-1)]);
-				// 		// console.log(analysisData[0][1].result['outMACDHist'][k]);
-				// 		// console.log(Object.keys(analysisData[l][1].result));
-				// 	}
-				// }
 
-				// console.log(signal);
+				console.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
+
 				if (signal) {
 					for (let j = 0; j < signal.length; j++) {
 						let latestCandle = signal[j].length - 1;
 						let matchFirstCond = signal[j][latestCandle][0];
 						let date = new Date(parseInt(this.chart[timeField][matchFirstCond.k]) * 1000);
-						signalTimes.push(date.toISOString());
+						// signalTimes.push(date.toISOString());
 						console.log(date.toISOString());
-						// let k = signal[j];
-						for (let l = 0; l < signal[j].length; l++) {
-							let m = signal[j][l];
-							// console.log(analysisData[0][1].nbElement);
-							// let l = k + (this.chart.open.length - resultMaxLength));
-							// console.log(m);
-							// console.log(this.chart.open[matchFirstCond.k]);
-							// console.log(analysisData[0][1].result['outMACDHist'][(k-1)]);
-							// console.log(analysisData[0][1].result['outMACDHist'][k]);
-							// console.log(Object.keys(analysisData[l][1].result));
-						}
+						
+						// Output details on all matching scenario conditions
+						// for (let l = 0; l < signal[j].length; l++) {
+						// 	console.log(signal[j][l]);
+						// }
 					}
 				}
-	
-				// console.log(this.chart.open.length);
-				// console.log(analysisData[0][1].result['outMACDHist'].length);
-	
-				// console.log(`Data point matches (by field: ${timeField.length ? timeField : 'index'}): ${signalTimes.length ? signalTimes.join(', ') : signal.join(', ')}`);
 			} catch (err) {
 				console.error(err);
 			}

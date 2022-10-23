@@ -84,18 +84,18 @@ export class Scenario implements ScenarioData {
 						// console.log(dataset);
 
 						if (dataset.result[valueA]) {
-							if (!data.analysisData[i][0].config.startIndex) {
-								data.analysisData[i][0].config.startIndex = (data.chart.open.length - dataset.result[valueA].length);
-							}
 
-							// console.log(`autostartIndex: ${data.analysisData[i][0].config.startIndex}`);
-							// console.log(`datasetLength[${valueA}]: ${dataset.result[valueA].length}`);
+							// If undefined, set the `startIndex` to the chart dataset, minus the length of the analysis dataset.
+							if (!data.analysisData[i][0].config.startIndex) {
+								data.analysisData[i][0].config.startIndex = (
+									data.chart.open.length
+									- dataset.result[valueA].length
+								);
+							}
 						}
 
 						// Check field exists within result dataset
-						// LOOP THRU DATASETS TO FIND THE FIELD
 						if (dataset.result[valueA]) {
-							// console.log(dataset.result[valueA]);
 							conditionMatch.push({
 								valueA: valueA,
 							});
@@ -123,15 +123,15 @@ export class Scenario implements ScenarioData {
 					) {
 						analysis = data.analysisData[i][0];
 						dataset = data.analysisData[i][1];
-						// console.log(dataset);
 
+						// If undefined, set the `startIndex` to the chart dataset, minus the length of the analysis dataset.
 						if (dataset.result[valueB]) {
 							if (!data.analysisData[i][0].config.startIndex) {
-								data.analysisData[i][0].config.startIndex = (data.chart.open.length - dataset.result[valueB].length);
+								data.analysisData[i][0].config.startIndex = (
+									data.chart.open.length
+									- dataset.result[valueB].length
+								);
 							}
-
-							// console.log(`autostartIndex: ${data.analysisData[i][0].config.startIndex}`);
-							// console.log(`datasetLength[${valueB}]: ${dataset.result[valueB].length}`);
 						}
 					}
 				}
@@ -164,15 +164,10 @@ export class Scenario implements ScenarioData {
 			j < data.chart.open.length;
 			j++
 		) {
-			// continue;
-			// console.log('test range: ' + (j - conditionDepth) + '-' + j);
-
 			// Skip data point range depths that are lower than the number of conditions
 			// (not enough data points for backward looking conditions)
 			if (j < conditionDepth)
 				continue;
-
-			// console.log('range: ' + (j - conditionDepth) + '-' + j);
 
 			// Reset, reuse connection index variable.
 			conditionSetIdx = 0;
@@ -186,9 +181,6 @@ export class Scenario implements ScenarioData {
 				k <= j;
 				k++
 			) {
-				// console.log('---------------------');
-
-				// console.log(`conditionSetIdx: ${conditionSetIdx}`);
 				let condition = this.condition[conditionSetIdx];
 				let conditionIdx: number = 0;
 
@@ -204,7 +196,6 @@ export class Scenario implements ScenarioData {
 				) {
 					let analysisOffset;
 
-					// console.log(`conditionIdx: ${conditionIdx}`);
 					valueA = condition[conditionIdx][0];
 					operator = condition[conditionIdx][1];
 					valueB = condition[conditionIdx][2];
@@ -229,18 +220,13 @@ export class Scenario implements ScenarioData {
 	
 								analysisOffset = (k - data.analysisData[i][0].config.startIndex);
 	
-								// console.log(data.analysisData[i][1].result[valueA][k]);
-								// if (analysisOffset < 10)
-								// 	console.log(`analysisOffset: ${analysisOffset}`);
-	
 								valueAReal = Number.parseFloat(
 									data.analysisData[i][1].result[valueA][analysisOffset]
 								).toFixed(10);
 							}
 							
 							if (typeof valueB === 'string') {
-								// console.log(data.analysisData[i][1].result);
-	
+								
 								// `valueB` is an analysis result data field
 								if (data.analysisData[i][1].result[valueB]) {
 	
@@ -268,10 +254,6 @@ export class Scenario implements ScenarioData {
 						}
 					}
 
-					// if (typeof analysisOffset === 'undefined') {
-					// 	continue;
-					// }
-
 					if (
 						typeof valueBReal === 'undefined'
 						&& typeof valueB === 'string'
@@ -281,7 +263,6 @@ export class Scenario implements ScenarioData {
 								data.chart[valueB][k]
 							).toFixed(10);
 						} else {
-							// console.log(`Not found Analysis(${i}) valueBReal: ${valueB}`);
 							continue;
 						}
 					}
@@ -289,19 +270,10 @@ export class Scenario implements ScenarioData {
 					// console.log(`valueAReal: ${valueAReal}`);
 					// console.log(`valueBReal: ${valueBReal}`);
 
-					// if (valueBReal === 'NaN') continue;
-
 					if (valueAReal) {
 						switch (operator) {
 							case '<': {
 								if (valueAReal < valueBReal) {
-									// console.log('conditionMatch');
-									// console.log(`k: ${k}`);
-									// console.log(`valueA: ${valueA}`);
-									// console.log(`valueAReal: ${valueAReal}`);
-									// console.log(`operator: ${operator}`);
-									// console.log(`valueB: ${valueB}`);
-									// console.log(`valueBReal: ${valueBReal}`);
 									conditionMatch.push({
 										k: k,
 										valueA: valueA,
@@ -316,13 +288,6 @@ export class Scenario implements ScenarioData {
 							}
 							case '<=': {
 								if (valueAReal <= valueBReal) {
-									// console.log('conditionMatch');
-									// console.log(`k: ${k}`);
-									// console.log(`valueA: ${valueA}`);
-									// console.log(`valueAReal: ${valueAReal}`);
-									// console.log(`operator: ${operator}`);
-									// console.log(`valueB: ${valueB}`);
-									// console.log(`valueBReal: ${valueBReal}`);
 									conditionMatch.push({
 										k: k,
 										valueA: valueA,
@@ -338,13 +303,6 @@ export class Scenario implements ScenarioData {
 
 							case '>': {
 								if (valueAReal > valueBReal) {
-									// console.log('conditionMatch');
-									// console.log(`k: ${k}`);
-									// console.log(`valueA: ${valueA}`);
-									// console.log(`valueAReal: ${valueAReal}`);
-									// console.log(`operator: ${operator}`);
-									// console.log(`valueB: ${valueB}`);
-									// console.log(`valueBReal: ${valueBReal}`);
 									conditionMatch.push({
 										k: k,
 										valueA: valueA,
@@ -360,13 +318,6 @@ export class Scenario implements ScenarioData {
 
 							case '>=': {
 								if (valueAReal >= valueBReal) {
-									// console.log('conditionMatch');
-									// console.log(`k: ${k}`);
-									// console.log(`valueA: ${valueA}`);
-									// console.log(`valueAReal: ${valueAReal}`);
-									// console.log(`operator: ${operator}`);
-									// console.log(`valueB: ${valueB}`);
-									// console.log(`valueBReal: ${valueBReal}`);
 									conditionMatch.push({
 										k: k,
 										valueA: valueA,
@@ -382,13 +333,6 @@ export class Scenario implements ScenarioData {
 
 							case '==': {
 								if (valueAReal == valueBReal) {
-									// console.log('conditionMatch');
-									// console.log(`k: ${k}`);
-									// console.log(`valueA: ${valueA}`);
-									// console.log(`valueAReal: ${valueAReal}`);
-									// console.log(`operator: ${operator}`);
-									// console.log(`valueB: ${valueB}`);
-									// console.log(`valueBReal: ${valueBReal}`);
 									conditionMatch.push({
 										k: k,
 										valueA: valueA,
@@ -404,13 +348,6 @@ export class Scenario implements ScenarioData {
 
 							case '!=': {
 								if (valueAReal != valueBReal) {
-									// console.log('conditionMatch');
-									// console.log(`k: ${k}`);
-									// console.log(`valueA: ${valueA}`);
-									// console.log(`valueAReal: ${valueAReal}`);
-									// console.log(`operator: ${operator}`);
-									// console.log(`valueB: ${valueB}`);
-									// console.log(`valueBReal: ${valueBReal}`);
 									conditionMatch.push({
 										k: k,
 										valueA: valueA,
@@ -428,52 +365,16 @@ export class Scenario implements ScenarioData {
 				}
 
 				// All conditions match on this dataset
-				// console.log(condition.length);
 				if (conditionMatch.length === condition.length) {
-					// console.log(`${j}`);
 					conditionSetMatch.push(conditionMatch);
 				}
 
 				conditionSetIdx++;
 			}
 
-			// console.log('-------END SET-------');
-
 			// All conditions match on this dataset
 			if (conditionSetMatch.length === this.condition.length) {
-				// console.log('conditionSetMatch');
-				// console.log(`${j-1}-${j}`);
-				// console.log(Number.parseFloat(
-				// 	data.analysisData[0][1].result['outMACDHist'][(j-1)]
-				// ).toFixed(10));
-				// console.log(Number.parseFloat(
-				// 	data.analysisData[0][1].result['outMACDHist'][j]
-				// ).toFixed(10));
-
-				// let k = j + startPoint;
-				// k = j;
-
 				scenarioMatch.push(conditionSetMatch);
-				
-
-
-
-
-
-
-
-				// console.log(`valueA: ${valueA}`);
-				// console.log(`valueAReal: ${valueAReal}`);
-				// console.log(`operator: ${operator}`);
-				// console.log(`valueB: ${valueB}`);
-				// console.log(`valueBReal: ${valueBReal}`);
-				
-				// let date = new Date(parseInt(data.chart.openTime[k]) * 1000);
-				// console.log(`dpDate: ${date.toISOString()}`);
-				// console.log(`close: ${data.chart.close[k]}`);
-
-				// console.log(data.analysisData[0][1].result['outReal'][(j-1)]);
-				// console.log(data.analysisData[0][1].result['outReal'][j]);
 
 				// Execute chained strategy, if provided
 				if (data.strategy) {
