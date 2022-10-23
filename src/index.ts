@@ -7,6 +7,7 @@ import { Chart } from './Bot/Chart';
 import { Strategy } from './Bot/Strategy';
 import { BollingerBullishLowerCross, BullishMacdCrossover, BullishRsiOversold, Sma20CrossUp } from './Helper/Scenario';
 import { BollingerBands20, Macd, Rsi14, Sma20 } from './Helper/Analysis';
+import { Window } from './Bot/Window';
 
 dotenv.config();
 
@@ -130,12 +131,15 @@ let stratSma20CrossUp = new Strategy({
 	name: 'stratBollingerBullishLowerCross',
 });
 
-// Execute all strategy analysis
-try {
-	// stratBullishMacdCrossover.execute();
-	// stratBullishRsiOversold.execute();
-	stratBollingerBullishLowerCross.execute();
-	// stratSma20CrossUp.execute();
-} catch (err) {
-	console.error(err);
-}
+let defaultWindow = new Window({
+	strategy: [
+		// stratBullishMacdCrossover,
+		// stratBullishRsiOversold,
+		stratBollingerBullishLowerCross,
+		// stratSma20CrossUp,
+	],
+});
+
+setInterval(function() {
+	defaultWindow.execute();
+}, 1000);
