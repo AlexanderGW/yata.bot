@@ -5,7 +5,12 @@ import { Asset } from './Bot/Asset';
 import { Pair } from './Bot/Pair';
 import { Chart } from './Bot/Chart';
 import { Strategy } from './Bot/Strategy';
-import { BollingerBullishLowerCross, BullishMacdCrossover, BullishRsiOversold, Sma20CrossUp } from './Helper/Scenario';
+import {
+	BollingerBullishLowerCross as scenarioBollingerBullishLowerCross,
+	BullishMacdCrossover as scenarioBullishMacdCrossover,
+	BullishRsiOversold as scenarioBullishRsiOversold,
+	Sma20CrossUp as scenarioSma20CrossUp
+} from './Helper/Scenario';
 import { BollingerBands20, Macd, Rsi14, Sma20 } from './Helper/Analysis';
 import { Window } from './Bot/Window';
 
@@ -82,7 +87,7 @@ try {
 // RSI crossing upward into 30 range
 let stratBullishRsiOversold = new Strategy({
 	action: [
-		[BullishRsiOversold],
+		[scenarioBullishRsiOversold],
 	],
 	analysis: [
 		Rsi14,
@@ -96,7 +101,7 @@ let stratBullishMacdCrossover = new Strategy({
 	action: [
 
 		// Trigger another strategy, if this scenario matches
-		[BullishMacdCrossover, stratBullishRsiOversold],
+		[scenarioBullishMacdCrossover, stratBullishRsiOversold],
 		// [scenarioBullishMacdCrossover],
 	],
 	analysis: [
@@ -110,7 +115,7 @@ let stratBollingerBullishLowerCross = new Strategy({
 	action: [
 
 		// Trigger another strategy, if this scenario matches
-		[BollingerBullishLowerCross, stratBullishRsiOversold],
+		[scenarioBollingerBullishLowerCross, stratBullishRsiOversold],
 	],
 	analysis: [
 		Sma20, // Must execute before `BollingerBands20`
@@ -122,7 +127,7 @@ let stratBollingerBullishLowerCross = new Strategy({
 
 let stratSma20CrossUp = new Strategy({
 	action: [
-		[Sma20CrossUp],
+		[scenarioSma20CrossUp],
 	],
 	analysis: [
 		Sma20,
