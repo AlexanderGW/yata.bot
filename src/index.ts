@@ -32,11 +32,13 @@ const exchangeKraken = new Kraken({
 
 // Create ETH asset
 let assetEth = new Asset({
+	exchange: exchangeKraken,
 	symbol: 'ETH'
 });
 
 // Create BTC asset
 let assetBtc = new Asset({
+	exchange: exchangeKraken,
 	symbol: 'BTC'
 });
 
