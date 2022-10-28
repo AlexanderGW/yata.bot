@@ -7,11 +7,16 @@ import { Chart } from './Bot/Chart';
 import { Strategy } from './Bot/Strategy';
 import {
 	BollingerBullishLowerCross as scenarioBollingerBullishLowerCross,
-	BullishMacdCrossover as scenarioBullishMacdCrossover,
+	BullishMacd12_26_9Crossover as scenarioBullishMacdDefaultCrossover,
 	BullishRsiOversold as scenarioBullishRsiOversold,
-	Sma20CrossUp as scenarioSma20CrossUp
+	analysisSma20CrossUp as scenarioanalysisSma20CrossUp
 } from './Helper/Scenario';
-import { BollingerBands20, Macd, Rsi14, Sma20 } from './Helper/Analysis';
+import {
+	BollingerDefault as analysisBollingerDefault,
+	Macd12_26_9 as analysisMacd12_26_9,
+	Rsi14 as analysisRsi14,
+	Sma20 as analysisSma20
+} from './Helper/Analysis';
 import { Window } from './Bot/Window';
 
 dotenv.config();
@@ -90,58 +95,58 @@ let stratBullishRsiOversold = new Strategy({
 		[scenarioBullishRsiOversold],
 	],
 	analysis: [
-		Rsi14,
+		analysisRsi14,
 	],
 	chart: chartKrakenEthBtc4h,
-	name: 'stratBullishRsiOversold',
+	name: 'BullishRsiOversold',
 });
 
 // MACD crossing upward
-let stratBullishMacdCrossover = new Strategy({
+let stratBullishMacdDefaultCrossover = new Strategy({
 	action: [
 
 		// Trigger another strategy, if this scenario matches
-		[scenarioBullishMacdCrossover, stratBullishRsiOversold],
-		// [scenarioBullishMacdCrossover],
+		[scenarioBullishMacdDefaultCrossover, stratBullishRsiOversold],
+		// [scenarioBullishMacdDefaultCrossover],
 	],
 	analysis: [
-		Macd,
+		analysisMacd12_26_9,
 	],
 	chart: chartKrakenEthBtc4h,
-	name: 'stratBullishMacdCrossover',
+	name: 'BullishMacdDefaultCrossover',
 });
 
-let stratBollingerBullishLowerCross = new Strategy({
+let stratBullishBollingerLowerCross = new Strategy({
 	action: [
 
 		// Trigger another strategy, if this scenario matches
 		[scenarioBollingerBullishLowerCross, stratBullishRsiOversold],
 	],
 	analysis: [
-		Sma20, // Must execute before `BollingerBands20`
-		BollingerBands20, // Depends on `Sma20` result
+		analysisSma20, // Must execute before `analysisBollingerDefault`
+		analysisBollingerDefault, // Depends on `analysisSma20` result
 	],
 	chart: chartKrakenEthBtc4h,
-	name: 'stratBollingerBullishLowerCross',
+	name: 'BullishBollingerLowerCross',
 });
 
-let stratSma20CrossUp = new Strategy({
+let stratBullishSma20Cross = new Strategy({
 	action: [
-		[scenarioSma20CrossUp],
+		[scenarioanalysisSma20CrossUp],
 	],
 	analysis: [
-		Sma20,
+		analysisSma20,
 	],
 	chart: chartKrakenEthBtc4h,
-	name: 'stratBollingerBullishLowerCross',
+	name: 'BullishBollingerLowerCross',
 });
 
 let defaultWindow = new Window({
 	strategy: [
-		// stratBullishMacdCrossover,
+		// stratBullishMacdDefaultCrossover,
 		// stratBullishRsiOversold,
-		stratBollingerBullishLowerCross,
-		// stratSma20CrossUp,
+		stratBullishBollingerLowerCross,
+		// stratBullishSma20Cross,
 	],
 });
 

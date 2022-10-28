@@ -1,10 +1,10 @@
 import { Scenario } from "../Bot/Scenario";
-import { BollingerBands20, Macd, Rsi14, Sma20 } from "../Helper/Analysis";
+import { analysisBollingerDefault, Macd12_26_9, analysisRsi14, analysisSma20 } from "../Helper/Analysis";
 
 // Scenario for analysis events
 export const BullishRsiOversold = new Scenario({
 	analysis: [
-		Rsi14
+		analysisRsi14
 	],
 	condition: [
 
@@ -22,9 +22,9 @@ export const BullishRsiOversold = new Scenario({
 	name: 'scenarioBullishRsiOversold',
 });
 
-export const BullishMacdCrossover = new Scenario({
+export const BullishMacd12_26_9Crossover = new Scenario({
 	analysis: [
-		Macd,
+		Macd12_26_9,
 	],
 	condition: [
 
@@ -40,13 +40,13 @@ export const BullishMacdCrossover = new Scenario({
 
 		// Fields: outMACD, outMACDSignal, outMACDHist
 	],
-	name: 'scenarioBullishMacdCrossover',
+	name: 'scenarioBullishMacdDefaultCrossover',
 });
 
 export const BollingerBullishLowerCross = new Scenario({
 	analysis: [
-		Sma20, // Must execute before `BollingerBands20`
-		BollingerBands20, // Depends on `Sma20` result
+		analysisSma20, // Must execute before `analysisBollingerDefault`
+		analysisBollingerDefault, // Depends on `analysisSma20` result
 	],
 	condition: [
 
@@ -76,9 +76,9 @@ export const BollingerBullishLowerCross = new Scenario({
 });
 
 // Candles closing about the 20 SMA
-export const Sma20CrossUp = new Scenario({
+export const analysisSma20CrossUp = new Scenario({
 	analysis: [
-		Sma20,
+		analysisSma20,
 	],
 	condition: [
 
@@ -102,5 +102,5 @@ export const Sma20CrossUp = new Scenario({
 			['close', '>=', 'outReal'],
 		],
 	],
-	name: 'scenarioSma20CrossUp',
+	name: 'scenarioanalysisSma20CrossUp',
 });

@@ -9,7 +9,7 @@ export const Rsi14 = new Analysis({
 		startIndex: 14,
 	}
 });
-// console.log(analysisRsi14.explain());
+// console.log(analysisanalysisRsi14.explain());
 
 // Exponential Moving Average (SMA) 20
 export const Ema20 = new Analysis({
@@ -39,7 +39,7 @@ export const Sma20 = new Analysis({
 		// startIndex: 20,
 	}
 });
-// console.log(analysisSma20.explain());
+// console.log(analysisanalysisSma20.explain());
 
 // Simple Moving Average (SMA) 50
 export const Sma50 = new Analysis({
@@ -60,7 +60,7 @@ export const Sma200 = new Analysis({
 });
 
 // Bollinger Bands (dependent on SMA20 result)
-export const BollingerBands20 = new Analysis({
+export const BollingerDefault = new Analysis({
 	name: 'BBANDS',
 	config: {
 		inRealAnalysis: Sma20,
@@ -72,10 +72,10 @@ export const BollingerBands20 = new Analysis({
 // console.log(analysisBollingerBands.explain());
 
 // Moving Average Convergence/Divergence (MACD) with defaults
-export const Macd = new Analysis({
+export const Macd12_26_9 = new Analysis({
 	name: 'MACD',
 	config: {
 		inRealField: 'close',
 	}
 });
-// console.log(analysisMacd.explain());
+// console.log(Macd12_26_9.explain());
