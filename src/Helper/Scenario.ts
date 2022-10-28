@@ -1,8 +1,13 @@
 import { Scenario } from "../Bot/Scenario";
-import { analysisBollingerDefault, Macd12_26_9, analysisRsi14, analysisSma20 } from "../Helper/Analysis";
+import {
+	Bollinger20 as analysisBollinger20,
+	Macd12_26_9 as analysisMacd12_26_9,
+	Rsi14 as analysisRsi14,
+	Sma20 as analysisSma20
+} from "../Helper/Analysis";
 
 // Scenario for analysis events
-export const BullishRsiOversold = new Scenario({
+export const BullishRsi14Oversold = new Scenario({
 	analysis: [
 		analysisRsi14
 	],
@@ -19,12 +24,12 @@ export const BullishRsiOversold = new Scenario({
 			['outReal', '>=', 30],
 		],
 	],
-	name: 'scenarioBullishRsiOversold',
+	name: 'scenarioBullishRsi14Oversold',
 });
 
 export const BullishMacd12_26_9Crossover = new Scenario({
 	analysis: [
-		Macd12_26_9,
+		analysisMacd12_26_9,
 	],
 	condition: [
 
@@ -40,13 +45,13 @@ export const BullishMacd12_26_9Crossover = new Scenario({
 
 		// Fields: outMACD, outMACDSignal, outMACDHist
 	],
-	name: 'scenarioBullishMacdDefaultCrossover',
+	name: 'scenarioBullishMacd12_26_9Crossover',
 });
 
-export const BollingerBullishLowerCross = new Scenario({
+export const BollingerBullishLowerCrossover = new Scenario({
 	analysis: [
-		analysisSma20, // Must execute before `analysisBollingerDefault`
-		analysisBollingerDefault, // Depends on `analysisSma20` result
+		analysisSma20, // Must execute before `analysisBollinger20`
+		analysisBollinger20, // Depends on `analysisSma20` result
 	],
 	condition: [
 
@@ -72,11 +77,11 @@ export const BollingerBullishLowerCross = new Scenario({
 
 		// Fields: outRealUpperBand, outRealLowerBand, outRealMiddleBand
 	],
-	name: 'scenarioBollingerBullishLowerCross',
+	name: 'scenarioBollingerBullishLowerCrossover',
 });
 
 // Candles closing about the 20 SMA
-export const analysisSma20CrossUp = new Scenario({
+export const Sma20CrossUp = new Scenario({
 	analysis: [
 		analysisSma20,
 	],
@@ -102,5 +107,5 @@ export const analysisSma20CrossUp = new Scenario({
 			['close', '>=', 'outReal'],
 		],
 	],
-	name: 'scenarioanalysisSma20CrossUp',
+	name: 'scenarioSma20CrossUp',
 });

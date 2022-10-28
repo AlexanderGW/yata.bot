@@ -13,7 +13,7 @@ export const Rsi14 = new Analysis({
 
 // Exponential Moving Average (SMA) 20
 export const Ema20 = new Analysis({
-	name: 'EMA',
+	name: 'EMA20',
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 20,
@@ -23,7 +23,7 @@ export const Ema20 = new Analysis({
 
 // Exponential Moving Average (SMA) 100
 export const Ema100 = new Analysis({
-	name: 'EMA',
+	name: 'EMA100',
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 100,
@@ -32,7 +32,7 @@ export const Ema100 = new Analysis({
 
 // Simple Moving Average (SMA) 20
 export const Sma20 = new Analysis({
-	name: 'SMA',
+	name: 'SMA20',
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 20,
@@ -43,7 +43,7 @@ export const Sma20 = new Analysis({
 
 // Simple Moving Average (SMA) 50
 export const Sma50 = new Analysis({
-	name: 'SMA',
+	name: 'SMA50',
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 50,
@@ -52,7 +52,7 @@ export const Sma50 = new Analysis({
 
 // Simple Moving Average (SMA) 200
 export const Sma200 = new Analysis({
-	name: 'SMA',
+	name: 'SMA200',
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 200,
@@ -60,8 +60,8 @@ export const Sma200 = new Analysis({
 });
 
 // Bollinger Bands (dependent on SMA20 result)
-export const BollingerDefault = new Analysis({
-	name: 'BBANDS',
+export const Bollinger20 = new Analysis({
+	name: 'Bollinger20',
 	config: {
 		inRealAnalysis: Sma20,
 		inRealField: 'outReal',
@@ -73,7 +73,7 @@ export const BollingerDefault = new Analysis({
 
 // Moving Average Convergence/Divergence (MACD) with defaults
 export const Macd12_26_9 = new Analysis({
-	name: 'MACD',
+	name: 'MACDDefault12_26_9',
 	config: {
 		inRealField: 'close',
 	}
