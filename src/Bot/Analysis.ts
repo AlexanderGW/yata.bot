@@ -57,10 +57,10 @@ export class Analysis implements AnalysisData {
 			};
 		}
 
-		console.log(this.explain);
-		console.log(`type: ${data.type}`);
-		console.log(`name: ${data.name}`);
-		console.log(config);
+		// console.log(this.explain);
+		// console.log(`type: ${data.type}`);
+		// console.log(`name: ${data.name}`);
+		// console.log(config);
 
 		this.config = config;
 

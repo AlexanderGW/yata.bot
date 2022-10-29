@@ -43,7 +43,7 @@ export const Sma20 = new Analysis({
 	},
 	type: 'SMA',
 });
-console.log(Sma20.explain);
+// console.log(Sma20.explain);
 
 // Simple Moving Average (SMA) 50
 export const Sma50 = new Analysis({
