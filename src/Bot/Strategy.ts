@@ -93,11 +93,11 @@ export class Strategy implements StrategyData {
 			}
 
 			if (!inReal)
-				throw (`Analysis dataset input '${inReal}' is empty.`);
+				throw (`Analysis '${analysis.name}' dataset input '${inReal}' is empty.`);
 
 			// Prepare talib options
 			let talibArgs = {
-				name: analysis.name,
+				name: analysis.type,
 				startIdx: 0,
 			};
 			let executeOptions = {
