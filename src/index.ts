@@ -17,7 +17,7 @@ import {
 	Rsi14 as analysisRsi14,
 	Sma20 as analysisSma20
 } from './Helper/Analysis';
-import { Window } from './Bot/Window';
+import { Timeframe } from './Bot/Timeframe';
 
 dotenv.config();
 
@@ -143,7 +143,7 @@ let stratBullishSma20Cross = new Strategy({
 	name: 'BullishBollingerLowerCross',
 });
 
-let defaultWindow = new Window({
+let defaultTimeframe = new Timeframe({
 	strategy: [
 		// stratBullishMacd12_26_9Crossover,
 		// stratBullishRsi14Oversold,
@@ -153,5 +153,5 @@ let defaultWindow = new Window({
 });
 
 setInterval(function() {
-	defaultWindow.execute();
+	defaultTimeframe.execute();
 }, 1000);

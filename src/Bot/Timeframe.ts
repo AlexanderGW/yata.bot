@@ -1,24 +1,26 @@
 import { uuid } from 'uuidv4';
 import { Strategy } from "./Strategy";
 
-export type WindowData = {
+export type TimeframeData = {
 	active?: boolean,
 	lastRun?: number,
+	maxTime?: number,
 	name?: string,
-	strategy: Array<Strategy>,
 	pollTime?: number,
+	strategy: Array<Strategy>,
 }
 
-export class Window {
+export class Timeframe {
 	active: boolean;
 	lastRun: number;
+	maxTime: number;
 	name?: string;
 	pollTime: number;
 	strategy: Array<Strategy>;
 	uuid: string; 
 
 	constructor (
-		data: WindowData,
+		data: TimeframeData,
 	) {
 		if (data.active)
 			this.active = data.active ? true : true;
@@ -30,6 +32,10 @@ export class Window {
 			this.lastRun = 0;
 		if (data.name)
 			this.name = data.name;
+		if (data.maxTime)
+			this.maxTime = data.maxTime > 0 ? data.maxTime : 900;
+		else
+			this.maxTime = 900;
 		if (data.pollTime)
 			this.pollTime = data.pollTime > 0 ? data.pollTime : 60;
 		else
@@ -48,7 +54,7 @@ export class Window {
 
 	execute () {
 		if (!this.active)
-			throw (`Window '${this.uuid}' is inactive.`);
+			throw (`Timeframe '${this.uuid}' is inactive.`);
 
 		const now = Date.now();
 		const pollTime = this.pollTime * 1000;
