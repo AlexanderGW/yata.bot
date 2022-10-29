@@ -16,6 +16,7 @@ export type AnalysisConfigData = {
 export type AnalysisData = {
 	config?: AnalysisConfigData,
 	name: string,
+	type: string,
 }
 
 export type AnalysisResultData = {
@@ -24,27 +25,30 @@ export type AnalysisResultData = {
 
 export class Analysis implements AnalysisData {
 	config?: AnalysisConfigData;
+	explain: object;
 	name: string;
+	type: string;
 	uuid: string;
 
 	constructor (
 		data: AnalysisData,
 	) {
 		this.name = data.name;
+		this.type = data.type;
 
 		let config: any = {
 			startIndex: 0,
 		};
 
-		let explain = talib.explain(this.name);
-		if (explain) {
+		this.explain = talib.explain(this.type);
+		if (this.explain?.inputs) {
 			let i: number = 0;
-			for (i = 0; i < explain.inputs.length; i++) {
-				config[explain.inputs[i].name] = '';
+			for (i = 0; i < this.explain.inputs.length; i++) {
+				config[this.explain.inputs[i].name] = '';
 			}
 			
-			for (i = 0; i < explain.optInputs.length; i++) {
-				config[explain.optInputs[i].name] = explain.optInputs[i].defaultValue;
+			for (i = 0; i < this.explain.optInputs.length; i++) {
+				config[this.explain.optInputs[i].name] = this.explain.optInputs[i].defaultValue;
 			}
 
 			config = {
@@ -53,17 +57,14 @@ export class Analysis implements AnalysisData {
 			};
 		}
 
-		// console.log(explain);
-		// console.log(data.name);
-		// console.log(config);
+		console.log(this.explain);
+		console.log(`type: ${data.type}`);
+		console.log(`name: ${data.name}`);
+		console.log(config);
 
 		this.config = config;
 
 		this.uuid = uuid();
 		// console.log(`Added analysis: ${this.uuid}`);
-	}
-
-	explain () {
-		console.log(talib.explain(this.name));
 	}
 }

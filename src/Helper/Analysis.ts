@@ -7,9 +7,10 @@ export const Rsi14 = new Analysis({
 		inRealField: 'close',
 		optInTimePeriod: 14,
 		startIndex: 14,
-	}
+	},
+	type: 'RSI',
 });
-// console.log(analysisanalysisRsi14.explain());
+// console.log(analysisanalysisRsi14.explain);
 
 // Exponential Moving Average (SMA) 20
 export const Ema20 = new Analysis({
@@ -17,9 +18,10 @@ export const Ema20 = new Analysis({
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 20,
-	}
+	},
+	type: 'EMA',
 });
-// console.log(analysisEma20.explain());
+// console.log(analysisEma20.explain);
 
 // Exponential Moving Average (SMA) 100
 export const Ema100 = new Analysis({
@@ -27,7 +29,8 @@ export const Ema100 = new Analysis({
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 100,
-	}
+	},
+	type: 'EMA',
 });
 
 // Simple Moving Average (SMA) 20
@@ -37,9 +40,10 @@ export const Sma20 = new Analysis({
 		inRealField: 'close',
 		optInTimePeriod: 20,
 		// startIndex: 20,
-	}
+	},
+	type: 'SMA',
 });
-// console.log(analysisanalysisSma20.explain());
+console.log(Sma20.explain);
 
 // Simple Moving Average (SMA) 50
 export const Sma50 = new Analysis({
@@ -47,7 +51,8 @@ export const Sma50 = new Analysis({
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 50,
-	}
+	},
+	type: 'SMA',
 });
 
 // Simple Moving Average (SMA) 200
@@ -56,7 +61,8 @@ export const Sma200 = new Analysis({
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 200,
-	}
+	},
+	type: 'SMA',
 });
 
 // Bollinger Bands (dependent on SMA20 result)
@@ -67,15 +73,17 @@ export const Bollinger20 = new Analysis({
 		inRealField: 'outReal',
 		optInTimePeriod: 20,
 		startIndex: 21,
-	}
+	},
+	type: 'BBANDS',
 });
-// console.log(analysisBollingerBands.explain());
+// console.log(Bollinger20.explain);
 
 // Moving Average Convergence/Divergence (MACD) with defaults
 export const Macd12_26_9 = new Analysis({
 	name: 'MACDDefault12_26_9',
 	config: {
 		inRealField: 'close',
-	}
+	},
+	type: 'MACD',
 });
-// console.log(Macd12_26_9.explain());
+// console.log(Macd12_26_9.explain);
