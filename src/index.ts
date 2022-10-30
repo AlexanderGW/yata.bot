@@ -18,6 +18,7 @@ import {
 	Sma20 as analysisSma20
 } from './Helper/Analysis';
 import { Timeframe } from './Bot/Timeframe';
+import { Bot } from './Bot/Bot';
 
 dotenv.config();
 
@@ -67,7 +68,10 @@ try {
 	let response: any = fs.readFileSync(
 		'./test/2022-10-15-ethbtc-4h-700.json',
 		'utf8',
-		function (err: object,data: object) {
+		function (
+			err: object,
+			data: object
+		) {
 	    	if (err)
 				console.error(err);
 		}
@@ -122,7 +126,8 @@ let stratBullishBollinger20LowerCross = new Strategy({
 	action: [
 
 		// Trigger another strategy, if this scenario matches
-		[scenarioBollingerBullishLowerCrossover, stratBullishRsi14Oversold],
+		// [scenarioBollingerBullishLowerCrossover, stratBullishRsi14Oversold],
+		[scenarioBollingerBullishLowerCrossover],
 	],
 	analysis: [
 		analysisSma20, // Must execute before `analysisBollinger20`
@@ -143,7 +148,10 @@ let stratBullishSma20Cross = new Strategy({
 	name: 'BullishBollingerLowerCross',
 });
 
+// Timeframes will trigger by default
 let defaultTimeframe = new Timeframe({
+	// active: false,
+	intervalTime: 5000,
 	strategy: [
 		// stratBullishMacd12_26_9Crossover,
 		// stratBullishRsi14Oversold,
@@ -152,6 +160,24 @@ let defaultTimeframe = new Timeframe({
 	],
 });
 
-setInterval(function() {
-	defaultTimeframe.execute();
-}, 1000);
+// Check pot, allow action of fixed val, or %
+const actionEthBtcBuy = () => {
+	console.log(`do: actionEthBtcBuy`);
+};
+
+Bot.subscribe({
+	action: actionEthBtcBuy,
+	chart: chartKrakenEthBtc4h,
+	condition: [
+		['signal', '>=', '3'],
+	],
+	// event: BotEvent.TimeframeResult,
+	name: 'buyEthBtcKraken',
+	timeframeAny: [
+		defaultTimeframe,
+	],
+});
+
+// Timeframes to despatch, whenever a signal changes
+
+// Track signals by chart? Then 

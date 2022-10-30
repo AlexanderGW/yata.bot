@@ -1,7 +1,7 @@
 import { uuid } from 'uuidv4';
 import { Analysis, AnalysisResultData } from './Analysis';
 import { Chart } from './Chart';
-import { Strategy } from './Strategy';
+import { Strategy, StrategyExecuteData } from './Strategy';
 
 export type ScenarioData = {
 	analysis: Analysis[],
@@ -9,10 +9,21 @@ export type ScenarioData = {
 	condition: Array<Array<[string, string, number | string]>>,
 }
 
+export type ScenarioSignalData = {
+	k: number,
+	valueA: string,
+	valueAReal: string,
+	operator: string,
+	valueB: string | number,
+	valueBReal: string | number,
+	analysisOffset: number,
+};
+
 export type ScenarioTestData = {
 	chart: Chart,
 	analysisData: Array<[Analysis, object]>,
 	strategy?: Strategy,
+	strategyExecuteData: StrategyExecuteData,
 }
 
 export class Scenario implements ScenarioData {
@@ -141,10 +152,12 @@ export class Scenario implements ScenarioData {
 			throw ('Scenario conditions are not compatible with dataset.');
 
 		// Walk through field values, on result dataset
-		let startPoint: number;
+		let startPoint: number = 0;
 
 		// TODO: Back testing all data points, start from beginning
-		startPoint = 0;
+		if (data.strategyExecuteData.maxTime) {
+			
+		}
 
 		console.log(`startPoint: ${startPoint}`);
 
@@ -376,7 +389,9 @@ export class Scenario implements ScenarioData {
 				// Execute chained strategy, if provided
 				if (data.strategy) {
 					console.log(`Scenario '${this.name}' triggered strategy '${data.strategy.name}'`);
-					data.strategy.execute();
+					data.strategy.execute(
+						data.strategyExecuteData
+					);
 				}
 			}
 		}

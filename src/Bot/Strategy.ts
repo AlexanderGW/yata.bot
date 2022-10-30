@@ -2,6 +2,7 @@ import { Analysis, AnalysisResultData } from "./Analysis";
 import { Chart } from "./Chart";
 import { uuid } from 'uuidv4';
 import { Scenario } from "./Scenario";
+import { Bot } from "./Bot";
 
 const talib = require('talib');
 
@@ -12,13 +13,17 @@ export type StrategyData = {
 	action: Array<[Scenario, Strategy?]>,
 }
 
+export type StrategyExecuteData = {
+	maxTime: number,
+}
+
 export class Strategy implements StrategyData {
 	analysis: Analysis[];
 	chart: Chart;
 	name?: string;
 	uuid: string;
-	result: object[];
-	resultIndex: string[];
+	result: object[] = [];
+	resultIndex: string[] = [];
 	action: Array<[Scenario, Strategy?]>;
 
 	constructor (
@@ -28,8 +33,6 @@ export class Strategy implements StrategyData {
 		this.chart = data.chart;
 		if (data.name)
 			this.name = data.name;
-		this.result = [];
-		this.resultIndex = [];
 		this.action = data.action;
 		this.uuid = uuid();
 	}
@@ -64,10 +67,16 @@ export class Strategy implements StrategyData {
 	/**
 	 * Execute all analysis on the strategy
 	 */
-	execute () {
+	execute (
+		data: StrategyExecuteData,
+	) {
 		let analysis: Analysis;
 		let i: number;
 		let action: [Scenario, Strategy?];
+
+		// TODO: calc the startPoint based on chart interval, and supplied maxTime
+		// THIS WILL LIMIT THE NUMBER OF SIGNALS RECORDED, FOR A CHART
+		// DO WE ASSIGN THE SIGNALS TO THE TIMEFRAME INSTEAD
 
 		// Process analysis
 		for (i = 0; i < this.analysis.length; i++) {
@@ -140,13 +149,15 @@ export class Strategy implements StrategyData {
 				timeField = 'closeTime';
 
 			// Test scenario conditions against analysis, or candle metrics
+			let signal: any = [];
 			try {
-				let signal: any = action[0].test({
+				signal = action[0].test({
 					chart: this.chart,
 					analysisData: analysisData,
 	
 					// Optional `Strategy` to execute on a `Scenario` match
 					strategy: action[1],
+					strategyExecuteData: data,
 				});
 	
 				// Console log details on matched data points
@@ -171,6 +182,8 @@ export class Strategy implements StrategyData {
 			} catch (err) {
 				console.error(err);
 			}
+
+			return signal;
 		}
 	}
 }

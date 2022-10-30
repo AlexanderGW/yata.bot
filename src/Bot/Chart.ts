@@ -3,6 +3,7 @@ import { Pair } from "./Pair";
 
 export type ChartData = {
 	exchange: Exchange,
+	lastUpdateTime?: number, // Milliseconds
 	pair: Pair,
 	pollTime?: number, // Seconds
 	candleTime?: number, // Seconds
@@ -29,12 +30,13 @@ export class Chart implements ChartData, ChartCandleData {
 	closeTime?: number[];
 	exchange: Exchange;
 	high?: string[];
+	lastUpdateTime: number;
 	low?: string[];
 	open?: string[];
 	openTime?: number[];
 	pair: Pair;
-	pollTime?: number;
-	candleTime?: number;
+	pollTime: number;
+	candleTime: number;
 	tradeCount?: number[];
 	volume?: string[];
 	weightedAvePrice?: string[];
@@ -53,6 +55,10 @@ export class Chart implements ChartData, ChartCandleData {
 		this.exchange = data.exchange;
 		if (data.high)
 			this.high = data.high;
+		if (data.lastUpdateTime)
+			this.lastUpdateTime = data.lastUpdateTime > 0 ? data.lastUpdateTime : 0;
+		else
+			this.lastUpdateTime = 0;
 		if (data.low)
 			this.low = data.low;
 		if (data.open)
@@ -89,6 +95,11 @@ export class Chart implements ChartData, ChartCandleData {
 			this.closeTime = data.closeTime;
 		if (data.high)
 			this.high = data.high;
+		this.lastUpdateTime = data.openTime?.length
+			? (parseInt(data.openTime[data.openTime.length - 1]) * 1000)
+			: Date.now();
+		// let nnn = new Date(this.lastUpdateTime);
+		// console.log(`this.lastUpdateTime: ${nnn.toISOString()}`);
 		if (data.low)
 			this.low = data.low;
 		if (data.open)

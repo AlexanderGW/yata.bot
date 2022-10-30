@@ -27,7 +27,7 @@ export interface ExchangeStorageInterface {
 	) => void;
 }
 
-export class Exchange implements ExchangeData, ExchangeStorageInterface {
+export class Exchange implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
 	handle?: object;
 	name: string;
 	uuid: string;
@@ -45,6 +45,12 @@ export class Exchange implements ExchangeData, ExchangeStorageInterface {
 		if (chart.exchange.uuid === this.uuid)
 			return true;
 		return false;
+	}
+
+	primeChart (
+		chart: Chart,
+	) {
+		
 	}
 
 	refreshChart (
@@ -127,5 +133,11 @@ export class Exchange implements ExchangeData, ExchangeStorageInterface {
 		} catch (err) {
 			return console.error(err);
 		}
+	}
+
+	syncChart (
+		chart: Chart,
+	) {
+		
 	}
 }

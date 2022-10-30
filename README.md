@@ -6,8 +6,8 @@ Following a concept of strategies, which look for scenarios (definable sets of c
 ## Todo
 
 - Monitor strategy signals within a timeframe; At Nth, trigger buy, sell, SL, etc.
-- Implement a progressive chart for active strategies (currently parses the entire dataset).
-- Implement JSON/YAML support
+- Progressive chart for active strategies (currently parses the entire dataset).
+- JSON/YAML support for configurations
 
 ## Development
 ```
