@@ -57,7 +57,13 @@ export class Timeframe implements TimeframeData {
 
 		// Start the interval, if timeframe is active
 		if (this.active) {
-			this.execute();
+			setTimeout(
+				function (timeframe) {
+					timeframe.execute();
+				},
+				10,
+				this
+			);
 			this.activate();
 		}
 	}

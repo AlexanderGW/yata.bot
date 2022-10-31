@@ -149,9 +149,9 @@ let stratBullishSma20Cross = new Strategy({
 });
 
 // Timeframes will trigger by default
-let defaultTimeframe = new Timeframe({
+let defaultTimeframe = Bot.setTimeframe({
 	// active: false,
-	intervalTime: 5000,
+	intervalTime: 1000,
 	strategy: [
 		// stratBullishMacd12_26_9Crossover,
 		// stratBullishRsi14Oversold,
