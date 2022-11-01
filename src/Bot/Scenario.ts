@@ -156,7 +156,10 @@ export class Scenario implements ScenarioData {
 
 		// TODO: Back testing all data points, start from beginning
 		if (data.strategyExecuteData.maxTime) {
-			
+			startPoint = (
+				data.chart.open.length
+				- Math.ceil(data.strategyExecuteData.maxTime / data.chart.candleTime)
+			);
 		}
 
 		console.log(`startPoint: ${startPoint}`);
