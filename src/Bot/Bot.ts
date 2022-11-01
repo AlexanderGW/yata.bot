@@ -97,13 +97,22 @@ export const Bot = {
 				// 	if 
 				// }
 
+				let signal = 0;
+
 				Object.entries(this.subscriber).forEach(function([key, val]) {
 					console.log(`subscriberKey: ${key}`);
-					console.log(`${val.timeframeAny[0].uuid}`);
+					// console.log(`${val.timeframeAny[0].uuid}`);
+					// console.log(typeof val.timeframeAny);
 
-					let index = val.timeframeAny.findIndex(_uuid => _uuid === data.uuid);
-
+					let index = val.timeframeAny.findIndex(timeframe => timeframe.uuid === data.uuid);
 					if (index >= 0) {
+						let timeField: string = '';
+
+						if (val.chart['openTime'])
+							timeField = 'openTime';
+						else if (val.chart['closeTime'])
+							timeField = 'closeTime';
+
 						console.log(`subscriberTimeframeMatch: ${index}`);
 
 						if (val.timeframeAny.length) {
@@ -114,21 +123,21 @@ export const Bot = {
 									let result = timeframe.result[i];
 									let uuid = timeframe.resultIndex[i];
 
-									// if (result) {
-									// 	// let strategy = Strategy.getResult
-									// 	for (let j = 0; j < result.length; j++) {
-									// 		let latestCandle = result[j].length - 1;
-									// 		let matchFirstCond = result[j][latestCandle][0];
-									// 		let date = new Date(parseInt(timeframe.strategy.chart[timeField][matchFirstCond.k]) * 1000);
-									// 		// resultTimes.push(date.toISOString());
-									// 		console.log(date.toISOString());
+									if (result) {
+										// let strategy = Strategy.getResult
+										for (let j = 0; j < result.length; j++) {
+											let latestCandle = result[j].length - 1;
+											let matchFirstCond = result[j][latestCandle][0];
+											let date = new Date(parseInt(val.chart[timeField][matchFirstCond.k]) * 1000);
+											// resultTimes.push(date.toISOString());
+											console.log(date.toISOString());
 											
-									// 		// Output details on all matching scenario conditions
-									// 		for (let l = 0; l < result[j].length; l++) {
-									// 			console.log(result[j][l]);
-									// 		}
-									// 	}
-									// }
+											// Output details on all matching scenario conditions
+											// for (let l = 0; l < result[j].length; l++) {
+											// 	console.log(result[j][l]);
+											// }
+										}
+									}
 								}
 							}
 						}
