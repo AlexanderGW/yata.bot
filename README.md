@@ -7,7 +7,7 @@ Following a concept of strategies, which look for scenarios (definable sets of c
 Here is a basic overview of how the bot is currently structured. Subject to change, as this project is still in development.
 
 ### `Timeframe`
-Run over `intervalTime`, checking one or more strategies
+Run over `intervalTime`, checking one or more `Strategy`. Matches will `Bot.despatch()` to any `Timeframe` subscribers.
 
 ### `Strategy` (belonging to a `Timeframe`)
 One or more `Analysis` result sets, for a given `Chart`, looking for one or more `Scenario` condition matches (which can trigger an optional chained `Strategy`).
@@ -19,7 +19,7 @@ One or more sets of conditions against one or more sets of `Analysis` and/or `Ch
 A light `talib` wrapper, with configuration.
 
 ### `Chart` (belonging to an `Exchange`)
-Collection of data points for a `Chart` with `Pair` of `Asset`, for a `canldeTime`, updated every `pollTime`, sourced from storage.
+Collection of data points for a `Chart` with `Pair` of `Asset`, for a `candleTime`, updated every `pollTime`, sourced from storage.
 
 ### `Asset` (belonging to a `Pair`)
 TBC
