@@ -281,10 +281,9 @@ export const Bot = {
 							}
 						}
 
-						// All conditions within the set, match on this data frame
+						// All conditions within the set, match on timeframe(s)
 						if (conditionMatch.length === val.condition.length) {
-							// conditionSetMatch.push(conditionMatch);
-							console.log(`Subscription match`);
+							console.log(`Subscription match: ${val.name}`);
 							
 							// Callback action for subscriber
 							val.action();

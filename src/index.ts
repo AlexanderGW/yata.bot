@@ -192,7 +192,3 @@ Bot.subscribe({
 		// testTimeframe,
 	],
 });
-
-// Timeframes to despatch, whenever a signal changes
-
-// Track signals by chart? Then 
