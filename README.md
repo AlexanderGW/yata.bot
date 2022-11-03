@@ -9,15 +9,15 @@ Here is a basic overview of how the bot is currently structured. Subject to chan
 ### Subscribing to `Timeframe` changes
 ```
 Bot.subscribe({
-	action: () => {},
-	chart: chartKrakenEthBtc4h,
-	condition: [
-		['total', '>=', '3'],
-	],
-	name: 'buyEthBtcKraken',
-	timeframeAny: [
-		defaultTimeframe,
-	],
+  action: () => {},
+  chart: chartKrakenEthBtc4h,
+  condition: [
+    ['total', '>=', '3'],
+  ],
+  name: 'buyEthBtcKraken',
+  timeframeAny: [
+    defaultTimeframe,
+  ],
 });
 ```
 
@@ -26,15 +26,15 @@ Run over `intervalTime`, checking one or more `Strategy`. Matches will `Bot.desp
 
 ```
 let defaultTimeframe = Bot.setTimeframe({
-	intervalTime: 1000, // 1 second
-	maxTime: 86400000 * 30, // last 30 days
-	strategy: [
-		stratBullishSma20Cross,
-	],
+  intervalTime: 1000, // 1 second
+  maxTime: 86400000 * 30, // last 30 days
+  strategy: [
+    stratBullishSma20Cross,
+  ],
 });
 
 setTimeout(function () {
-	defaultTimeframe.deactivate();
+  defaultTimeframe.deactivate();
 }, 2000);
 ```
 
@@ -43,14 +43,14 @@ One or more `Analysis` result sets, for a given `Chart`, looking for one or more
 
 ```
 let stratBullishSma20Cross = new Strategy({
-	action: [
-		[scenarioSma20CrossUp],
-	],
-	analysis: [
-		analysisSma20,
-	],
-	chart: chartKrakenEthBtc4h,
-	name: 'BullishSma20Cross',
+  action: [
+    [scenarioSma20CrossUp],
+  ],
+  analysis: [
+    analysisSma20,
+  ],
+  chart: chartKrakenEthBtc4h,
+  name: 'BullishSma20Cross',
 });
 ```
 
@@ -59,32 +59,32 @@ One or more sets of conditions against one or more sets of `Analysis` and/or `Ch
 
 ```
 const Sma20CrossUp = new Scenario({
-	analysis: [
-		analysisSma20,
-	],
-	condition: [
+  analysis: [
+    analysisSma20,
+  ],
+  condition: [
 
-		// Three candles back
-		[
-			['close', '<', 'outReal'],
-		],
+    // Three candles back
+    [
+      ['close', '<', 'outReal'],
+    ],
 
-		// Two...
-		[
-			['close', '<', 'outReal'],
-		],
+    // Two...
+    [
+      ['close', '<', 'outReal'],
+    ],
 
-		// Previous candle
-		[
-			['close', '>=', 'outReal'],
-		],
+    // Previous candle
+    [
+      ['close', '>=', 'outReal'],
+    ],
 
-		// Latest candle
-		[
-			['close', '>=', 'outReal'],
-		],
-	],
-	name: 'scenarioSma20CrossUp',
+    // Latest candle
+    [
+      ['close', '>=', 'outReal'],
+    ],
+  ],
+  name: 'scenarioSma20CrossUp',
 });
 ```
 
@@ -93,13 +93,13 @@ A light `talib` wrapper, with configuration.
 
 ```
 const analysisSma20 = new Analysis({
-	name: 'SMA20',
-	config: {
-		inRealField: 'close',
-		optInTimePeriod: 20,
-		// startIndex: 20, // Force offset of TA, to chart datapoints
-	},
-	type: 'SMA',
+  name: 'SMA20',
+  config: {
+    inRealField: 'close',
+    optInTimePeriod: 20,
+    // startIndex: 20, // Force offset of TA, to chart datapoints
+  },
+  type: 'SMA',
 });
 ```
 
@@ -108,10 +108,10 @@ Collection of data points for a `Chart` with `Pair` of `Asset`, for a `candleTim
 
 ```
 let chartKrakenEthBtc4h = new Chart({
-	exchange: exchangeKraken,
-	pair: pairEthBtc,
-	pollTime: 300, // 5m in seconds
-	candleTime: 14400 // 4h in seconds
+  exchange: exchangeKraken,
+  pair: pairEthBtc,
+  pollTime: 300, // 5m in seconds
+  candleTime: 14400 // 4h in seconds
 });
 ```
 
@@ -120,18 +120,18 @@ TBC
 
 ```
 let assetEth = new Asset({
-	exchange: exchangeKraken,
-	symbol: 'ETH'
+  exchange: exchangeKraken,
+  symbol: 'ETH'
 });
 
 let assetBtc = new Asset({
-	exchange: exchangeKraken,
-	symbol: 'BTC'
+  exchange: exchangeKraken,
+  symbol: 'BTC'
 });
 
 let pairEthBtc = new Pair({
-	a: assetEth,
-	b: assetBtc
+  a: assetEth,
+  b: assetBtc
 });
 ```
 
@@ -140,9 +140,9 @@ A potential source of `Chart` data, or destination for `Exchange` actions. I.e. 
 
 ```
 const exchangeKraken = new Kraken({
-	name: 'Kraken',
-	key: process.env.KRAKEN_CLIENT_KEY,
-	secret: process.env.KRAKEN_CLIENT_SECRET,
+  name: 'Kraken',
+  key: process.env.KRAKEN_CLIENT_KEY,
+  secret: process.env.KRAKEN_CLIENT_SECRET,
 });
 ```
 
