@@ -3,6 +3,27 @@ Still in very early stages of development. Leveraging the `talib` library, via [
 
 Following a concept of strategies, which look for scenarios (definable sets of conditions over a number of data frames) on chart and/or technical analysis; firing events (such as buy, sell, SL, etc.), based on the number of signals within a given time frame.
 
+## Structuring
+Here is a basic overview of how the bot is currently structured. Subject to change, as this project is still in development.
+- Timeframe
+  
+  Run over `intervalTime`, checking one or more strategies
+  - Strategy
+
+    One or more `Analysis` result sets, for a given `Chart`, looking for one or more `Scenario` condition matches (which can trigger an optional chained `Strategy`).
+    - Scenario
+
+	  One or more sets of conditions against one or more sets of `Analysis` and/or `Chart` metrics.
+	  - Analysis
+
+	    A light `talib` wrapper, with configuration.
+	    - Chart
+
+		  Collection of data points for a `Chart` with `Pair` of `Asset`, sourced from storage.
+		  - Exchange
+
+		    A potential source of `Chart` data, or destination for `Exchange` actions, based on a `Bot.subscribe()` despatch to open/close a `Position`.
+
 ## Todo
 
 - Monitor strategy signals within a timeframe; At Nth, trigger buy, sell, SL, etc.
