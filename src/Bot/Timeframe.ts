@@ -11,6 +11,7 @@ export type TimeframeData = {
 	name?: string,
 	pollTime?: number, // Milliseconds
 	strategy: Array<Strategy>,
+	uuid?: string,
 }
 
 export class Timeframe implements TimeframeData {
@@ -53,7 +54,7 @@ export class Timeframe implements TimeframeData {
 		else
 			this.pollTime = 60000;
 		this.strategy = data.strategy;
-		this.uuid = uuid();
+		this.uuid = data.uuid ?? uuid();
 
 		// Start the interval, if timeframe is active
 		if (this.active) {

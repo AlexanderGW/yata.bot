@@ -8,6 +8,7 @@ export type ExchangeData = {
 	name: string,
 	key?: string,
 	secret?: string,	
+	uuid?: string,
 }
 
 export interface ExchangeInterface {
@@ -36,7 +37,7 @@ export class Exchange implements ExchangeData, ExchangeInterface, ExchangeStorag
 		data: ExchangeData,
 	) {
 		this.name = data.name;
-		this.uuid = uuid();
+		this.uuid = data.uuid ?? uuid();
 	}
 
 	compat (

@@ -7,6 +7,7 @@ export type ScenarioData = {
 	analysis: Analysis[],
 	name: string,
 	condition: Array<Array<[string, string, number | string]>>,
+	uuid?: string,
 }
 
 export type ScenarioSignalData = {
@@ -38,7 +39,7 @@ export class Scenario implements ScenarioData {
 		this.analysis = data.analysis;
 		this.condition = data.condition;
 		this.name = data.name;
-		this.uuid = uuid();
+		this.uuid = data.uuid ?? uuid();
 	}
 
 	test (

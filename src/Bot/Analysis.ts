@@ -17,6 +17,7 @@ export type AnalysisData = {
 	config?: AnalysisConfigData,
 	name: string,
 	type: string,
+	uuid?: string,
 }
 
 export type AnalysisResultData = {
@@ -64,7 +65,7 @@ export class Analysis implements AnalysisData {
 
 		this.config = config;
 
-		this.uuid = uuid();
+		this.uuid = data.uuid ?? uuid();
 		// console.log(`Added analysis: ${this.uuid}`);
 	}
 }

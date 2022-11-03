@@ -11,6 +11,7 @@ export type StrategyData = {
 	chart: Chart,
 	name?: string,
 	action: Array<[Scenario, Strategy?]>,
+	uuid?: string,
 }
 
 export type StrategyExecuteData = {
@@ -34,7 +35,7 @@ export class Strategy implements StrategyData {
 		if (data.name)
 			this.name = data.name;
 		this.action = data.action;
-		this.uuid = uuid();
+		this.uuid = data.uuid ?? uuid();
 	}
 
 	/**
