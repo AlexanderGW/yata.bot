@@ -87,17 +87,17 @@ export const Sma20CrossUp = new Scenario({
 	],
 	condition: [
 
-		// Latest candle
+		// Three candles back
 		[
 			['close', '<', 'outReal'],
 		],
 
-		// Latest candle
+		// Two...
 		[
 			['close', '<', 'outReal'],
 		],
 
-		// Latest candle
+		// Previous candle
 		[
 			['close', '>=', 'outReal'],
 		],

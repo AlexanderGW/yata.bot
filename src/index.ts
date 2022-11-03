@@ -145,7 +145,7 @@ let stratBullishSma20Cross = new Strategy({
 		analysisSma20,
 	],
 	chart: chartKrakenEthBtc4h,
-	name: 'BullishBollingerLowerCross',
+	name: 'BullishSma20Cross',
 });
 
 // Timeframes will trigger by default
@@ -179,6 +179,9 @@ const actionEthBtcBuy = () => {
 	console.log(`do: actionEthBtcBuy`);
 };
 
+// TODO: Fix issue with multiple timeframes
+// signal results only show for one timeframe - others are missing
+
 Bot.subscribe({
 	action: actionEthBtcBuy,
 	chart: chartKrakenEthBtc4h,
@@ -189,6 +192,6 @@ Bot.subscribe({
 	name: 'buyEthBtcKraken',
 	timeframeAny: [
 		defaultTimeframe,
-		// testTimeframe,
+		testTimeframe,
 	],
 });
