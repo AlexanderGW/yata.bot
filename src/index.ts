@@ -151,11 +151,25 @@ let stratBullishSma20Cross = new Strategy({
 // Timeframes will trigger by default
 let defaultTimeframe = Bot.setTimeframe({
 	// active: false,
-	intervalTime: 1000,
+	intervalTime: 1000, // 1 second
+	maxTime: 86400000 * 30, // last 30 days
 	strategy: [
 		// stratBullishMacd12_26_9Crossover,
 		// stratBullishRsi14Oversold,
 		stratBullishBollinger20LowerCross,
+		// stratBullishSma20Cross,
+	],
+});
+
+// Timeframes will trigger by default
+let testTimeframe = Bot.setTimeframe({
+	// active: false,
+	intervalTime: 1000, // 1 second
+	maxTime: 86400000 * 30, // last 30 days
+	strategy: [
+		// stratBullishMacd12_26_9Crossover,
+		stratBullishRsi14Oversold,
+		// stratBullishBollinger20LowerCross,
 		// stratBullishSma20Cross,
 	],
 });
@@ -169,12 +183,13 @@ Bot.subscribe({
 	action: actionEthBtcBuy,
 	chart: chartKrakenEthBtc4h,
 	condition: [
-		['signal', '>=', '3'],
+		['total', '>=', '3'],
 	],
 	// event: BotEvent.TimeframeResult,
 	name: 'buyEthBtcKraken',
 	timeframeAny: [
 		defaultTimeframe,
+		// testTimeframe,
 	],
 });
 

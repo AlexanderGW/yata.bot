@@ -154,11 +154,13 @@ export class Scenario implements ScenarioData {
 		// Walk through field values, on result dataset
 		let startPoint: number = 0;
 
-		// TODO: Back testing all data points, start from beginning
+		// Offset from the front of the dataset
 		if (data.strategyExecuteData.maxTime) {
+			// console.log(`data.strategyExecuteData.maxTime: ${data.strategyExecuteData.maxTime / 1000}`);
+			// console.log(`data.chart.candleTime: ${data.chart.candleTime}`);
 			startPoint = (
 				data.chart.open.length
-				- Math.ceil(data.strategyExecuteData.maxTime / data.chart.candleTime)
+				- Math.ceil((data.strategyExecuteData.maxTime / 1000) / data.chart.candleTime)
 			);
 		}
 
