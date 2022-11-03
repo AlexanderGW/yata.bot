@@ -5,24 +5,27 @@ Following a concept of strategies, which look for scenarios (definable sets of c
 
 ## Structuring
 Here is a basic overview of how the bot is currently structured. Subject to change, as this project is still in development.
-- Timeframe
-  
-  Run over `intervalTime`, checking one or more strategies
-  - Strategy
 
-    One or more `Analysis` result sets, for a given `Chart`, looking for one or more `Scenario` condition matches (which can trigger an optional chained `Strategy`).
-    - Scenario
+### `Timeframe`
+Run over `intervalTime`, checking one or more strategies
 
-	  One or more sets of conditions against one or more sets of `Analysis` and/or `Chart` metrics.
-	  - Analysis
+### `Strategy` (belonging to a `Timeframe`)
+One or more `Analysis` result sets, for a given `Chart`, looking for one or more `Scenario` condition matches (which can trigger an optional chained `Strategy`).
 
-	    A light `talib` wrapper, with configuration.
-	    - Chart
+### `Scenario` (belonging to a `Strategy`)
+One or more sets of conditions against one or more sets of `Analysis` and/or `Chart` metrics.
 
-		  Collection of data points for a `Chart` with `Pair` of `Asset`, sourced from storage.
-		  - Exchange
+### `Analysis` (belonging to a `Strategy` and/or `Scenario`)
+A light `talib` wrapper, with configuration.
 
-		    A potential source of `Chart` data, or destination for `Exchange` actions, based on a `Bot.subscribe()` despatch to open/close a `Position`.
+### `Chart` (belonging to an `Exchange`)
+Collection of data points for a `Chart` with `Pair` of `Asset`, for a `canldeTime`, updated every `pollTime`, sourced from storage.
+
+### `Asset` (belonging to a `Pair`)
+TBC
+
+### `Exchange`
+A potential source of `Chart` data, or destination for `Exchange` actions. I.e. based on a `Bot.subscribe()` despatch to open/close a `Position`.
 
 ## Todo
 
