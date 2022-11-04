@@ -125,14 +125,18 @@ export const Bot = {
 
 						if (val.timeframeAny.length) {
 
+							// console.log(`timeframeCount: ${val.timeframeAny.length}`);
+
 							// Process timeframes
 							for (let i = 0; i < val.timeframeAny.length; i++) {
 								let timeframe = val.timeframeAny[i];
-								console.log(`Timeframe '${timeframe.uuid}'`);
+								// console.log(`Timeframe '${timeframe.uuid}'`);
+
+								// console.log(`timeframeResultCount: ${timeframe.result.length}`);
 
 								for (let j = 0; j < timeframe.result.length; j++) {
-									let result = timeframe.result[i];
-									let uuid = timeframe.resultIndex[i];
+									let result = timeframe.result[j];
+									let uuid = timeframe.resultIndex[j];
 									// console.log(`Strategy (${j}) '${uuid}'`);
 									// console.log(`result.length: ${result?.length}`);
 
@@ -141,19 +145,19 @@ export const Bot = {
 
 										// console.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
 
-										// console.log(`signalCount: ${result.length}`);
+										console.log(`signalCount: ${result.length}`);
 
 										// let strategy = Strategy.getResult
-										for (let j = 0; j < result.length; j++) {
-											let latestCandle = result[j].length - 1;
-											let matchFirstCond = result[j][latestCandle][0];
+										for (let k = 0; k < result.length; k++) {
+											let latestCandle = result[k].length - 1;
+											let matchFirstCond = result[k][latestCandle][0];
 											let date = new Date(parseInt(val.chart[timeField][matchFirstCond.k]) * 1000);
 											// resultTimes.push(date.toISOString());
 											console.log(date.toISOString());
 											
 											// Output details on all matching scenario conditions
-											// for (let l = 0; l < result[j].length; l++) {
-											// 	console.log(result[j][l]);
+											// for (let l = 0; l < result[k].length; l++) {
+											// 	console.log(result[k][l]);
 											// }
 										}
 
@@ -170,9 +174,9 @@ export const Bot = {
 							
 							// timeframeResult.push(result);
 
-							console.log(`signalHigh: ${signalResult.high}`);
-							console.log(`signalLow: ${signalResult.low}`);
-							console.log(`signalTotal: ${signalResult.total}`);
+							// console.log(`signalHigh: ${signalResult.high}`);
+							// console.log(`signalLow: ${signalResult.low}`);
+							// console.log(`signalTotal: ${signalResult.total}`);
 						}
 
 						let conditionMatch: any = [];
