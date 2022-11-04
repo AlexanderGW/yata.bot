@@ -152,7 +152,7 @@ let stratBullishSma20Cross = new Strategy({
 let defaultTimeframe = Bot.setTimeframe({
 	// active: false,
 	intervalTime: 1000, // 1 second
-	maxTime: 86400000 * 30, // last 30 days
+	maxTime: 86400000 * 100, // last 30 days
 	strategy: [
 		// stratBullishMacd12_26_9Crossover,
 		// stratBullishRsi14Oversold,
@@ -164,8 +164,8 @@ let defaultTimeframe = Bot.setTimeframe({
 // Timeframes will trigger by default
 let testTimeframe = Bot.setTimeframe({
 	// active: false,
-	intervalTime: 1000, // 1 second
-	maxTime: 86400000 * 30, // last 30 days
+	intervalTime: 1500, // 1 second
+	maxTime: 86400000 * 50, // last 30 days
 	strategy: [
 		// stratBullishMacd12_26_9Crossover,
 		stratBullishRsi14Oversold,
