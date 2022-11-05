@@ -1,5 +1,5 @@
-import { Chart } from "./Chart";
-import { Timeframe, TimeframeData } from "./Timeframe";
+import { ChartItem } from "./Chart";
+import { TimeframeItem } from "./Timeframe";
 
 enum Level {
 	Info = 0,
@@ -14,10 +14,10 @@ export enum BotEvent {
 export type BotSubscribeData = {
 	action: CallableFunction,
 	condition: Array<[string, string, string]>,
-	chart: Chart,
+	chart: ChartItem,
 	name?: string,
-	timeframeAny?: Timeframe[],
-	timeframeTotal?: Timeframe[],
+	timeframeAny?: TimeframeItem[],
+	timeframeTotal?: TimeframeItem[],
 };
 
 export type BotEventData = {
@@ -25,10 +25,18 @@ export type BotEventData = {
 	uuid: string,
 };
 
+export type ItemBaseData = {
+	baseClass: string,
+	name?: string,
+	uuid?: string,
+}
+
 export const Bot = {
 	subscriber: [],
 	timeframe: [],
 	timeframeIndex: [],
+	item: [],
+	itemIndex: [],
 
 	log (
 		string: string,
@@ -45,34 +53,33 @@ export const Bot = {
 			console.error(consoleString);
 	},
 
-	getTimeframe (
-		data: TimeframeData
-	) {
-		let index = this.timeframeIndex.findIndex(_uuid => _uuid === data.uuid);
+	getItem (
+		uuid: string,
+	): any {
+		let index = this.itemIndex.findIndex(_uuid => _uuid === uuid);
 
 		if (index >= 0)
-			return this.timeframe[index];
+			return this.item[index];
 		return false;
 	},
 
-	setTimeframe (
-		data: TimeframeData
+	setItem (
+		data: object,
 	) {
-		let index = this.timeframeIndex.findIndex(_uuid => _uuid === data.uuid);
+		let index = this.itemIndex.findIndex(_uuid => _uuid === data.uuid);
 
-		// Reset existing timeframe
-		if (index >= 0) {
-			this.timeframe[index] = new Timeframe(data);
-
-			return this.timeframe[index];
-		}
+		// Reset existing item
+		if (index >= 0)
+			this.item[index] = data;
 		
-		// Store new timeframe
-		let newIndex = this.timeframe.length;
-		this.timeframe.push(new Timeframe(data));
-		this.timeframeIndex.push(data.uuid);
+		// Store new item
+		else {
+			// let newIndex = this.item.length;
+			this.item.push(data);
+			this.itemIndex.push(data.uuid);
+		}
 
-		return this.timeframe[newIndex];
+		return data.uuid;
 	},
 
 	subscribe (

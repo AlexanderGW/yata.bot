@@ -1,5 +1,6 @@
-import { Chart, ChartCandleData } from "./Chart";
+import { ChartCandleData, ChartItem } from "./Chart";
 import { uuid } from 'uuidv4';
+import { Bot } from "./Bot";
 
 const fs = require('fs');
 
@@ -13,22 +14,22 @@ export type ExchangeData = {
 
 export interface ExchangeInterface {
 	primeChart: (
-		chart: Chart,
+		chart: ChartItem,
 	) => void;
 
 	syncChart: (
-		chart: Chart,
+		chart: ChartItem,
 	) => void;
 }
 
 export interface ExchangeStorageInterface {
 	refreshChart: (
-		chart: Chart,
+		chart: ChartItem,
 		data: object,
 	) => void;
 }
 
-export class Exchange implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
+export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
 	handle?: object;
 	name: string;
 	uuid: string;
@@ -41,7 +42,7 @@ export class Exchange implements ExchangeData, ExchangeInterface, ExchangeStorag
 	}
 
 	compat (
-		chart: Chart,
+		chart: ChartItem,
 	) {
 		if (chart.exchange.uuid === this.uuid)
 			return true;
@@ -49,13 +50,13 @@ export class Exchange implements ExchangeData, ExchangeInterface, ExchangeStorag
 	}
 
 	primeChart (
-		chart: Chart,
+		chart: ChartItem,
 	) {
 		
 	}
 
 	refreshChart (
-		chart: Chart,
+		chart: ChartItem,
 		data: ChartCandleData
 	) {
 		chart.refresh(data);
@@ -137,8 +138,19 @@ export class Exchange implements ExchangeData, ExchangeInterface, ExchangeStorag
 	}
 
 	syncChart (
-		chart: Chart,
+		chart: ChartItem,
 	) {
 		
 	}
 }
+
+export const Exchange = {
+	new (
+		data: ExchangeData,
+	) {
+		let item = new ExchangeItem(data);
+		let uuid = Bot.setItem(item);
+
+		return Bot.getItem(uuid);
+	}
+};

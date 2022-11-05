@@ -1,10 +1,14 @@
 import * as dotenv from 'dotenv';
 
-import { Kraken } from './Bot/Exchange/Kraken';
 import { Asset } from './Bot/Asset';
-import { Pair } from './Bot/Pair';
+import { Bot } from './Bot/Bot';
 import { Chart } from './Bot/Chart';
+import { Kraken } from './Bot/Exchange/Kraken';
+import { Pair } from './Bot/Pair';
 import { Strategy } from './Bot/Strategy';
+import { Timeframe } from './Bot/Timeframe';
+
+// Helpers
 import {
 	BollingerBullishLowerCrossover as scenarioBollingerBullishLowerCrossover,
 	BullishMacd12_26_9Crossover as scenarioBullishMacd12_26_9Crossover,
@@ -17,40 +21,40 @@ import {
 	Rsi14 as analysisRsi14,
 	Sma20 as analysisSma20
 } from './Helper/Analysis';
-import { Timeframe } from './Bot/Timeframe';
-import { Bot } from './Bot/Bot';
 
 dotenv.config();
 
 const fs = require('fs');
 
+// TODO: UNIT TESTING - CHAI?
+
 // Create Kraken exchange client
-const exchangeKraken = new Kraken({
+const exchangeKraken = Kraken.new({
 	name: 'Kraken',
 	key: process.env.KRAKEN_CLIENT_KEY,
 	secret: process.env.KRAKEN_CLIENT_SECRET,
 });
 
 // Create ETH asset
-let assetEth = new Asset({
+let assetEth = Asset.new({
 	exchange: exchangeKraken,
 	symbol: 'ETH'
 });
 
 // Create BTC asset
-let assetBtc = new Asset({
+let assetBtc = Asset.new({
 	exchange: exchangeKraken,
 	symbol: 'BTC'
 });
 
 // Create ETH BTC pair of assets
-let pairEthBtc = new Pair({
+let pairEthBtc = Pair.new({
 	a: assetEth,
 	b: assetBtc
 });
 
 // Create a ETHBTC pair chart, and 1 minute, for Kraken exchange data
-let chartKrakenEthBtc4h = new Chart({
+let chartKrakenEthBtc4h = Chart.new({
 	exchange: exchangeKraken,
 	pair: pairEthBtc,
 	pollTime: 300, // 5m in seconds
@@ -89,14 +93,14 @@ try {
 }
 
 // Create an existing position on exchange
-// let pos1 = new Position({
+// let pos1 = Position.new({
 // 	exchange: exchangeKraken,
 // 	pair: pairEthBtc,
 // 	amount: '2.23523552'
 // });
 
 // RSI crossing upward into 30 range
-let stratBullishRsi14Oversold = new Strategy({
+let stratBullishRsi14Oversold = Strategy.new({
 	action: [
 		[scenarioBullishRsi14Oversold],
 	],
@@ -108,7 +112,7 @@ let stratBullishRsi14Oversold = new Strategy({
 });
 
 // MACD crossing upward
-let stratBullishMacd12_26_9Crossover = new Strategy({
+let stratBullishMacd12_26_9Crossover = Strategy.new({
 	action: [
 
 		// Trigger another strategy, if this scenario matches
@@ -122,7 +126,7 @@ let stratBullishMacd12_26_9Crossover = new Strategy({
 	name: 'BullishMacd12_26_9Crossover',
 });
 
-let stratBullishBollinger20LowerCross = new Strategy({
+let stratBullishBollinger20LowerCross = Strategy.new({
 	action: [
 
 		// Trigger another strategy, if this scenario matches
@@ -137,7 +141,7 @@ let stratBullishBollinger20LowerCross = new Strategy({
 	name: 'BullishBollingerLowerCross',
 });
 
-let stratBullishSma20Cross = new Strategy({
+let stratBullishSma20Cross = Strategy.new({
 	action: [
 		[scenarioSma20CrossUp],
 	],
@@ -149,10 +153,10 @@ let stratBullishSma20Cross = new Strategy({
 });
 
 // Timeframes will trigger by default
-let defaultTimeframe = Bot.setTimeframe({
+let defaultTimeframe = Timeframe.new({
 	// active: false,
 	intervalTime: 1000, // 1 second
-	maxTime: 86400000 * 100, // last 30 days
+	maxTime: 86400000 * 100, // last 100 days
 	strategy: [
 		// stratBullishMacd12_26_9Crossover,
 		// stratBullishRsi14Oversold,
@@ -162,10 +166,10 @@ let defaultTimeframe = Bot.setTimeframe({
 });
 
 // Timeframes will trigger by default
-let testTimeframe = Bot.setTimeframe({
+let testTimeframe = Timeframe.new({
 	// active: false,
 	intervalTime: 1500, // 1 second
-	maxTime: 86400000 * 50, // last 30 days
+	maxTime: 86400000 * 50, // last 50 days
 	strategy: [
 		// stratBullishMacd12_26_9Crossover,
 		stratBullishRsi14Oversold,

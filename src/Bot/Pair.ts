@@ -1,13 +1,14 @@
-import { Asset } from "./Asset";
+import { AssetItem } from "./Asset";
+import { Bot } from "./Bot";
 
 export type PairData = {
-	a: Asset,
-	b: Asset,
+	a: AssetItem,
+	b: AssetItem,
 }
 
-export class Pair implements PairData {
-	a: Asset;
-	b: Asset;
+export class PairItem implements PairData {
+	a: AssetItem;
+	b: AssetItem;
 
 	constructor (
 		data: PairData,
@@ -16,3 +17,14 @@ export class Pair implements PairData {
 		this.b = data.b;
 	}
 }
+
+export const Pair = {
+	new (
+		data: PairData,
+	) {
+		let item = new PairItem(data);
+		let uuid = Bot.setItem(item);
+
+		return Bot.getItem(uuid);
+	}
+};

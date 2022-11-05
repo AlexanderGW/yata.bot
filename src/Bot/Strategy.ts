@@ -1,16 +1,16 @@
-import { Analysis, AnalysisResultData } from "./Analysis";
-import { Chart } from "./Chart";
+import { AnalysisItem } from "./Analysis";
+import { ChartItem } from "./Chart";
 import { uuid } from 'uuidv4';
-import { Scenario } from "./Scenario";
+import { ScenarioItem } from "./Scenario";
 import { Bot } from "./Bot";
 
 const talib = require('talib');
 
 export type StrategyData = {
-	analysis: Analysis[],
-	chart: Chart,
+	analysis: AnalysisItem[],
+	chart: ChartItem,
 	name?: string,
-	action: Array<[Scenario, Strategy?]>,
+	action: Array<[ScenarioItem, StrategyItem?]>,
 	uuid?: string,
 }
 
@@ -18,14 +18,14 @@ export type StrategyExecuteData = {
 	maxTime: number,
 }
 
-export class Strategy implements StrategyData {
-	analysis: Analysis[];
-	chart: Chart;
+export class StrategyItem implements StrategyData {
+	analysis: AnalysisItem[];
+	chart: ChartItem;
 	name?: string;
 	uuid: string;
 	result: object[] = [];
 	resultIndex: string[] = [];
-	action: Array<[Scenario, Strategy?]>;
+	action: Array<[ScenarioItem, StrategyItem?]>;
 
 	constructor (
 		data: StrategyData,
@@ -44,7 +44,7 @@ export class Strategy implements StrategyData {
 	 * @param chart 
 	 */
 	setChart (
-		chart: Chart
+		chart: ChartItem
 	) {
 		this.chart = chart;
 	}
@@ -56,7 +56,7 @@ export class Strategy implements StrategyData {
 	 * @returns 
 	 */
 	getResult (
-		analysis: Analysis
+		analysis: AnalysisItem
 	) {
 		let index = this.resultIndex.findIndex(_uuid => _uuid === analysis.uuid);
 
@@ -71,9 +71,9 @@ export class Strategy implements StrategyData {
 	execute (
 		data: StrategyExecuteData,
 	) {
-		let analysis: Analysis;
+		let analysis: AnalysisItem;
 		let i: number;
-		let action: [Scenario, Strategy?];
+		let action: [ScenarioItem, StrategyItem?];
 
 		// TODO: calc the startPoint based on chart interval, and supplied maxTime
 		// THIS WILL LIMIT THE NUMBER OF SIGNALS RECORDED, FOR A CHART
@@ -130,9 +130,9 @@ export class Strategy implements StrategyData {
 			action = this.action[i];
 
 			// Add specified analysis results, to the test dataset
-			let analysis: Analysis;
+			let analysis: AnalysisItem;
 			let result: object | boolean;
-			let analysisData: Array<[Analysis, object]> = [];
+			let analysisData: Array<[AnalysisItem, object]> = [];
 			for (let i = 0; i < action[0].analysis.length; i++) {
 				analysis = this.analysis[i];
 
@@ -188,3 +188,14 @@ export class Strategy implements StrategyData {
 		}
 	}
 }
+
+export const Strategy = {
+	new (
+		data: StrategyData,
+	) {
+		let item = new StrategyItem(data);
+		let uuid = Bot.setItem(item);
+
+		return Bot.getItem(uuid);
+	}
+};

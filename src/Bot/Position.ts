@@ -1,19 +1,19 @@
 import { Bot } from "./Bot";
-import { Exchange } from "./Exchange";
-import { Pair } from "./Pair";
+import { ExchangeItem } from "./Exchange";
+import { PairItem } from "./Pair";
 import { State } from "./State";
 
 export type PositionData = {
 	amount?: string,
-	exchange: Exchange,
-	pair: Pair,
+	exchange: ExchangeItem,
+	pair: PairItem,
 	state?: State,
 }
 
-export class Position implements PositionData {
+export class PositionItem implements PositionData {
 	amount?: string = '0';
-	exchange: Exchange;
-	pair: Pair;
+	exchange: ExchangeItem;
+	pair: PairItem;
 	state?: State = State.Open;
 
 	constructor (
@@ -27,3 +27,14 @@ export class Position implements PositionData {
 			this.state = data.state;
 	}
 }
+
+export const Position = {
+	new (
+		data: PositionData,
+	): PositionItem {
+		let item = new PositionItem(data);
+		let uuid = Bot.setItem(item);
+
+		return Bot.getItem(uuid);
+	}
+};

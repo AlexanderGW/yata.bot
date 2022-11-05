@@ -1,11 +1,12 @@
 import { uuid } from 'uuidv4';
+import { Bot } from './Bot';
 
 const talib = require('talib');
 
 export type AnalysisConfigData = {
 	startIndex?: number,
 	inReal?: string[],
-	inRealAnalysis?: Analysis,
+	inRealAnalysis?: AnalysisItem,
 	inRealField?: string,
 	optInTimePeriod?: number,
 	optInNbDevUp?: number,
@@ -24,7 +25,7 @@ export type AnalysisResultData = {
 	result: object,
 }
 
-export class Analysis implements AnalysisData {
+export class AnalysisItem implements AnalysisData {
 	config?: AnalysisConfigData;
 	explain: object;
 	name: string;
@@ -69,3 +70,14 @@ export class Analysis implements AnalysisData {
 		// console.log(`Added analysis: ${this.uuid}`);
 	}
 }
+
+export const Analysis = {
+	new (
+		data: AnalysisData,
+	) {
+		let item = new AnalysisItem(data);
+		let uuid = Bot.setItem(item);
+
+		return Bot.getItem(uuid);
+	}
+};

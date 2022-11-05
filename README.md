@@ -42,7 +42,7 @@ setTimeout(function () {
 One or more `Analysis` result sets, for a given `Chart`, looking for one or more `Scenario` condition matches (which can trigger an optional chained `Strategy`).
 
 ```
-let stratBullishSma20Cross = new Strategy({
+let stratBullishSma20Cross = Strategy.new({
   action: [
     [scenarioSma20CrossUp],
   ],
@@ -58,7 +58,7 @@ let stratBullishSma20Cross = new Strategy({
 One or more sets of conditions against one or more sets of `Analysis` and/or `Chart` metrics.
 
 ```
-const Sma20CrossUp = new Scenario({
+const Sma20CrossUp = Scenario.new({
   analysis: [
     analysisSma20,
   ],
@@ -92,7 +92,7 @@ const Sma20CrossUp = new Scenario({
 A light `talib` wrapper, with configuration.
 
 ```
-const analysisSma20 = new Analysis({
+const analysisSma20 = Analysis.new({
   name: 'SMA20',
   config: {
     inRealField: 'close',
@@ -107,7 +107,7 @@ const analysisSma20 = new Analysis({
 Collection of data points for a `Chart` with `Pair` of `Asset`, for a `candleTime`, updated every `pollTime`, sourced from storage.
 
 ```
-let chartKrakenEthBtc4h = new Chart({
+let chartKrakenEthBtc4h = Chart.new({
   exchange: exchangeKraken,
   pair: pairEthBtc,
   pollTime: 300, // 5m in seconds
@@ -119,17 +119,17 @@ let chartKrakenEthBtc4h = new Chart({
 TBC
 
 ```
-let assetEth = new Asset({
+let assetEth = Asset.new({
   exchange: exchangeKraken,
   symbol: 'ETH'
 });
 
-let assetBtc = new Asset({
+let assetBtc = Asset.new({
   exchange: exchangeKraken,
   symbol: 'BTC'
 });
 
-let pairEthBtc = new Pair({
+let pairEthBtc = Pair.new({
   a: assetEth,
   b: assetBtc
 });
@@ -139,7 +139,7 @@ let pairEthBtc = new Pair({
 A potential source of `Chart` data, or destination for `Exchange` actions. I.e. based on a `Bot.subscribe()` despatch to open/close a `Position`.
 
 ```
-const exchangeKraken = new Kraken({
+const exchangeKraken = Kraken.new({
   name: 'Kraken',
   key: process.env.KRAKEN_CLIENT_KEY,
   secret: process.env.KRAKEN_CLIENT_SECRET,

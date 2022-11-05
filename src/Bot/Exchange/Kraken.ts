@@ -1,9 +1,10 @@
-import { Chart, ChartCandleData } from '../Chart';
-import { Exchange, ExchangeData, ExchangeInterface } from '../Exchange';
+import { Bot } from '../Bot';
+import { ChartCandleData, ChartItem } from '../Chart';
+import { ExchangeData, ExchangeInterface, ExchangeItem } from '../Exchange';
 
 const fs = require('fs');
 
-export class Kraken extends Exchange implements ExchangeInterface {
+export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 	// Omitting 4th char prefix of `X`, added on `pair` assignment
 	symbols = {
@@ -129,7 +130,7 @@ export class Kraken extends Exchange implements ExchangeInterface {
 	}
 
 	async syncChart (
-		chart: Chart,
+		chart: ChartItem,
 	) {
 		if (!this.compat(chart))
 			throw ('This chart belongs to a different exchange.');
@@ -197,3 +198,14 @@ export class Kraken extends Exchange implements ExchangeInterface {
 		}
 	}
 }
+
+export const Kraken = {
+	new (
+		data: ExchangeData,
+	) {
+		let item = new KrakenItem(data);
+		let uuid = Bot.setItem(item);
+
+		return Bot.getItem(uuid);
+	}
+};

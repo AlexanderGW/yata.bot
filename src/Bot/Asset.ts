@@ -1,14 +1,15 @@
-import { Exchange } from "./Exchange";
+import { Bot } from "./Bot";
+import { ExchangeItem } from "./Exchange";
 
 export type AssetData = {
-	exchange: Exchange,
+	exchange: ExchangeItem,
 	name?: string,
 	price?: number,
 	symbol: string,
 }
 
-export class Asset implements AssetData {
-	exchange: Exchange;
+export class AssetItem implements AssetData {
+	exchange: ExchangeItem;
 	name?: string;
 	price?: number;
 	symbol: string;
@@ -24,3 +25,14 @@ export class Asset implements AssetData {
 		this.symbol = data.symbol;
 	}
 }
+
+export const Asset = {
+	new (
+		data: AssetData,
+	) {
+		let item = new AssetItem(data);
+		let uuid = Bot.setItem(item);
+
+		return Bot.getItem(uuid);
+	}
+};

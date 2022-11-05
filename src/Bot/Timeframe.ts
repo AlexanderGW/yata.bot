@@ -1,6 +1,6 @@
 import { uuid } from 'uuidv4';
 import { Bot, BotEvent } from './Bot';
-import { Strategy } from "./Strategy";
+import { StrategyItem } from "./Strategy";
 
 export type TimeframeData = {
 	active?: boolean,
@@ -10,11 +10,11 @@ export type TimeframeData = {
 	maxTime?: number, // Milliseconds
 	name?: string,
 	pollTime?: number, // Milliseconds
-	strategy: Array<Strategy>,
+	strategy: Array<StrategyItem>,
 	uuid?: string,
 }
 
-export class Timeframe implements TimeframeData {
+export class TimeframeItem implements TimeframeData {
 	active: boolean;
 	interval: any;
 	intervalTime: number;
@@ -24,7 +24,7 @@ export class Timeframe implements TimeframeData {
 	pollTime: number;
 	result: object[] = [];
 	resultIndex: string[] = [];
-	strategy: Array<Strategy>;
+	strategy: Array<StrategyItem>;
 	uuid: string;
 
 	constructor (
@@ -92,7 +92,7 @@ export class Timeframe implements TimeframeData {
 	 * @returns 
 	 */
 	getResult (
-		strategy: Strategy
+		strategy: StrategyItem
 	) {
 		let index = this.resultIndex.findIndex(_uuid => _uuid === strategy.uuid);
 
@@ -163,3 +163,14 @@ export class Timeframe implements TimeframeData {
 		}
 	}
 }
+
+export const Timeframe = {
+	new (
+		data: TimeframeData,
+	) {
+		let item = new TimeframeItem(data);
+		let uuid = Bot.setItem(item);
+
+		return Bot.getItem(uuid);
+	}
+};

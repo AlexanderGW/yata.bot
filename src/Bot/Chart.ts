@@ -1,10 +1,11 @@
-import { Exchange } from "./Exchange";
-import { Pair } from "./Pair";
+import { Bot } from "./Bot";
+import { ExchangeItem } from "./Exchange";
+import { PairItem } from "./Pair";
 
 export type ChartData = {
-	exchange: Exchange,
+	exchange: ExchangeItem,
 	lastUpdateTime?: number, // Milliseconds
-	pair: Pair,
+	pair: PairItem,
 	pollTime?: number, // Seconds
 	candleTime?: number, // Seconds
 };
@@ -23,18 +24,18 @@ export type ChartCandleData = {
 	weightedAvePrice?: string[],
 };
 
-export class Chart implements ChartData, ChartCandleData {
+export class ChartItem implements ChartData, ChartCandleData {
 	change?: string[];
 	changePercent?: string[];
 	close?: string[];
 	closeTime?: number[];
-	exchange: Exchange;
+	exchange: ExchangeItem;
 	high?: string[];
 	lastUpdateTime: number;
 	low?: string[];
 	open?: string[];
 	openTime?: number[];
-	pair: Pair;
+	pair: PairItem;
 	pollTime: number;
 	candleTime: number;
 	tradeCount?: number[];
@@ -114,3 +115,14 @@ export class Chart implements ChartData, ChartCandleData {
 			this.weightedAvePrice = data.weightedAvePrice;
 	}
 }
+
+export const Chart = {
+	new (
+		data: ChartData,
+	) {
+		let item = new ChartItem(data);
+		let uuid = Bot.setItem(item);
+
+		return Bot.getItem(uuid);
+	}
+};

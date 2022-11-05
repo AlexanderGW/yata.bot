@@ -1,10 +1,11 @@
 import { uuid } from 'uuidv4';
-import { Analysis, AnalysisResultData } from './Analysis';
-import { Chart } from './Chart';
-import { Strategy, StrategyExecuteData } from './Strategy';
+import { AnalysisItem } from './Analysis';
+import { Bot } from './Bot';
+import { ChartItem } from './Chart';
+import { StrategyExecuteData, StrategyItem } from './Strategy';
 
 export type ScenarioData = {
-	analysis: Analysis[],
+	analysis: AnalysisItem[],
 	name: string,
 	condition: Array<Array<[string, string, number | string]>>,
 	uuid?: string,
@@ -21,14 +22,14 @@ export type ScenarioSignalData = {
 };
 
 export type ScenarioTestData = {
-	chart: Chart,
-	analysisData: Array<[Analysis, object]>,
-	strategy?: Strategy,
+	chart: ChartItem,
+	analysisData: Array<[AnalysisItem, object]>,
+	strategy?: StrategyItem,
 	strategyExecuteData: StrategyExecuteData,
 }
 
-export class Scenario implements ScenarioData {
-	analysis: Analysis[];
+export class ScenarioItem implements ScenarioData {
+	analysis: AnalysisItem[];
 	condition: any;
 	name: string;
 	uuid: string; 
@@ -405,3 +406,14 @@ export class Scenario implements ScenarioData {
 		return scenarioMatch;
 	}
 }
+
+export const Scenario = {
+	new (
+		data: ScenarioData,
+	) {
+		let item = new ScenarioItem(data);
+		let uuid = Bot.setItem(item);
+
+		return Bot.getItem(uuid);
+	}
+};
