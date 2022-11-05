@@ -1,4 +1,4 @@
-import { AnalysisItem } from "./Analysis";
+import { AnalysisExecuteData, AnalysisItem } from "./Analysis";
 import { ChartItem } from "./Chart";
 import { uuid } from 'uuidv4';
 import { ScenarioItem } from "./Scenario";
@@ -57,7 +57,7 @@ export class StrategyItem implements StrategyData {
 	 */
 	getResult (
 		analysis: AnalysisItem
-	) {
+	): AnalysisExecuteData | boolean {
 		let index = this.resultIndex.findIndex(_uuid => _uuid === analysis.uuid);
 
 		if (index >= 0)
@@ -75,15 +75,11 @@ export class StrategyItem implements StrategyData {
 		let i: number;
 		let action: [ScenarioItem, StrategyItem?];
 
-		// TODO: calc the startPoint based on chart interval, and supplied maxTime
-		// THIS WILL LIMIT THE NUMBER OF SIGNALS RECORDED, FOR A CHART
-		// DO WE ASSIGN THE SIGNALS TO THE TIMEFRAME INSTEAD
-
 		// Process analysis
 		for (i = 0; i < this.analysis.length; i++) {
 			analysis = this.analysis[i];
 
-			let inReal: string[];
+			let inReal: string[] = [];
 
 			// Source the result of previously executed analysis
 			if (analysis.config?.inRealAnalysis) {
@@ -118,7 +114,7 @@ export class StrategyItem implements StrategyData {
 			};
 
 			// Execute
-			let result = talib.execute(executeOptions);
+			let result: AnalysisExecuteData = talib.execute(executeOptions);
 
 			// Store results
 			this.result.push(result);

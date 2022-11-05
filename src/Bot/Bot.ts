@@ -26,15 +26,12 @@ export type BotEventData = {
 };
 
 export type ItemBaseData = {
-	baseClass: string,
 	name?: string,
-	uuid?: string,
+	uuid: string,
 }
 
 export const Bot = {
 	subscriber: [],
-	timeframe: [],
-	timeframeIndex: [],
 	item: [],
 	itemIndex: [],
 
@@ -64,8 +61,8 @@ export const Bot = {
 	},
 
 	setItem (
-		data: object,
-	) {
+		data: ItemBaseData,
+	): string {
 		let index = this.itemIndex.findIndex(_uuid => _uuid === data.uuid);
 
 		// Reset existing item
@@ -97,15 +94,6 @@ export const Bot = {
 
 		switch (data.event) {
 			case BotEvent.TimeframeResult : {
-				// console.log(``);
-
-				// for (let i = 0; i < i; i++) {
-				// 	let subscriber = this.subscriber[i];
-				// 	if 
-				// }
-
-				// let signal = 0;
-
 				Object.entries(this.subscriber).forEach(function([key, val]) {
 					// console.log(`subscriberIndex: ${key}`);
 					// console.log(`${val.timeframeAny[0].uuid}`);
@@ -115,9 +103,9 @@ export const Bot = {
 					if (index >= 0) {
 						let timeField: string = '';
 
-						if (val.chart['openTime'])
+						if (val.chart?.hasOwnProperty('openTime'))
 							timeField = 'openTime';
-						else if (val.chart['closeTime'])
+						else if (val.chart?.hasOwnProperty('closeTime'))
 							timeField = 'closeTime';
 
 						// console.log(`subscriberTimeframeIndex: ${index}`);
@@ -130,7 +118,7 @@ export const Bot = {
 
 						let signal: number[] = [];
 
-						if (val.timeframeAny.length) {
+						if (val.timeframeAny?.length) {
 
 							// console.log(`timeframeCount: ${val.timeframeAny.length}`);
 

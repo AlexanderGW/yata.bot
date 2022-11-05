@@ -1,5 +1,5 @@
 import { uuid } from 'uuidv4';
-import { AnalysisItem } from './Analysis';
+import { AnalysisData, AnalysisExecuteData, AnalysisItem } from './Analysis';
 import { Bot } from './Bot';
 import { ChartItem } from './Chart';
 import { StrategyExecuteData, StrategyItem } from './Strategy';
@@ -23,7 +23,7 @@ export type ScenarioSignalData = {
 
 export type ScenarioTestData = {
 	chart: ChartItem,
-	analysisData: Array<[AnalysisItem, object]>,
+	analysisData: Array<[AnalysisItem, AnalysisExecuteData]>,
 	strategy?: StrategyItem,
 	strategyExecuteData: StrategyExecuteData,
 }
@@ -77,15 +77,15 @@ export class ScenarioItem implements ScenarioData {
 				operator = condition[conditionIdx][1];
 				valueB = condition[conditionIdx][2];
 				
-				if (data.chart[valueA]) {
+				if (data.chart.hasOwnProperty(valueA)) {
 					conditionMatch.push({
 						valueA: valueA,
 					});
 				} else {
 
 					// Walk through datasets
-					let analysis: object;
-					let dataset: object;
+					let analysis: AnalysisData;
+					let dataset: AnalysisExecuteData;
 					for (
 						let i: number = 0;
 						i < data.analysisData.length;
@@ -95,11 +95,11 @@ export class ScenarioItem implements ScenarioData {
 						dataset = data.analysisData[i][1];
 						// console.log(dataset);
 
-						if (dataset.result[valueA]) {
+						if (dataset.result?.hasOwnProperty(valueA)) {
 
 							// If undefined, set the `startIndex` to the chart dataset, minus the length of the analysis dataset.
-							if (!data.analysisData[i][0].config.startIndex) {
-								data.analysisData[i][0].config.startIndex = (
+							if (!analysis.config?.startIndex) {
+								analysis.config.startIndex = (
 									data.chart.open.length
 									- dataset.result[valueA].length
 								);
@@ -107,7 +107,7 @@ export class ScenarioItem implements ScenarioData {
 						}
 
 						// Check field exists within result dataset
-						if (dataset.result[valueA]) {
+						if (dataset.result?.hasOwnProperty(valueA)) {
 							conditionMatch.push({
 								valueA: valueA,
 							});
@@ -119,15 +119,15 @@ export class ScenarioItem implements ScenarioData {
 
 
 
-				if (data.chart[valueB]) {
+				if (data.chart.hasOwnProperty(valueB)) {
 					conditionMatch.push({
 						valueB: valueB,
 					});
 				} else {
 
 					// Walk through datasets
-					let analysis: object;
-					let dataset: object;
+					let analysis: AnalysisData;
+					let dataset: AnalysisExecuteData;
 					for (
 						let i: number = 0;
 						i < data.analysisData.length;
@@ -137,9 +137,9 @@ export class ScenarioItem implements ScenarioData {
 						dataset = data.analysisData[i][1];
 
 						// If undefined, set the `startIndex` to the chart dataset, minus the length of the analysis dataset.
-						if (dataset.result[valueB]) {
-							if (!data.analysisData[i][0].config.startIndex) {
-								data.analysisData[i][0].config.startIndex = (
+						if (dataset.result?.hasOwnProperty(valueB)) {
+							if (!analysis.config?.startIndex) {
+								analysis.config.startIndex = (
 									data.chart.open.length
 									- dataset.result[valueB].length
 								);
@@ -229,7 +229,7 @@ export class ScenarioItem implements ScenarioData {
 						) {
 
 							// `valueA` is an analysis result data field
-							if (data.analysisData[i][1].result[valueA]) {
+							if (data.analysisData[i][1].result?.hasOwnProperty(valueA)) {
 	
 								// Skip while the data point range is out-of-scope (not enough data points)
 								if (k < data.analysisData[i][0].config.startIndex + conditionDepth)
@@ -245,7 +245,7 @@ export class ScenarioItem implements ScenarioData {
 							if (typeof valueB === 'string') {
 								
 								// `valueB` is an analysis result data field
-								if (data.analysisData[i][1].result[valueB]) {
+								if (data.analysisData[i][1].result?.hasOwnProperty(valueB)) {
 	
 									// Skip while the data point range is out-of-scope (not enough data points)
 									if (k < data.analysisData[i][0].config.startIndex + conditionDepth)
@@ -262,7 +262,7 @@ export class ScenarioItem implements ScenarioData {
 					}
 
 					if (typeof valueAReal === 'undefined') {
-						if (data.chart[valueA]) {
+						if (data.chart.hasOwnProperty(valueA)) {
 							valueAReal = Number.parseFloat(
 								data.chart[valueA][k]
 							).toFixed(10);
@@ -275,7 +275,7 @@ export class ScenarioItem implements ScenarioData {
 						typeof valueBReal === 'undefined'
 						&& typeof valueB === 'string'
 					) {
-						if(data.chart[valueB]) {
+						if(data.chart.hasOwnProperty(valueB)) {
 							valueBReal = Number.parseFloat(
 								data.chart[valueB][k]
 							).toFixed(10);

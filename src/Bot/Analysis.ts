@@ -14,6 +14,38 @@ export type AnalysisConfigData = {
 	optInMAType?: number,
 }
 
+export type AnalysisExecuteResultData = {
+	outReal?: number[] | string[],
+	outRealUpperBand?: number[] | string[],
+	outRealMiddleBand?: number[] | string[],
+	outRealLowerBand?: number[] | string[],
+}
+
+export type AnalysisExecuteData = {
+	result?: object,//AnalysisExecuteResultData,
+}
+
+export type AnalysisExplainInputsData = {
+	name: string,
+	type: string,
+}
+
+export type AnalysisExplainOptInputsData = {
+	name: string,
+	displayName: string,
+	defaultValue: number,
+	hint: string,
+	type: string,
+}
+
+export type AnalysisExplainData = {
+	group: string,
+	hint: string,
+	inputs: Array<AnalysisExplainInputsData>,
+	name: string,
+	optInputs: Array<AnalysisExplainOptInputsData>,
+}
+
 export type AnalysisData = {
 	config?: AnalysisConfigData,
 	name: string,
@@ -27,7 +59,7 @@ export type AnalysisResultData = {
 
 export class AnalysisItem implements AnalysisData {
 	config?: AnalysisConfigData;
-	explain: object;
+	explain: AnalysisExplainData;
 	name: string;
 	type: string;
 	uuid: string;
