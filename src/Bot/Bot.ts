@@ -1,16 +1,25 @@
 import { ChartItem } from "./Chart";
 import { TimeframeItem } from "./Timeframe";
 
+/**
+ * Logging levels
+ */
 enum Level {
 	Info = 0,
 	Warn = 1,
 	Err = 2,
 }
 
+/**
+ * Event types
+ */
 export enum BotEvent {
 	TimeframeResult = 100,
 }
 
+/**
+ * Event subscriber data
+ */
 export type BotSubscribeData = {
 	action: CallableFunction,
 	condition: Array<[string, string, string]>,
@@ -25,16 +34,37 @@ export type BotEventData = {
 	uuid: string,
 };
 
+/**
+ * Basic item structure, everything must have its own UUID
+ */
 export type ItemBaseData = {
 	name?: string,
 	uuid: string,
 }
 
 export const Bot = {
+
+	/**
+	 * Event subscribers
+	 */
 	subscriber: [],
+
+	/**
+	 * Legacy item storage
+	 */
 	item: [],
+
+	/**
+	 * Legacy item storage index
+	 */
 	itemIndex: [],
 
+	/**
+	 * Logging interface
+	 * 
+	 * @param string 
+	 * @param level 
+	 */
 	log (
 		string: string,
 		level?: Level,
@@ -50,6 +80,12 @@ export const Bot = {
 			console.error(consoleString);
 	},
 
+	/**
+	 * Lookup and return an item from general storage
+	 * 
+	 * @param {string} uuid 
+	 * @returns {object | false}
+	 */
 	getItem (
 		uuid: string,
 	): any {
@@ -60,6 +96,13 @@ export const Bot = {
 		return false;
 	},
 
+	/**
+	 * Add or replace an exisiting item in general storage
+	 * @todo Allow for different storage interfaces
+	 * 
+	 * @param {object} data - Base item strcuture for storage
+	 * @returns {string} The items UUID
+	 */
 	setItem (
 		data: ItemBaseData,
 	): string {
@@ -79,12 +122,22 @@ export const Bot = {
 		return data.uuid;
 	},
 
+	/**
+	 * Event subscriber
+	 * 
+	 * @param data 
+	 */
 	subscribe (
 		data: BotSubscribeData
 	) {
 		this.subscriber.push(data);
 	},
 
+	/**
+	 * Despatcher for event subscribers
+	 * 
+	 * @param data 
+	 */
 	despatch (
 		data: BotEventData
 	) {
@@ -93,6 +146,10 @@ export const Bot = {
 		// console.log(`uuid: ${data.uuid}`);
 
 		switch (data.event) {
+
+			/**
+			 * A `Timeframe` has finished an iteration
+			 */
 			case BotEvent.TimeframeResult : {
 				Object.entries(this.subscriber).forEach(function([key, val]) {
 					// console.log(`subscriberIndex: ${key}`);
@@ -118,6 +175,9 @@ export const Bot = {
 
 						let signal: number[] = [];
 
+						/**
+						 * Aggregated results from any of the listed `Timeframe`
+						 */
 						if (val.timeframeAny?.length) {
 
 							// console.log(`timeframeCount: ${val.timeframeAny.length}`);
@@ -136,11 +196,13 @@ export const Bot = {
 									// console.log(`result.length: ${result?.length}`);
 
 									if (result?.length) {
-										// console.info(`Strategy '${this.name}' scenario '${action[0].name}' analysis matches: ${signal.length}`);
 
-										// console.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
+										// Get strategy from storage, by UUID
+										let strategy = Bot.getItem(uuid);
 
-										console.log(`signalCount: ${result.length}`);
+										console.info(`Strategy '${strategy.name}', scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
+
+										console.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
 
 										// let strategy = Strategy.getResult
 										for (let k = 0; k < result.length; k++) {
