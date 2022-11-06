@@ -1,8 +1,8 @@
-import { uuid } from 'uuidv4';
 import { AnalysisData, AnalysisExecuteData, AnalysisItem } from './Analysis';
 import { Bot } from './Bot';
 import { ChartItem } from './Chart';
 import { StrategyExecuteData, StrategyItem } from './Strategy';
+import { uuid } from 'uuidv4';
 
 export type ScenarioData = {
 	analysis: AnalysisItem[],
@@ -32,7 +32,7 @@ export class ScenarioItem implements ScenarioData {
 	analysis: AnalysisItem[];
 	condition: any;
 	name: string;
-	uuid: string; 
+	uuid: string;
 
 	constructor (
 		data: ScenarioData,

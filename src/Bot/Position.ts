@@ -2,12 +2,14 @@ import { Bot } from "./Bot";
 import { ExchangeItem } from "./Exchange";
 import { PairItem } from "./Pair";
 import { State } from "./State";
+import { uuid } from 'uuidv4';
 
 export type PositionData = {
 	amount?: string,
 	exchange: ExchangeItem,
 	pair: PairItem,
 	state?: State,
+	uuid?: string,
 }
 
 export class PositionItem implements PositionData {
@@ -15,6 +17,7 @@ export class PositionItem implements PositionData {
 	exchange: ExchangeItem;
 	pair: PairItem;
 	state?: State = State.Open;
+	uuid: string;
 
 	constructor (
 		data: PositionData,
@@ -25,6 +28,7 @@ export class PositionItem implements PositionData {
 		this.pair = data.pair;
 		if (data.state)
 			this.state = data.state;
+		this.uuid = data.uuid ?? uuid();
 	}
 }
 

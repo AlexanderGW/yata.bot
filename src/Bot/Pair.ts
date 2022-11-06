@@ -1,20 +1,24 @@
 import { AssetItem } from "./Asset";
 import { Bot } from "./Bot";
+import { uuid } from 'uuidv4';
 
 export type PairData = {
 	a: AssetItem,
 	b: AssetItem,
+	uuid?: string,
 }
 
 export class PairItem implements PairData {
 	a: AssetItem;
 	b: AssetItem;
+	uuid: string; 
 
 	constructor (
 		data: PairData,
 	) {
 		this.a = data.a;
 		this.b = data.b;
+		this.uuid = data.uuid ?? uuid();
 	}
 }
 

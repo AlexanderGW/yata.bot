@@ -1,3 +1,4 @@
+import { uuid } from 'uuidv4';
 import { Bot } from "./Bot";
 import { ExchangeItem } from "./Exchange";
 import { PairItem } from "./Pair";
@@ -20,6 +21,7 @@ export type ChartCandleData = {
 	open?: string[],
 	openTime?: number[],
 	tradeCount?: number[],
+	uuid?: string,
 	volume?: string[],
 	weightedAvePrice?: string[],
 };
@@ -39,6 +41,7 @@ export class ChartItem implements ChartData, ChartCandleData {
 	pollTime: number;
 	candleTime: number;
 	tradeCount?: number[];
+	uuid: string;
 	volume?: string[];
 	weightedAvePrice?: string[];
 
@@ -77,6 +80,7 @@ export class ChartItem implements ChartData, ChartCandleData {
 			this.candleTime = 3600;
 		if (data.tradeCount)
 			this.tradeCount = data.tradeCount;
+		this.uuid = data.uuid ?? uuid();
 		if (data.volume)
 			this.volume = data.volume;
 		if (data.weightedAvePrice)
