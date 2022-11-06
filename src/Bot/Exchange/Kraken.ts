@@ -26,14 +26,14 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 	translateSymbol (
 		symbol: string,
 	) {
-		if (this.symbols[symbol])
+		if (this.symbols.hasOwnProperty(symbol))
 			return this.symbols[symbol];
 
 		return symbol;
 	}
 
 	async primeChart (
-		chart: Chart,
+		chart: ChartItem,
 	) {
 		if (!this.compat(chart))
 			throw ('This chart belongs to a different exchange.');
