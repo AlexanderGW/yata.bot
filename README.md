@@ -3,7 +3,7 @@ Still in very early stages of development. Leveraging the `talib` library, via [
 
 Following a concept of strategies, which look for scenarios (definable sets of conditions over a number of data frames) on chart and/or technical analysis; firing events (such as buy, sell, SL, etc.), based on the number of signals within a given time frame.
 
-## Structuring
+## Structure
 Here is a basic overview of how the bot is currently structured. Subject to change, as this project is still in development.
 
 ### Subscribing to `Timeframe` changes
@@ -24,8 +24,10 @@ Bot.subscribe({
 ### `Timeframe`
 Run over `intervalTime`, checking one or more `Strategy`. Matches will `Bot.despatch()` to any `Timeframe` subscribers.
 
+Note: A `Timeframe` uses only milliseconds. Everything else is in seconds.
+
 ```
-let defaultTimeframe = Bot.setTimeframe({
+let defaultTimeframe = Timeframe.new({
   intervalTime: 1000, // 1 second
   maxTime: 86400000 * 30, // last 30 days
   strategy: [
@@ -146,11 +148,21 @@ const exchangeKraken = Kraken.new({
 });
 ```
 
+## Storage
+All created items (i.e. `Pair.new()`) are kept in a simple global storage system, identified by their own UUID. Using `Bot.setItem(object): uuid` and `Bot.getItem(uuid): object`
+
 ## Todo
 
 - Monitor strategy signals within a timeframe; At Nth, trigger buy, sell, SL, etc.
 - Progressive chart for active strategies (currently parses the entire dataset).
 - JSON/YAML support for configurations
+- Expand `Bot.setItem` and `Bot.getItem` storage system (Redis, MongoDB, etc)
+
+## Testing
+Mocha, Chai (TBC)
+```
+npm test
+```
 
 ## Development
 ```
