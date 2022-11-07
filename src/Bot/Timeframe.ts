@@ -1,5 +1,5 @@
 import { uuid } from 'uuidv4';
-import { Bot, BotEvent } from './Bot';
+import { Bot, BotEvent, Log } from './Bot';
 import { ChartCandleData } from './Chart';
 import { StrategyItem } from "./Strategy";
 
@@ -31,7 +31,8 @@ export class TimeframeItem implements TimeframeData {
 	constructor (
 		data: TimeframeData,
 	) {
-		if (data.active)
+		console.log(data.active);
+		if (data.hasOwnProperty('active'))
 			this.active = data.active ? true : false;
 		else
 			this.active = true;
@@ -57,8 +58,8 @@ export class TimeframeItem implements TimeframeData {
 		this.strategy = data.strategy;
 		this.uuid = data.uuid ?? uuid();
 
-		// Start the interval, if timeframe is active
-		if (this.active) {
+		// Start the interval, if timeframe is marked as active
+		if (this.active === true) {
 			setTimeout(
 				function (timeframe) {
 					timeframe.execute();
@@ -125,7 +126,8 @@ export class TimeframeItem implements TimeframeData {
 				if ((now - strategy.chart.lastUpdateTime) >= strategy.chart.pollTime) {
 					let date = new Date(strategy.chart.lastUpdateTime);
 
-					console.log(`Strategy chart to be synced from: ${date.toISOString()}`);
+					Bot.log(`Strategy chart to be synced from: ${date.toISOString()}`);
+
 					try {
 						strategy.chart.exchange.syncChart(
 							strategy.chart

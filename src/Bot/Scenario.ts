@@ -196,16 +196,13 @@ export class ScenarioItem implements ScenarioData {
 			);
 		}
 
-		console.log(`startPoint: ${startPoint}`);
-
-		// TODO: Testing latest data points only
-		// startPoint = dataset.result[valueA].length - this.condition.length;
+		// console.log(`startPoint: ${startPoint}`);
 
 		let conditionDepth: number = (this.condition.length - 1);
 
 		// Walk the data points, from the required view point
 		// (number of conditions, minus 1)
-		console.log(`Ranging: ${startPoint}-${endPoint}`);
+		// console.log(`Ranging: ${startPoint}-${endPoint}`);
 		for (
 			let j: number = startPoint;
 			j < endPoint;

@@ -1,4 +1,4 @@
-import { Bot } from '../Bot';
+import { Bot, Log } from '../Bot';
 import { ChartCandleData, ChartItem } from '../Chart';
 import { ExchangeData, ExchangeInterface, ExchangeItem } from '../Exchange';
 
@@ -175,7 +175,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 			let since = date.getTime() / 1000;
 
-			console.log(`Requesting data since: ${date.toISOString()}`);
+			Bot.log(`Requesting data since: ${date.toISOString()}`);
 			// return true;
 
 			// console.log(`Now: ${Date.now()}`);

@@ -151,7 +151,6 @@ export class StrategyItem implements StrategyData {
 					analysisData.push([analysis, result]);
 			}
 
-			// let signalTimes: string[] = [];
 			let timeField: string = '';
 
 			if (this.chart.dataset?.openTime)
@@ -169,26 +168,6 @@ export class StrategyItem implements StrategyData {
 					strategy: action[1],
 					strategyExecuteData: data,
 				});
-
-				// Console log details on matched data points
-				// console.info(`Strategy '${this.name}' scenario '${action[0].name}' analysis matches: ${signal.length}`);
-
-				// console.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
-
-				// if (signal) {
-				// 	for (let j = 0; j < signal.length; j++) {
-				// 		let latestCandle = signal[j].length - 1;
-				// 		let matchFirstCond = signal[j][latestCandle][0];
-				// 		let date = new Date(parseInt(this.chart[timeField][matchFirstCond.k]) * 1000);
-				// 		// signalTimes.push(date.toISOString());
-				// 		console.log(date.toISOString());
-						
-				// 		// Output details on all matching scenario conditions
-				// 		// for (let l = 0; l < signal[j].length; l++) {
-				// 		// 	console.log(signal[j][l]);
-				// 		// }
-				// 	}
-				// }
 			} catch (err) {
 				console.error(err);
 			}

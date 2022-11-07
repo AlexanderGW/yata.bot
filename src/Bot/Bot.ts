@@ -1,11 +1,14 @@
-import { ChartCandleData, ChartItem } from "./Chart";
-import { StrategyItem } from "./Strategy";
-import { Timeframe, TimeframeItem } from "./Timeframe";
+import { ChartItem } from "./Chart";
+import { TimeframeItem } from "./Timeframe";
+
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 /**
  * Logging levels
  */
-enum Level {
+export enum Log {
 	Info = 0,
 	Warn = 1,
 	Err = 2,
@@ -18,11 +21,15 @@ export enum BotEvent {
 	TimeframeResult = 100,
 }
 
+export type BotSubscribeCallbackData = (
+	subscribe: BotSubscribeData,
+) => void;
+
 /**
  * Event subscriber data
  */
 export type BotSubscribeData = {
-	action: CallableFunction,
+	action: BotSubscribeCallbackData,
 	condition: Array<[string, string, string]>,
 	chart: ChartItem,
 	name?: string,
@@ -63,7 +70,7 @@ export type BotData = {
 	 itemIndex: string[],
 	 log: (
 		string: string,
-		level?: Level,
+		level?: Log,
 	 ) => void,
 	 getItem: (
 		uuid: string,
@@ -104,17 +111,19 @@ export const Bot: BotData = {
 	 */
 	log (
 		string: string,
-		level?: Level,
+		level?: Log,
 	) {
-		let now = new Date();
-		let consoleString = `${now.toISOString()}: ${string}`;
+		if (process.env.LOG_STDOUT_LEVEL) {
+			let now = new Date();
+			let consoleString = `${now.toISOString()}: ${string}`;
 
-		if (level === Level.Info)
-			console.log(consoleString);
-		else if (level === Level.Warn)
-			console.warn(consoleString);
-		else
+			if (level === Log.Err)
 			console.error(consoleString);
+			else if (level === Log.Warn)
+				console.warn(consoleString);
+			else
+				console.log(consoleString);
+		}
 	},
 
 	/**
@@ -234,41 +243,41 @@ export const Bot: BotData = {
 
 								for (let j = 0; j < timeframe.result.length; j++) {
 									let result: any = timeframe.result[j];
-									let uuid = timeframe.resultIndex[j];
+									// let uuid = timeframe.resultIndex[j];
 									// console.log(`Strategy (${j}) '${uuid}'`);
 									// console.log(`result.length: ${result?.length}`);
 
 									if (result?.length) {
 
 										// Get strategy from storage, by UUID
-										let strategy: StrategyItem = Bot.getItem(uuid);
+										// let strategy: StrategyItem = Bot.getItem(uuid);
 
-										console.info(`Strategy '${strategy.name}', scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
+										// console.info(`Strategy '${strategy.name}', scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
 
-										console.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
+										// console.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
 
-										// let strategy = Strategy.getResult
-										for (let k = 0; k < result.length; k++) {
-											let latestCandle = result[k].length - 1;
-											let matchFirstCond = result[k][latestCandle][0];
+										// // let strategy = Strategy.getResult
+										// for (let k = 0; k < result.length; k++) {
+										// 	let latestCandle = result[k].length - 1;
+										// 	let matchFirstCond = result[k][latestCandle][0];
 											
-											if (val.chart.dataset?.hasOwnProperty(timeField)) {
-												let datasetValue = val.chart.dataset[timeField as keyof ChartCandleData];
-												if (datasetValue) {
-													let date = new Date(parseInt(datasetValue[matchFirstCond.k] as string) * 1000);
-													// resultTimes.push(date.toISOString());
-													console.log(date.toISOString());
+										// 	if (val.chart.dataset?.hasOwnProperty(timeField)) {
+										// 		let datasetValue = val.chart.dataset[timeField as keyof ChartCandleData];
+										// 		if (datasetValue) {
+										// 			let date = new Date(parseInt(datasetValue[matchFirstCond.k] as string) * 1000);
+										// 			// resultTimes.push(date.toISOString());
+										// 			console.log(date.toISOString());
 													
-													// Output details on all matching scenario conditions
-													// for (let l = 0; l < result[k].length; l++) {
-													// 	console.log(result[k][l]);
-													// }
-												}
+										// 			// Output details on all matching scenario conditions
+										// 			// for (let l = 0; l < result[k].length; l++) {
+										// 			// 	console.log(result[k][l]);
+										// 			// }
+										// 		}
 												
-											}
+										// 	}
 
 											
-										}
+										// }
 
 										signal.push(result.length);
 									}
@@ -396,10 +405,12 @@ export const Bot: BotData = {
 
 						// All conditions within the set, match on timeframe(s)
 						if (conditionMatch.length === val.condition.length) {
-							console.log(`Subscription match: ${val.name}`);
+							// console.log(`Subscription match: ${val.name}`);
 							
-							// Callback action for subscriber
-							val.action();
+							// Callback action for subscriber, pass the `BotSubscribeData` data
+							val.action(
+								val
+							);
 						}
 					}
 				});
