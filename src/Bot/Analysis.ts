@@ -21,8 +21,8 @@ export type AnalysisExecuteResultData = {
 	outRealLowerBand?: number[] | string[],
 }
 
-export type AnalysisExecuteData = {
-	result?: object,//AnalysisExecuteResultData,
+export type AnalysisResultData = {
+	result?: AnalysisExecuteResultData,
 }
 
 export type AnalysisExplainInputsData = {
@@ -51,10 +51,6 @@ export type AnalysisData = {
 	name: string,
 	type: string,
 	uuid?: string,
-}
-
-export type AnalysisResultData = {
-	result: object,
 }
 
 export class AnalysisItem implements AnalysisData {
@@ -106,7 +102,7 @@ export class AnalysisItem implements AnalysisData {
 export const Analysis = {
 	new (
 		data: AnalysisData,
-	) {
+	): AnalysisItem {
 		let item = new AnalysisItem(data);
 		let uuid = Bot.setItem(item);
 

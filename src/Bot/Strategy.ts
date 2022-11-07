@@ -1,8 +1,8 @@
-import { AnalysisExecuteData, AnalysisItem } from "./Analysis";
-import { ChartItem } from "./Chart";
-import { uuid } from 'uuidv4';
-import { ScenarioItem } from "./Scenario";
+import { AnalysisResultData, AnalysisItem, AnalysisExecuteResultData } from "./Analysis";
 import { Bot } from "./Bot";
+import { ChartCandleData, ChartItem } from "./Chart";
+import { ScenarioConditionMatch, ScenarioItem } from "./Scenario";
+import { uuid } from 'uuidv4';
 
 const talib = require('talib');
 
@@ -23,7 +23,7 @@ export class StrategyItem implements StrategyData {
 	chart: ChartItem;
 	name?: string;
 	uuid: string;
-	result: object[] = [];
+	result: Array<AnalysisResultData> = [];
 	resultIndex: string[] = [];
 	action: Array<[ScenarioItem, StrategyItem?]>;
 
@@ -57,7 +57,7 @@ export class StrategyItem implements StrategyData {
 	 */
 	getResult (
 		analysis: AnalysisItem
-	): AnalysisExecuteData | boolean {
+	): AnalysisResultData | boolean {
 		let index = this.resultIndex.findIndex(_uuid => _uuid === analysis.uuid);
 
 		if (index >= 0)
@@ -75,27 +75,41 @@ export class StrategyItem implements StrategyData {
 		let i: number;
 		let action: [ScenarioItem, StrategyItem?];
 
+		let signal: Array<Array<ScenarioConditionMatch>> = [];
+
 		// Process analysis
 		for (i = 0; i < this.analysis.length; i++) {
 			analysis = this.analysis[i];
 
-			let inReal: string[] = [];
+			let inReal: number[] | string[] = [];
+			let inRealField: string = '';
+			if (analysis?.config?.inRealField) {
+				inRealField = analysis.config.inRealField;
+			}
 
 			// Source the result of previously executed analysis
 			if (analysis.config?.inRealAnalysis) {
-				if (!analysis.config.inRealField)
+				if (!inRealField)
 					throw ('Analysis dataset input field is unknown.');
 
 				let analysisResult = this.getResult(analysis.config.inRealAnalysis);
-				if (!analysisResult)
+				if (analysisResult === false)
 					throw ('No result found for provided analysis, make sure it executes before this analysis.');
 
-				inReal = analysisResult.result[analysis.config.inRealField];
+				if (typeof analysisResult === 'object' && analysisResult.result) {
+					let resultValue = analysisResult.result[inRealField as keyof AnalysisExecuteResultData];
+					if (resultValue)
+						inReal = resultValue;
+				}
 			}
 
 			// Source chart data
 			else if (analysis.config?.inRealField) {
-				inReal = this.chart[analysis.config.inRealField];
+				if (this.chart.dataset?.hasOwnProperty(inRealField)) {
+					const resultValue = this.chart.dataset[inRealField as keyof ChartCandleData];
+					if (resultValue)
+						inReal = resultValue;
+				}
 			}
 
 			if (!inReal)
@@ -114,7 +128,7 @@ export class StrategyItem implements StrategyData {
 			};
 
 			// Execute
-			let result: AnalysisExecuteData = talib.execute(executeOptions);
+			let result: AnalysisResultData = talib.execute(executeOptions);
 
 			// Store results
 			this.result.push(result);
@@ -127,26 +141,25 @@ export class StrategyItem implements StrategyData {
 
 			// Add specified analysis results, to the test dataset
 			let analysis: AnalysisItem;
-			let result: object | boolean;
-			let analysisData: Array<[AnalysisItem, object]> = [];
+			let result;
+			let analysisData: Array<[AnalysisItem, AnalysisResultData]> = [];
 			for (let i = 0; i < action[0].analysis.length; i++) {
 				analysis = this.analysis[i];
 
 				result = this.getResult(analysis);
-				if (result)
+				if (typeof result !== 'boolean')
 					analysisData.push([analysis, result]);
 			}
 
 			// let signalTimes: string[] = [];
 			let timeField: string = '';
 
-			if (this.chart['openTime'])
+			if (this.chart.dataset?.openTime)
 				timeField = 'openTime';
-			else if (this.chart['closeTime'])
+			else if (this.chart.dataset?.closeTime)
 				timeField = 'closeTime';
 
 			// Test scenario conditions against analysis, or candle metrics
-			let signal: any = [];
 			try {
 				signal = action[0].test({
 					chart: this.chart,
@@ -179,16 +192,16 @@ export class StrategyItem implements StrategyData {
 			} catch (err) {
 				console.error(err);
 			}
-
-			return signal;
 		}
+
+		return signal;
 	}
 }
 
 export const Strategy = {
 	new (
 		data: StrategyData,
-	) {
+	): StrategyItem {
 		let item = new StrategyItem(data);
 		let uuid = Bot.setItem(item);
 

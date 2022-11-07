@@ -5,9 +5,15 @@ import { ExchangeData, ExchangeInterface, ExchangeItem } from '../Exchange';
 const fs = require('fs');
 
 export class KrakenItem extends ExchangeItem implements ExchangeInterface {
+	handle?: {
+		api: (type: string, options: object) => {
+			result: any,
+			error?: string[],
+		},
+	};
 
 	// Omitting 4th char prefix of `X`, added on `pair` assignment
-	symbols = {
+	symbols: any = {
 		BTC: 'XBT',
 	};
 
@@ -71,7 +77,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			// console.log(`since: ${since}`);
 			// return true;
 
-			let responseJson: any = await this.handle?.api(
+			let responseJson = await this.handle?.api(
 
 				// Type
 				'OHLC',
@@ -84,49 +90,54 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				}
 			);
 
-			let etlData = this.etl(
-				responseJson
-			);
-			
-			this.refreshChart(
-				chart,
-				etlData,
-			);
+			let etlData: ChartCandleData = {
+				close: [],
+				high: [],
+				low: [],
+				open: [],
+				openTime: [],
+				tradeCount: [],
+				volume: [],
+				weightedAvePrice: [],
+			};
+	
+			// Extract, transform, load response to chart
+			if (responseJson?.result.hasOwnProperty(pair)) {
+				let pairData = responseJson.result[pair];
+
+				let p: {
+					0: number,
+					1: string,
+					2: string,
+					3: string,
+					4: string,
+					5: string,
+					6: string,
+					7: number,
+				};
+
+				for (let i = 0; i < pairData.length; i++) {
+					p = pairData[i];
+					// console.log(p[0]);return;
+					etlData.close?.push(p[4]);
+					etlData.high?.push(p[2]);
+					etlData.low?.push(p[3]);
+					etlData.open?.push(p[1]);
+					etlData.openTime?.push(p[0]);
+					etlData.tradeCount?.push(p[7]);
+					etlData.volume?.push(p[6]);
+					etlData.weightedAvePrice?.push(p[5]);
+				}
+
+				this.refreshChart(
+					chart,
+					etlData,
+				);
+			}
+			// console.log(etlData);
 		} catch (error) {
 			console.error(error);
 		}
-	}
-
-	etl (
-		rawData: object,
-	) {
-		let etlData: ChartCandleData = {
-			close: [],
-			high: [],
-			low: [],
-			open: [],
-			openTime: [],
-			tradeCount: [],
-			volume: [],
-			weightedAvePrice: [],
-		};
-
-		// Extract, transform, load response to chart
-		for (let i = 0; i < rawData.result[pair].length; i++) {
-			let p: any = rawData.result[pair][i];
-			// console.log(p[0]);return;
-			etlData.close.push(p[4]);
-			etlData.high.push(p[2]);
-			etlData.low.push(p[3]);
-			etlData.open.push(p[1]);
-			etlData.openTime.push(p[0]);
-			etlData.tradeCount.push(p[7]);
-			etlData.volume.push(p[6]);
-			etlData.weightedAvePrice.push(p[5]);
-		}
-
-		// console.log(etlData);return;
-		return etlData;
 	}
 
 	async syncChart (
@@ -170,29 +181,66 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			// console.log(`Now: ${Date.now()}`);
 			// console.log(`chart.lastDate: ${chart.lastUpdateTime}`);
 			// console.log(`maxCandles: ${maxCandles}`);
-			return;
+			// return;
 
-			let responseJson: any = await this.handle?.api(
+			// let responseJson = await this.handle?.api(
 
-				// Type
-				'OHLC',
+			// 	// Type
+			// 	'OHLC',
 
-				// Options
-				{
-					interval: interval,
-					pair: pair,
-					since: since,
-				}
-			);
+			// 	// Options
+			// 	{
+			// 		interval: interval,
+			// 		pair: pair,
+			// 		since: since,
+			// 	}
+			// );
 
-			let etlData = this.etl(
-				responseJson
-			);
-			
-			this.refreshChart(
-				chart,
-				etlData,
-			);
+			// let etlData: ChartCandleData = {
+			// 	close: [],
+			// 	high: [],
+			// 	low: [],
+			// 	open: [],
+			// 	openTime: [],
+			// 	tradeCount: [],
+			// 	volume: [],
+			// 	weightedAvePrice: [],
+			// };
+	
+			// // Extract, transform, load response to chart
+			// if (responseJson?.result.hasOwnProperty(pair)) {
+			// 	let pairData = responseJson.result[pair];
+
+			// 	let p: {
+			// 		0: number,
+			// 		1: string,
+			// 		2: string,
+			// 		3: string,
+			// 		4: string,
+			// 		5: string,
+			// 		6: string,
+			// 		7: number,
+			// 	};
+
+			// 	for (let i = 0; i < pairData.length; i++) {
+			// 		p = pairData[i];
+			// 		// console.log(p[0]);return;
+			// 		etlData.close?.push(p[4]);
+			// 		etlData.high?.push(p[2]);
+			// 		etlData.low?.push(p[3]);
+			// 		etlData.open?.push(p[1]);
+			// 		etlData.openTime?.push(p[0]);
+			// 		etlData.tradeCount?.push(p[7]);
+			// 		etlData.volume?.push(p[6]);
+			// 		etlData.weightedAvePrice?.push(p[5]);
+			// 	}
+
+			// 	this.refreshChart(
+			// 		chart,
+			// 		etlData,
+			// 	);
+			// }
+			// console.log(etlData);
 		} catch (error) {
 			console.error(error);
 		}
@@ -202,7 +250,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 export const Kraken = {
 	new (
 		data: ExchangeData,
-	) {
+	): KrakenItem {
 		let item = new KrakenItem(data);
 		let uuid = Bot.setItem(item);
 

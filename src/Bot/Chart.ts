@@ -5,10 +5,12 @@ import { PairItem } from "./Pair";
 
 export type ChartData = {
 	exchange: ExchangeItem,
+	dataset?: ChartCandleData,
 	lastUpdateTime?: number, // Milliseconds
 	pair: PairItem,
 	pollTime?: number, // Seconds
 	candleTime?: number, // Seconds
+	uuid?: string,
 };
 
 export type ChartCandleData = {
@@ -21,54 +23,44 @@ export type ChartCandleData = {
 	open?: string[],
 	openTime?: number[],
 	tradeCount?: number[],
-	uuid?: string,
 	volume?: string[],
 	weightedAvePrice?: string[],
 };
 
-export class ChartItem implements ChartData, ChartCandleData {
-	change?: string[];
-	changePercent?: string[];
-	close?: string[];
-	closeTime?: number[];
+export class ChartItem implements ChartData {
+	dataset?: ChartCandleData;
 	exchange: ExchangeItem;
-	high?: string[];
 	lastUpdateTime: number;
-	low?: string[];
-	open?: string[];
-	openTime?: number[];
 	pair: PairItem;
 	pollTime: number;
 	candleTime: number;
-	tradeCount?: number[];
 	uuid: string;
-	volume?: string[];
-	weightedAvePrice?: string[];
 
 	constructor (
-		data: ChartData & ChartCandleData,
+		data: ChartData,
 	) {
-		if (data.change)
-			this.change = data.change;
-		if (data.changePercent)
-			this.changePercent = data.changePercent;
-		if (data.close)
-			this.close = data.close;
-		if (data.closeTime)
-			this.closeTime = data.closeTime;
+		// if (data.change)
+		// 	this.change = data.change;
+		// if (data.changePercent)
+		// 	this.changePercent = data.changePercent;
+		// if (data.close)
+		// 	this.close = data.close;
+		// if (data.closeTime)
+		// 	this.closeTime = data.closeTime;
+		this.dataset = data.dataset;
 		this.exchange = data.exchange;
-		if (data.high)
-			this.high = data.high;
+		// if (data.high)
+		// 	this.high = data.high;
 		if (data.lastUpdateTime)
 			this.lastUpdateTime = data.lastUpdateTime > 0 ? data.lastUpdateTime : 0;
 		else
 			this.lastUpdateTime = 0;
-		if (data.low)
-			this.low = data.low;
-		if (data.open)
-			this.open = data.open;
-		if (data.openTime)
-			this.openTime = data.openTime;
+		// if (data.low)
+		// 	this.low = data.low;
+		// if (data.open)
+		// 	this.open = data.open;
+		// if (data.openTime)
+		// 	this.openTime = data.openTime;
 		this.pair = data.pair;
 		if (data.pollTime)
 			this.pollTime = data.pollTime > 0 ? data.pollTime : 60;
@@ -78,52 +70,53 @@ export class ChartItem implements ChartData, ChartCandleData {
 			this.candleTime = data.candleTime > 0 ? data.candleTime : 3600;
 		else
 			this.candleTime = 3600;
-		if (data.tradeCount)
-			this.tradeCount = data.tradeCount;
+		// if (data.tradeCount)
+		// 	this.tradeCount = data.tradeCount;
 		this.uuid = data.uuid ?? uuid();
-		if (data.volume)
-			this.volume = data.volume;
-		if (data.weightedAvePrice)
-			this.weightedAvePrice = data.weightedAvePrice;
+		// if (data.volume)
+		// 	this.volume = data.volume;
+		// if (data.weightedAvePrice)
+		// 	this.weightedAvePrice = data.weightedAvePrice;
 	}
 
 	refresh (
 		data: ChartCandleData,
 	) {
-		if (data.change)
-			this.change = data.change;
-		if (data.changePercent)
-			this.changePercent = data.changePercent;
-		if (data.close)
-			this.close = data.close;
-		if (data.closeTime)
-			this.closeTime = data.closeTime;
-		if (data.high)
-			this.high = data.high;
+		// if (data.change)
+		// 	this.change = data.change;
+		// if (data.changePercent)
+		// 	this.changePercent = data.changePercent;
+		// if (data.close)
+		// 	this.close = data.close;
+		// if (data.closeTime)
+		// 	this.closeTime = data.closeTime;
+		// if (data.high)
+		// 	this.high = data.high;
+		this.dataset = data;
 		this.lastUpdateTime = data.openTime?.length
-			? (parseInt(data.openTime[data.openTime.length - 1]) * 1000)
+			? (data.openTime[data.openTime.length - 1] * 1000)
 			: Date.now();
 		// let nnn = new Date(this.lastUpdateTime);
 		// console.log(`this.lastUpdateTime: ${nnn.toISOString()}`);
-		if (data.low)
-			this.low = data.low;
-		if (data.open)
-			this.open = data.open;
-		if (data.openTime)
-			this.openTime = data.openTime;
-		if (data.tradeCount)
-			this.tradeCount = data.tradeCount;
-		if (data.volume)
-			this.volume = data.volume;
-		if (data.weightedAvePrice)
-			this.weightedAvePrice = data.weightedAvePrice;
+		// if (data.low)
+		// 	this.low = data.low;
+		// if (data.open)
+		// 	this.open = data.open;
+		// if (data.openTime)
+		// 	this.openTime = data.openTime;
+		// if (data.tradeCount)
+		// 	this.tradeCount = data.tradeCount;
+		// if (data.volume)
+		// 	this.volume = data.volume;
+		// if (data.weightedAvePrice)
+		// 	this.weightedAvePrice = data.weightedAvePrice;
 	}
 }
 
 export const Chart = {
 	new (
 		data: ChartData,
-	) {
+	): ChartItem {
 		let item = new ChartItem(data);
 		let uuid = Bot.setItem(item);
 

@@ -1,4 +1,4 @@
-import { Analysis } from "../Bot/Analysis";
+import { Analysis, AnalysisItem } from "../Bot/Analysis";
 
 // Relative Strength Index (RSI) 14
 export const Rsi14 = Analysis.new({

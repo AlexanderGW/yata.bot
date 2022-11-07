@@ -1,5 +1,6 @@
-import { ChartItem } from "./Chart";
-import { TimeframeItem } from "./Timeframe";
+import { ChartCandleData, ChartItem } from "./Chart";
+import { StrategyItem } from "./Strategy";
+import { Timeframe, TimeframeItem } from "./Timeframe";
 
 /**
  * Logging levels
@@ -29,6 +30,20 @@ export type BotSubscribeData = {
 	timeframeTotal?: TimeframeItem[],
 };
 
+export type BotSubscribeConditionData = {
+	valueA: string,
+	valueAReal: number,
+	operator: string,
+	valueB: string | number,
+	valueBReal: number,
+};
+
+export type BotSignalData = {
+	high: number,
+	low: number,
+	total: number,
+};
+
 export type BotEventData = {
 	event: BotEvent,
 	uuid: string,
@@ -37,12 +52,34 @@ export type BotEventData = {
 /**
  * Basic item structure, everything must have its own UUID
  */
-export type ItemBaseData = {
+ export type ItemBaseData = {
 	name?: string,
 	uuid: string,
 }
 
-export const Bot = {
+export type BotData = {
+	 subscriber: Array<BotSubscribeData>,
+	 item: object[],
+	 itemIndex: string[],
+	 log: (
+		string: string,
+		level?: Level,
+	 ) => void,
+	 getItem: (
+		uuid: string,
+	 ) => any,
+	 setItem: (
+		data: ItemBaseData,
+	 ) => string,
+	 subscribe: (
+		data: BotSubscribeData,
+	 ) => void,
+	 despatch: (
+		data: BotEventData,
+	 ) => void,
+};
+
+export const Bot: BotData = {
 
 	/**
 	 * Event subscribers
@@ -89,7 +126,7 @@ export const Bot = {
 	getItem (
 		uuid: string,
 	): any {
-		let index = this.itemIndex.findIndex(_uuid => _uuid === uuid);
+		let index = this.itemIndex.findIndex((_uuid : string) => _uuid === uuid);
 
 		if (index >= 0)
 			return this.item[index];
@@ -106,7 +143,7 @@ export const Bot = {
 	setItem (
 		data: ItemBaseData,
 	): string {
-		let index = this.itemIndex.findIndex(_uuid => _uuid === data.uuid);
+		let index = this.itemIndex.findIndex((_uuid: string) => _uuid === data.uuid);
 
 		// Reset existing item
 		if (index >= 0)
@@ -128,7 +165,7 @@ export const Bot = {
 	 * @param data 
 	 */
 	subscribe (
-		data: BotSubscribeData
+		data: BotSubscribeData,
 	) {
 		this.subscriber.push(data);
 	},
@@ -139,7 +176,7 @@ export const Bot = {
 	 * @param data 
 	 */
 	despatch (
-		data: BotEventData
+		data: BotEventData,
 	) {
 		// console.log(`Bot.despatch()`);
 		// console.log(`event: ${data.event}`);
@@ -151,23 +188,29 @@ export const Bot = {
 			 * A `Timeframe` has finished an iteration
 			 */
 			case BotEvent.TimeframeResult : {
-				Object.entries(this.subscriber).forEach(function([key, val]) {
+				Object.entries(this.subscriber).forEach(function([
+					key,
+					val
+				]: [
+					string,
+					BotSubscribeData
+				]) {
 					// console.log(`subscriberIndex: ${key}`);
 					// console.log(`${val.timeframeAny[0].uuid}`);
 					// console.log(typeof val.timeframeAny);
 
-					let index = val.timeframeAny.findIndex(timeframe => timeframe.uuid === data.uuid);
-					if (index >= 0) {
+					let index = val.timeframeAny?.findIndex(timeframe => timeframe.uuid === data.uuid);
+					if (index && index >= 0) {
 						let timeField: string = '';
 
-						if (val.chart?.hasOwnProperty('openTime'))
+						if (val.chart.dataset?.hasOwnProperty('openTime'))
 							timeField = 'openTime';
-						else if (val.chart?.hasOwnProperty('closeTime'))
+						else if (val.chart.dataset?.hasOwnProperty('closeTime'))
 							timeField = 'closeTime';
 
 						// console.log(`subscriberTimeframeIndex: ${index}`);
 
-						let signalResult = {
+						let signalResult: BotSignalData = {
 							high: 0,
 							low: 0,
 							total: 0,
@@ -190,7 +233,7 @@ export const Bot = {
 								// console.log(`timeframeResultCount: ${timeframe.result.length}`);
 
 								for (let j = 0; j < timeframe.result.length; j++) {
-									let result = timeframe.result[j];
+									let result: any = timeframe.result[j];
 									let uuid = timeframe.resultIndex[j];
 									// console.log(`Strategy (${j}) '${uuid}'`);
 									// console.log(`result.length: ${result?.length}`);
@@ -198,7 +241,7 @@ export const Bot = {
 									if (result?.length) {
 
 										// Get strategy from storage, by UUID
-										let strategy = Bot.getItem(uuid);
+										let strategy: StrategyItem = Bot.getItem(uuid);
 
 										console.info(`Strategy '${strategy.name}', scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
 
@@ -208,14 +251,23 @@ export const Bot = {
 										for (let k = 0; k < result.length; k++) {
 											let latestCandle = result[k].length - 1;
 											let matchFirstCond = result[k][latestCandle][0];
-											let date = new Date(parseInt(val.chart[timeField][matchFirstCond.k]) * 1000);
-											// resultTimes.push(date.toISOString());
-											console.log(date.toISOString());
 											
-											// Output details on all matching scenario conditions
-											// for (let l = 0; l < result[k].length; l++) {
-											// 	console.log(result[k][l]);
-											// }
+											if (val.chart.dataset?.hasOwnProperty(timeField)) {
+												let datasetValue = val.chart.dataset[timeField as keyof ChartCandleData];
+												if (datasetValue) {
+													let date = new Date(parseInt(datasetValue[matchFirstCond.k] as string) * 1000);
+													// resultTimes.push(date.toISOString());
+													console.log(date.toISOString());
+													
+													// Output details on all matching scenario conditions
+													// for (let l = 0; l < result[k].length; l++) {
+													// 	console.log(result[k][l]);
+													// }
+												}
+												
+											}
+
+											
 										}
 
 										signal.push(result.length);
@@ -236,21 +288,21 @@ export const Bot = {
 							// console.log(`signalTotal: ${signalResult.total}`);
 						}
 
-						let conditionMatch: any = [];
+						let conditionMatch: Array<BotSubscribeConditionData> = [];
 
 						let valueA: string;
-						let valueAReal: string;
+						let valueAReal: number;
 						let operator: string;
 						let valueB: string;
-						let valueBReal: string;
+						let valueBReal: number;
 
 						for (let i = 0; i < val.condition.length; i++) {
 							valueA = val.condition[i][0];
 							operator = val.condition[i][1];
 							valueB = val.condition[i][2];
 
-							valueAReal = signalResult[valueA] ?? valueA;
-							valueBReal = signalResult[valueB] ?? valueB;
+							valueAReal = signalResult[valueA as keyof BotSignalData] ?? valueA;
+							valueBReal = signalResult[valueB as keyof BotSignalData] ?? valueB;
 
 							// console.log({
 							// 	valueA: valueA,

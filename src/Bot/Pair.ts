@@ -25,7 +25,7 @@ export class PairItem implements PairData {
 export const Pair = {
 	new (
 		data: PairData,
-	) {
+	): PairItem {
 		let item = new PairItem(data);
 		let uuid = Bot.setItem(item);
 

@@ -1,5 +1,6 @@
 import { uuid } from 'uuidv4';
 import { Bot, BotEvent } from './Bot';
+import { ChartCandleData } from './Chart';
 import { StrategyItem } from "./Strategy";
 
 export type TimeframeData = {
@@ -167,7 +168,7 @@ export class TimeframeItem implements TimeframeData {
 export const Timeframe = {
 	new (
 		data: TimeframeData,
-	) {
+	): TimeframeItem {
 		let item = new TimeframeItem(data);
 		let uuid = Bot.setItem(item);
 

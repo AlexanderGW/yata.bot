@@ -5,7 +5,6 @@ import { Bot } from "./Bot";
 const fs = require('fs');
 
 export type ExchangeData = {
-	handle?: object,
 	name: string,
 	key?: string,
 	secret?: string,	
@@ -30,7 +29,6 @@ export interface ExchangeStorageInterface {
 }
 
 export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
-	handle?: object;
 	name: string;
 	uuid: string;
 	
@@ -147,7 +145,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 export const Exchange = {
 	new (
 		data: ExchangeData,
-	) {
+	): ExchangeItem {
 		let item = new ExchangeItem(data);
 		let uuid = Bot.setItem(item);
 
