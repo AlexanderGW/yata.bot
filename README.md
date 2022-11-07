@@ -20,7 +20,9 @@ Here is a basic overview of how the bot is currently structured. Subject to chan
 ### Subscribing to `Timeframe` changes
 ```
 Bot.subscribe({
-  action: () => {},
+  action: (
+    subscribe: BotSubscribeData
+  ) => {},
   chart: chartKrakenEthBtc4h,
   condition: [
     ['total', '>=', '3'],
