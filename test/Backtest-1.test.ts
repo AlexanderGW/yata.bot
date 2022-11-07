@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 
 import * as dotenv from 'dotenv';
+dotenv.config();
 
 import { Asset } from '../src/Bot/Asset';
 import { Bot, BotSubscribeData } from '../src/Bot/Bot';
@@ -25,12 +26,11 @@ import {
 } from '../src/Helper/Analysis';
 import { uuid } from 'uuidv4';
 
-dotenv.config();
-
 const fs = require('fs');
 
 describe('Backtest dataset 1', () => {
     it('should match known chart datapoint analysis scenarios, against test JSON', () => {
+
         // Create Kraken exchange client
         const exchangeKraken = Kraken.new({
             name: 'Kraken',
@@ -219,8 +219,8 @@ describe('Backtest dataset 1', () => {
         const actionEthBtcBuy = (
             subscribe: BotSubscribeData
         ) => {
-            // Bot.log(`chart: ${subscribe.chart.uuid}`);
-            // Bot.log(`do: actionEthBtcBuy`);
+            // Bot.log(`TEST: chart: ${subscribe.chart.uuid}`);
+            Bot.log(`TEST: do: actionEthBtcBuy`);
 
             if (subscribe.timeframeAny?.length) {
                 for (let i = 0; i < subscribe.timeframeAny.length; i++) {
@@ -228,9 +228,9 @@ describe('Backtest dataset 1', () => {
 
                     // Index timeframe UUID for test comparison
                     actualResultIndex.push(timeframe.uuid);
-                    // Bot.log(`Timeframe '${timeframe.uuid}'`);
+                    Bot.log(`TEST: Timeframe '${timeframe.uuid}'`);
             
-                    // Bot.log(`timeframeResultCount: ${timeframe.result.length}`);
+                    Bot.log(`TEST: timeframeResultCount: ${timeframe.result.length}`);
             
                     let timeField: string = '';
             
@@ -242,16 +242,16 @@ describe('Backtest dataset 1', () => {
                     for (let j = 0; j < timeframe.result.length; j++) {
                         let result: any = timeframe.result[j];
                         let uuid = timeframe.resultIndex[j];
-                        // Bot.log(`Strategy (${j}) '${uuid}'`);
-                        // Bot.log(`result.length: ${result?.length}`);
+                        Bot.log(`TEST: Strategy (${j}) '${uuid}'`);
+                        Bot.log(`TEST: result.length: ${result?.length}`);
             
                         if (result?.length) {
             
                             // Get strategy from storage, by UUID
                             let strategy: StrategyItem = Bot.getItem(uuid);
             
-                            // console.info(`Strategy '${strategy.name}', scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
-                            // Bot.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
+                            Bot.log(`TEST: Strategy '${strategy.name}', scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
+                            Bot.log(`TEST: Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
             
                             let actualTimeframeResult: number[] = [];
 

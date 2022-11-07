@@ -2,8 +2,9 @@ import { ChartItem } from "./Chart";
 import { TimeframeItem } from "./Timeframe";
 
 import * as dotenv from 'dotenv';
-
 dotenv.config();
+
+const fs = require('fs');
 
 /**
  * Logging levels
@@ -114,15 +115,47 @@ export const Bot: BotData = {
 		level?: Log,
 	) {
 		let now = new Date();
-		let consoleString = `${now.toISOString()}: ${string}`;
-		
-		if (process.env.LOG_STDOUT_LEVEL) {
+
+		if (process.env.BOT_LOG_STDOUT) {
+			let consoleString = `${now.toISOString()}: ${string}`;
+
 			if (level === Log.Err)
 				console.error(consoleString);
 			else if (level === Log.Warn)
 				console.warn(consoleString);
 			else
 				console.log(consoleString);
+		}
+
+		if (process.env.BOT_LOG_FILE) {
+			let levelValue;
+			if (level === Log.Err)
+				levelValue = 2;
+			else if (level === Log.Warn)
+				levelValue = 1;
+			else
+				levelValue = 0;
+
+			let consoleString = `${now.toISOString()}: ${levelValue}; ${string}`;
+
+			const pad = (value: number) =>
+				value.toString().length == 1
+				? `0${value}`
+				: value;
+
+			let filenameParts = [
+				now.getUTCFullYear(),
+				pad(now.getUTCMonth() + 1),
+				pad(now.getUTCDate()),
+			];
+
+			let filename = filenameParts.join('-');
+			
+			fs.appendFile(
+				`./storage/log/${filename}.log`,
+				`${consoleString}\n`,
+				() => console.info(`APPEND: ./storage/log/${filename}.log`)
+			);
 		}
 	},
 
