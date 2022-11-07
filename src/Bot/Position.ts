@@ -4,9 +4,14 @@ import { PairItem } from "./Pair";
 import { State } from "./State";
 import { uuid } from 'uuidv4';
 
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 export type PositionData = {
 	amount?: string,
 	exchange: ExchangeItem,
+	live: boolean,
 	pair: PairItem,
 	state?: State,
 	uuid?: string,
@@ -15,6 +20,7 @@ export type PositionData = {
 export class PositionItem implements PositionData {
 	amount?: string = '0';
 	exchange: ExchangeItem;
+	live: boolean;
 	pair: PairItem;
 	state?: State = State.Open;
 	uuid: string;
@@ -25,6 +31,12 @@ export class PositionItem implements PositionData {
 		if (data.amount)
 			this.amount = data.amount;
 		this.exchange = data.exchange;
+		if (data.hasOwnProperty('live'))
+			this.live = data.live ? true : false;
+		else if (process.env.BOT_LIVE)
+			this.live = process.env.BOT_LIVE === '1' ? true : false;
+		else
+			this.live = false;
 		this.pair = data.pair;
 		if (data.state)
 			this.state = data.state;
