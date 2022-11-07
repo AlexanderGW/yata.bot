@@ -76,7 +76,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 			pad(now.getUTCDate()),
 		];
 		let path = pathParts.join('/');
-		// console.log(path);
+		// Bot.log(path);
 
 		// return;
 
@@ -91,7 +91,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 			pad(now.getUTCSeconds()),
 		];
 		let filename = filenameParts.join('-');
-		// console.log(filename);
+		// Bot.log(filename);
 
 		let responseJson = JSON.stringify(data);
 
@@ -109,7 +109,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 						if (err)
 							throw err;
 
-						console.log(`Directory created: ${storagePath}`);
+						Bot.log(`Directory created: ${storagePath}`);
 					}
 				)
 			}
@@ -127,7 +127,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 					if (err)
 						throw err;
 					
-					console.log(`Stored: ${storageFile}`);
+					Bot.log(`Stored: ${storageFile}`);
 				}
 			);
 		} catch (err) {

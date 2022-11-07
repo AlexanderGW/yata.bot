@@ -106,7 +106,7 @@ export class ScenarioItem implements ScenarioData {
 					) {
 						analysis = data.analysisData[i][0];
 						dataset = data.analysisData[i][1];
-						// console.log(dataset);
+						// Bot.log(dataset);
 
 						if (analysis.config && dataset.result?.hasOwnProperty(valueA)) {
 
@@ -188,21 +188,21 @@ export class ScenarioItem implements ScenarioData {
 
 		// Offset from the front of the dataset
 		if (data.strategyExecuteData.maxTime && data.chart.dataset?.open) {
-			// console.log(`data.strategyExecuteData.maxTime: ${data.strategyExecuteData.maxTime / 1000}`);
-			// console.log(`data.chart.candleTime: ${data.chart.candleTime}`);
+			// Bot.log(`data.strategyExecuteData.maxTime: ${data.strategyExecuteData.maxTime / 1000}`);
+			// Bot.log(`data.chart.candleTime: ${data.chart.candleTime}`);
 			startPoint = (
 				endPoint
 				- Math.ceil((data.strategyExecuteData.maxTime / 1000) / data.chart.candleTime)
 			);
 		}
 
-		// console.log(`startPoint: ${startPoint}`);
+		// Bot.log(`startPoint: ${startPoint}`);
 
 		let conditionDepth: number = (this.condition.length - 1);
 
 		// Walk the data points, from the required view point
 		// (number of conditions, minus 1)
-		// console.log(`Ranging: ${startPoint}-${endPoint}`);
+		// Bot.log(`Ranging: ${startPoint}-${endPoint}`);
 		for (
 			let j: number = startPoint;
 			j < endPoint;
@@ -337,8 +337,8 @@ export class ScenarioItem implements ScenarioData {
 						}
 					}
 
-					// console.log(`valueAReal: ${valueAReal}`);
-					// console.log(`valueBReal: ${valueBReal}`);
+					// Bot.log(`valueAReal: ${valueAReal}`);
+					// Bot.log(`valueBReal: ${valueBReal}`);
 
 					if (valueAReal) {
 						switch (operator) {
@@ -448,7 +448,7 @@ export class ScenarioItem implements ScenarioData {
 
 				// Execute chained strategy, if provided
 				if (data.strategy) {
-					console.log(`Scenario '${this.name}' triggered strategy '${data.strategy.name}'`);
+					Bot.log(`Scenario '${this.name}' triggered strategy '${data.strategy.name}'`);
 					data.strategy.execute(
 						data.strategyExecuteData
 					);

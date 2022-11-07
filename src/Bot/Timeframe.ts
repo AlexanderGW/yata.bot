@@ -31,7 +31,6 @@ export class TimeframeItem implements TimeframeData {
 	constructor (
 		data: TimeframeData,
 	) {
-		console.log(data.active);
 		if (data.hasOwnProperty('active'))
 			this.active = data.active ? true : false;
 		else
@@ -115,8 +114,8 @@ export class TimeframeItem implements TimeframeData {
 			this.result = [];
 			this.resultIndex = [];
 
-			// console.log(`Last run: ${this.lastRunTime}`);
-			// console.log(`Since last run: ${now - this.lastRunTime}`);
+			// Bot.log(`Last run: ${this.lastRunTime}`);
+			// Bot.log(`Since last run: ${now - this.lastRunTime}`);
 			
 			// Process strategies
 			for (let i = 0; i < this.strategy.length; i++) {

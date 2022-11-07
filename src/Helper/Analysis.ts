@@ -10,7 +10,7 @@ export const Rsi14 = Analysis.new({
 	},
 	type: 'RSI',
 });
-// console.log(analysisanalysisRsi14.explain);
+// Bot.log(analysisanalysisRsi14.explain);
 
 // Exponential Moving Average (SMA) 20
 export const Ema20 = Analysis.new({
@@ -21,7 +21,7 @@ export const Ema20 = Analysis.new({
 	},
 	type: 'EMA',
 });
-// console.log(analysisEma20.explain);
+// Bot.log(analysisEma20.explain);
 
 // Exponential Moving Average (SMA) 100
 export const Ema100 = Analysis.new({
@@ -43,7 +43,7 @@ export const Sma20 = Analysis.new({
 	},
 	type: 'SMA',
 });
-// console.log(Sma20.explain);
+// Bot.log(Sma20.explain);
 
 // Simple Moving Average (SMA) 50
 export const Sma50 = Analysis.new({
@@ -76,7 +76,7 @@ export const Bollinger20 = Analysis.new({
 	},
 	type: 'BBANDS',
 });
-// console.log(Bollinger20.explain);
+// Bot.log(Bollinger20.explain);
 
 // Moving Average Convergence/Divergence (MACD) with defaults
 export const Macd12_26_9 = Analysis.new({
@@ -86,4 +86,4 @@ export const Macd12_26_9 = Analysis.new({
 	},
 	type: 'MACD',
 });
-// console.log(Macd12_26_9.explain);
+// Bot.log(Macd12_26_9.explain);

@@ -113,12 +113,12 @@ export const Bot: BotData = {
 		string: string,
 		level?: Log,
 	) {
+		let now = new Date();
+		let consoleString = `${now.toISOString()}: ${string}`;
+		
 		if (process.env.LOG_STDOUT_LEVEL) {
-			let now = new Date();
-			let consoleString = `${now.toISOString()}: ${string}`;
-
 			if (level === Log.Err)
-			console.error(consoleString);
+				console.error(consoleString);
 			else if (level === Log.Warn)
 				console.warn(consoleString);
 			else
@@ -187,9 +187,9 @@ export const Bot: BotData = {
 	despatch (
 		data: BotEventData,
 	) {
-		// console.log(`Bot.despatch()`);
-		// console.log(`event: ${data.event}`);
-		// console.log(`uuid: ${data.uuid}`);
+		// Bot.log(`Bot.despatch()`);
+		// Bot.log(`event: ${data.event}`);
+		// Bot.log(`uuid: ${data.uuid}`);
 
 		switch (data.event) {
 
@@ -204,9 +204,9 @@ export const Bot: BotData = {
 					string,
 					BotSubscribeData
 				]) {
-					// console.log(`subscriberIndex: ${key}`);
-					// console.log(`${val.timeframeAny[0].uuid}`);
-					// console.log(typeof val.timeframeAny);
+					// Bot.log(`subscriberIndex: ${key}`);
+					// Bot.log(`${val.timeframeAny[0].uuid}`);
+					// Bot.log(typeof val.timeframeAny);
 
 					let index = val.timeframeAny?.findIndex(timeframe => timeframe.uuid === data.uuid);
 					if (index && index >= 0) {
@@ -217,7 +217,7 @@ export const Bot: BotData = {
 						else if (val.chart.dataset?.hasOwnProperty('closeTime'))
 							timeField = 'closeTime';
 
-						// console.log(`subscriberTimeframeIndex: ${index}`);
+						// Bot.log(`subscriberTimeframeIndex: ${index}`);
 
 						let signalResult: BotSignalData = {
 							high: 0,
@@ -232,20 +232,20 @@ export const Bot: BotData = {
 						 */
 						if (val.timeframeAny?.length) {
 
-							// console.log(`timeframeCount: ${val.timeframeAny.length}`);
+							// Bot.log(`timeframeCount: ${val.timeframeAny.length}`);
 
 							// Process timeframes
 							for (let i = 0; i < val.timeframeAny.length; i++) {
 								let timeframe = val.timeframeAny[i];
-								// console.log(`Timeframe '${timeframe.uuid}'`);
+								// Bot.log(`Timeframe '${timeframe.uuid}'`);
 
-								// console.log(`timeframeResultCount: ${timeframe.result.length}`);
+								// Bot.log(`timeframeResultCount: ${timeframe.result.length}`);
 
 								for (let j = 0; j < timeframe.result.length; j++) {
 									let result: any = timeframe.result[j];
 									// let uuid = timeframe.resultIndex[j];
-									// console.log(`Strategy (${j}) '${uuid}'`);
-									// console.log(`result.length: ${result?.length}`);
+									// Bot.log(`Strategy (${j}) '${uuid}'`);
+									// Bot.log(`result.length: ${result?.length}`);
 
 									if (result?.length) {
 
@@ -254,7 +254,7 @@ export const Bot: BotData = {
 
 										// console.info(`Strategy '${strategy.name}', scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
 
-										// console.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
+										// Bot.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
 
 										// // let strategy = Strategy.getResult
 										// for (let k = 0; k < result.length; k++) {
@@ -266,11 +266,11 @@ export const Bot: BotData = {
 										// 		if (datasetValue) {
 										// 			let date = new Date(parseInt(datasetValue[matchFirstCond.k] as string) * 1000);
 										// 			// resultTimes.push(date.toISOString());
-										// 			console.log(date.toISOString());
+										// 			Bot.log(date.toISOString());
 													
 										// 			// Output details on all matching scenario conditions
 										// 			// for (let l = 0; l < result[k].length; l++) {
-										// 			// 	console.log(result[k][l]);
+										// 			// 	Bot.log(result[k][l]);
 										// 			// }
 										// 		}
 												
@@ -292,9 +292,9 @@ export const Bot: BotData = {
 							
 							// timeframeResult.push(result);
 
-							// console.log(`signalHigh: ${signalResult.high}`);
-							// console.log(`signalLow: ${signalResult.low}`);
-							// console.log(`signalTotal: ${signalResult.total}`);
+							// Bot.log(`signalHigh: ${signalResult.high}`);
+							// Bot.log(`signalLow: ${signalResult.low}`);
+							// Bot.log(`signalTotal: ${signalResult.total}`);
 						}
 
 						let conditionMatch: Array<BotSubscribeConditionData> = [];
@@ -313,7 +313,7 @@ export const Bot: BotData = {
 							valueAReal = signalResult[valueA as keyof BotSignalData] ?? valueA;
 							valueBReal = signalResult[valueB as keyof BotSignalData] ?? valueB;
 
-							// console.log({
+							// Bot.log({
 							// 	valueA: valueA,
 							// 	valueAReal: valueAReal,
 							// 	operator: operator,
@@ -405,7 +405,7 @@ export const Bot: BotData = {
 
 						// All conditions within the set, match on timeframe(s)
 						if (conditionMatch.length === val.condition.length) {
-							// console.log(`Subscription match: ${val.name}`);
+							// Bot.log(`Subscription match: ${val.name}`);
 							
 							// Callback action for subscriber, pass the `BotSubscribeData` data
 							val.action(

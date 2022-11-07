@@ -97,7 +97,7 @@ export class ChartItem implements ChartData {
 			? (data.openTime[data.openTime.length - 1] * 1000)
 			: Date.now();
 		// let nnn = new Date(this.lastUpdateTime);
-		// console.log(`this.lastUpdateTime: ${nnn.toISOString()}`);
+		// Bot.log(`this.lastUpdateTime: ${nnn.toISOString()}`);
 		// if (data.low)
 		// 	this.low = data.low;
 		// if (data.open)

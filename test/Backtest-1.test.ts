@@ -219,8 +219,8 @@ describe('Backtest dataset 1', () => {
         const actionEthBtcBuy = (
             subscribe: BotSubscribeData
         ) => {
-            // console.log(`chart: ${subscribe.chart.uuid}`);
-            // console.log(`do: actionEthBtcBuy`);
+            // Bot.log(`chart: ${subscribe.chart.uuid}`);
+            // Bot.log(`do: actionEthBtcBuy`);
 
             if (subscribe.timeframeAny?.length) {
                 for (let i = 0; i < subscribe.timeframeAny.length; i++) {
@@ -228,9 +228,9 @@ describe('Backtest dataset 1', () => {
 
                     // Index timeframe UUID for test comparison
                     actualResultIndex.push(timeframe.uuid);
-                    // console.log(`Timeframe '${timeframe.uuid}'`);
+                    // Bot.log(`Timeframe '${timeframe.uuid}'`);
             
-                    // console.log(`timeframeResultCount: ${timeframe.result.length}`);
+                    // Bot.log(`timeframeResultCount: ${timeframe.result.length}`);
             
                     let timeField: string = '';
             
@@ -242,8 +242,8 @@ describe('Backtest dataset 1', () => {
                     for (let j = 0; j < timeframe.result.length; j++) {
                         let result: any = timeframe.result[j];
                         let uuid = timeframe.resultIndex[j];
-                        // console.log(`Strategy (${j}) '${uuid}'`);
-                        // console.log(`result.length: ${result?.length}`);
+                        // Bot.log(`Strategy (${j}) '${uuid}'`);
+                        // Bot.log(`result.length: ${result?.length}`);
             
                         if (result?.length) {
             
@@ -251,7 +251,7 @@ describe('Backtest dataset 1', () => {
                             let strategy: StrategyItem = Bot.getItem(uuid);
             
                             // console.info(`Strategy '${strategy.name}', scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
-                            // console.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
+                            // Bot.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
             
                             let actualTimeframeResult: number[] = [];
 
@@ -269,12 +269,12 @@ describe('Backtest dataset 1', () => {
                                         actualTimeframeResult.push(date.getTime());
                                         
                                         // resultTimes.push(date.toISOString());
-                                        // console.log(date.toISOString());
-                                        // console.log(date.getTime());
+                                        // Bot.log(date.toISOString());
+                                        // Bot.log(date.getTime());
                                         
                                         // Output details on all matching scenario conditions
                                         // for (let l = 0; l < result[k].length; l++) {
-                                        // 	console.log(result[k][l]);
+                                        // 	Bot.log(result[k][l]);
                                         // }
                                     }
                                 }
@@ -285,11 +285,11 @@ describe('Backtest dataset 1', () => {
                     }
                 }
 
-                // console.log(expectedResult);
-                // console.log(expectedResultIndex);
+                // Bot.log(expectedResult);
+                // Bot.log(expectedResultIndex);
 
-                // console.log(actualResult);
-                // console.log(actualResultIndex);
+                // Bot.log(actualResult);
+                // Bot.log(actualResultIndex);
 
                 expect(JSON.stringify(actualResult)).to.equal(JSON.stringify(expectedResult));
                 expect(JSON.stringify(actualResultIndex)).to.equal(JSON.stringify(expectedResultIndex));

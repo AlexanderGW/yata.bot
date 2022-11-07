@@ -74,7 +74,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 			let since = date.getTime() / 1000;
 
-			// console.log(`since: ${since}`);
+			// Bot.log(`since: ${since}`);
 			// return true;
 
 			let responseJson = await this.handle?.api(
@@ -118,7 +118,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 				for (let i = 0; i < pairData.length; i++) {
 					p = pairData[i];
-					// console.log(p[0]);return;
+					// Bot.log(p[0]);return;
 					etlData.close?.push(p[4]);
 					etlData.high?.push(p[2]);
 					etlData.low?.push(p[3]);
@@ -134,7 +134,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					etlData,
 				);
 			}
-			// console.log(etlData);
+			// Bot.log(etlData);
 		} catch (error) {
 			console.error(error);
 		}
@@ -178,9 +178,9 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			Bot.log(`Requesting data since: ${date.toISOString()}`);
 			// return true;
 
-			// console.log(`Now: ${Date.now()}`);
-			// console.log(`chart.lastDate: ${chart.lastUpdateTime}`);
-			// console.log(`maxCandles: ${maxCandles}`);
+			// Bot.log(`Now: ${Date.now()}`);
+			// Bot.log(`chart.lastDate: ${chart.lastUpdateTime}`);
+			// Bot.log(`maxCandles: ${maxCandles}`);
 			// return;
 
 			// let responseJson = await this.handle?.api(
@@ -224,7 +224,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 			// 	for (let i = 0; i < pairData.length; i++) {
 			// 		p = pairData[i];
-			// 		// console.log(p[0]);return;
+			// 		// Bot.log(p[0]);return;
 			// 		etlData.close?.push(p[4]);
 			// 		etlData.high?.push(p[2]);
 			// 		etlData.low?.push(p[3]);
@@ -240,7 +240,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			// 		etlData,
 			// 	);
 			// }
-			// console.log(etlData);
+			// Bot.log(etlData);
 		} catch (error) {
 			console.error(error);
 		}

@@ -87,15 +87,15 @@ export class AnalysisItem implements AnalysisData {
 			};
 		}
 
-		// console.log(this.explain);
-		// console.log(`type: ${data.type}`);
-		// console.log(`name: ${data.name}`);
-		// console.log(config);
+		// Bot.log(this.explain);
+		// Bot.log(`type: ${data.type}`);
+		// Bot.log(`name: ${data.name}`);
+		// Bot.log(config);
 
 		this.config = config;
 
 		this.uuid = data.uuid ?? uuid();
-		// console.log(`Added analysis: ${this.uuid}`);
+		// Bot.log(`Added analysis: ${this.uuid}`);
 	}
 }
 
