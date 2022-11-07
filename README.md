@@ -3,6 +3,17 @@ Still in very early stages of development. Leveraging the `talib` library, via [
 
 Following a concept of strategies, which look for scenarios (definable sets of conditions over a number of data frames) on chart and/or technical analysis; firing events (such as buy, sell, SL, etc.), based on the number of signals within a given time frame.
 
+## Testing
+Mocha, Chai unit test coverage. Currently tests a known dataset for strategy scenarios, against two timeframes.
+```
+npm test
+```
+
+## Development
+```
+tsc --watch
+```
+
 ## Structure
 Here is a basic overview of how the bot is currently structured. Subject to change, as this project is still in development.
 
@@ -157,18 +168,6 @@ All created items (i.e. `Pair.new()`) are kept in a simple global storage system
 - Progressive chart for active strategies (currently parses the entire dataset).
 - JSON/YAML support for configurations
 - Expand `Bot.setItem` and `Bot.getItem` storage system (Redis, MongoDB, etc)
-
-## Testing
-Mocha, Chai (TBC)
-```
-npm test
-```
-
-## Development
-```
-tsc --watch
-node dist/index.js
-```
 
 ## Caveats
 
