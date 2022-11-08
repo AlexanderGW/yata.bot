@@ -280,37 +280,6 @@ export const Bot: BotData = {
 									// Bot.log(`result.length: ${result?.length}`);
 
 									if (result?.length) {
-
-										// Get strategy from storage, by UUID
-										// let strategy: StrategyItem = Bot.getItem(uuid);
-
-										// console.info(`Strategy '${strategy.name}', scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
-
-										// Bot.log(`Leading data frame matches (by field: ${timeField.length ? timeField : 'index'})`);
-
-										// // let strategy = Strategy.getResult
-										// for (let k = 0; k < result.length; k++) {
-										// 	let latestCandle = result[k].length - 1;
-										// 	let matchFirstCond = result[k][latestCandle][0];
-											
-										// 	if (val.chart.dataset?.hasOwnProperty(timeField)) {
-										// 		let datasetValue = val.chart.dataset[timeField as keyof ChartCandleData];
-										// 		if (datasetValue) {
-										// 			let date = new Date(parseInt(datasetValue[matchFirstCond.k] as string) * 1000);
-										// 			// resultTimes.push(date.toISOString());
-										// 			Bot.log(date.toISOString());
-													
-										// 			// Output details on all matching scenario conditions
-										// 			// for (let l = 0; l < result[k].length; l++) {
-										// 			// 	Bot.log(result[k][l]);
-										// 			// }
-										// 		}
-												
-										// 	}
-
-											
-										// }
-
 										signal.push(result.length);
 									}
 								}
@@ -324,9 +293,7 @@ export const Bot: BotData = {
 							
 							// timeframeResult.push(result);
 
-							// Bot.log(`signalHigh: ${signalResult.high}`);
-							// Bot.log(`signalLow: ${signalResult.low}`);
-							// Bot.log(`signalTotal: ${signalResult.total}`);
+							Bot.log(`signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}`);
 						}
 
 						let conditionMatch: Array<BotSubscribeConditionData> = [];
@@ -437,7 +404,7 @@ export const Bot: BotData = {
 
 						// All conditions within the set, match on timeframe(s)
 						if (conditionMatch.length === val.condition.length) {
-							// Bot.log(`Subscription match: ${val.name}`);
+							Bot.log(`Subscription triggered (condition match) callback: ${val.name}`);
 							
 							// Callback action for subscriber, pass the `BotSubscribeData` data
 							val.action(
