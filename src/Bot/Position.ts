@@ -1,7 +1,6 @@
 import { Bot } from "./Bot";
 import { ExchangeItem } from "./Exchange";
 import { PairItem } from "./Pair";
-import { State } from "./State";
 import { uuid } from 'uuidv4';
 
 export type PositionData = {
@@ -9,7 +8,6 @@ export type PositionData = {
 	exchange: ExchangeItem,
 	live?: boolean,
 	pair: PairItem,
-	state?: State,
 	uuid?: string,
 }
 
@@ -18,7 +16,6 @@ export class PositionItem implements PositionData {
 	exchange: ExchangeItem;
 	live: boolean;
 	pair: PairItem;
-	state?: State = State.Open;
 	uuid: string;
 
 	constructor (
@@ -34,8 +31,6 @@ export class PositionItem implements PositionData {
 		else
 			this.live = false;
 		this.pair = data.pair;
-		if (data.state)
-			this.state = data.state;
 		this.uuid = data.uuid ?? uuid();
 	}
 }

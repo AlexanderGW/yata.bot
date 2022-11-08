@@ -25,6 +25,8 @@ import {
 	Sma20 as analysisSma20
 } from '../src/Helper/Analysis';
 import { uuid } from 'uuidv4';
+import { Position, PositionItem } from '../src/Bot/Position';
+import { Order, OrderType } from '../src/Bot/Order';
 
 const fs = require('fs');
 
@@ -55,6 +57,24 @@ describe('Backtest dataset 1', () => {
             a: assetEth,
             b: assetBtc
         });
+
+        // Create an existing position on exchange
+        let pos1 = Position.new({
+        	exchange: exchangeKraken,
+        	pair: pairEthBtc,
+        	amount: '2.23523552'
+        });
+
+        // Create an order, ready to be executed on exchange
+        let order1 = Order.new({
+        	exchange: exchangeKraken,
+        	pair: pairEthBtc,
+            position: pos1,
+            price: '0.05',
+            type: OrderType.LimitBuy,
+        	amount: '10%' // of provided position
+        });
+        // order1.execute();
 
         // Create a ETHBTC pair chart, and 1 minute, for Kraken exchange data
         let chartKrakenEthBtc4h = Chart.new({
@@ -94,13 +114,6 @@ describe('Backtest dataset 1', () => {
         } catch (err) {
             console.error(err);
         }
-
-        // Create an existing position on exchange
-        // let pos1 = Position.new({
-        // 	exchange: exchangeKraken,
-        // 	pair: pairEthBtc,
-        // 	amount: '2.23523552'
-        // });
 
         // RSI crossing upward into 30 range
         let stratBullishRsi14Oversold = Strategy.new({
