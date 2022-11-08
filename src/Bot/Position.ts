@@ -7,7 +7,7 @@ import { uuid } from 'uuidv4';
 export type PositionData = {
 	amount?: string,
 	exchange: ExchangeItem,
-	live: boolean,
+	live?: boolean,
 	pair: PairItem,
 	state?: State,
 	uuid?: string,
