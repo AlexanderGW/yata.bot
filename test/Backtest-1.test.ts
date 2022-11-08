@@ -220,7 +220,7 @@ describe('Backtest dataset 1', () => {
             subscribe: BotSubscribeData
         ) => {
             // Bot.log(`TEST: chart: ${subscribe.chart.uuid}`);
-            Bot.log(`TEST: do: actionEthBtcBuy`);
+            // Bot.log(`TEST: do: actionEthBtcBuy`);
 
             if (subscribe.timeframeAny?.length) {
                 for (let i = 0; i < subscribe.timeframeAny.length; i++) {
@@ -269,7 +269,7 @@ describe('Backtest dataset 1', () => {
                                         actualTimeframeResult.push(date.getTime());
                                         
                                         // resultTimes.push(date.toISOString());
-                                        // Bot.log(date.toISOString());
+                                        Bot.log(`TEST: Match: ${date.toISOString()}`);
                                         // Bot.log(date.getTime());
                                         
                                         // Output details on all matching scenario conditions
@@ -309,6 +309,9 @@ describe('Backtest dataset 1', () => {
                 testTimeframe,
             ],
         });
+
+        defaultTimeframe.execute();
+        testTimeframe.execute();
     });
 });
 
