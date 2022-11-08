@@ -1,9 +1,6 @@
 import { ChartItem } from "./Chart";
 import { TimeframeItem } from "./Timeframe";
 
-import * as dotenv from 'dotenv';
-dotenv.config();
-
 const fs = require('fs');
 
 /**
@@ -116,7 +113,7 @@ export const Bot: BotData = {
 	) {
 		let now = new Date();
 
-		if (process.env.BOT_LOG_STDOUT) {
+		if (process.env.BOT_LOG_STDOUT && process.env.BOT_LOG_STDOUT === '1') {
 			let consoleString = `${now.toISOString()}: ${string}`;
 
 			if (level === Log.Err)
@@ -127,7 +124,7 @@ export const Bot: BotData = {
 				console.log(consoleString);
 		}
 
-		if (process.env.BOT_LOG_FILE) {
+		if (process.env.BOT_LOG_FILE && process.env.BOT_LOG_FILE === '1') {
 			let levelValue;
 			if (level === Log.Err)
 				levelValue = 2;
@@ -154,7 +151,9 @@ export const Bot: BotData = {
 			fs.appendFile(
 				`./storage/log/${filename}.log`,
 				`${consoleString}\n`,
-				() => console.info(`APPEND: ./storage/log/${filename}.log`)
+				() => {
+					// console.info(`APPEND: ./storage/log/${filename}.log`)
+				}
 			);
 		}
 	},

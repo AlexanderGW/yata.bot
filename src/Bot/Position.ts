@@ -4,10 +4,6 @@ import { PairItem } from "./Pair";
 import { State } from "./State";
 import { uuid } from 'uuidv4';
 
-import * as dotenv from 'dotenv';
-
-dotenv.config();
-
 export type PositionData = {
 	amount?: string,
 	exchange: ExchangeItem,
