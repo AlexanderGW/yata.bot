@@ -104,7 +104,7 @@ export class TimeframeItem implements TimeframeData {
 
 	execute () {
 		if (!this.active)
-			throw (`Timeframe '${this.uuid}' is inactive.`);
+			Bot.log(`Timeframe '${this.uuid}' executed manually.`);
 
 		const now = Date.now();
 
