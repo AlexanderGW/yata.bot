@@ -66,15 +66,19 @@ describe('Backtest dataset 1', () => {
         });
 
         // Create an order, ready to be executed on exchange
-        let order1 = Order.new({
-        	exchange: exchangeKraken,
-        	pair: pairEthBtc,
-            position: pos1,
-            price: '0.05',
-            type: OrderType.LimitBuy,
-        	amount: '10%' // of provided position
-        });
-        // order1.execute();
+        try {
+            let order1 = Order.new({
+                exchange: exchangeKraken,
+                pair: pairEthBtc,
+                position: pos1,
+                price: '0.05',
+                type: OrderType.LimitBuy,
+                amount: '10%' // of provided position
+            });
+            // order1.execute();
+        } catch (err) {
+            Bot.log(err as string);
+        }
 
         // Create a ETHBTC pair chart, and 1 minute, for Kraken exchange data
         let chartKrakenEthBtc4h = Chart.new({

@@ -82,6 +82,13 @@ export const Order = {
 	new (
 		data: OrderData,
 	): OrderItem {
+		if (
+			data.amount?.substring(data.amount.length - 1) === '%'
+			&& !data.hasOwnProperty('position')
+		) {
+			throw (`Order percentage amounts, require a position`);
+		}
+
 		let item = new OrderItem(data);
 		let uuid = Bot.setItem(item);
 
