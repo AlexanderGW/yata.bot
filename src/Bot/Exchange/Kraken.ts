@@ -175,7 +175,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 			let since = date.getTime() / 1000;
 
-			Bot.log(`Requesting data since: ${date.toISOString()}`);
+			Bot.log(`Kraken: Chart '${chart.uuid}' data since: ${date.toISOString()}`);
 			// return true;
 
 			// Bot.log(`Now: ${Date.now()}`);

@@ -202,7 +202,7 @@ export class ScenarioItem implements ScenarioData {
 
 		// Walk the data points, from the required view point
 		// (number of conditions, minus 1)
-		Bot.log(`Scenario datapoint range: ${startPoint}-${endPoint}`);
+		Bot.log(`Scenario '${this.uuid}' datapoint range: ${startPoint}-${endPoint}`);
 		for (
 			let j: number = startPoint;
 			j < endPoint;

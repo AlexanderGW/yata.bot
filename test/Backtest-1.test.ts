@@ -261,7 +261,7 @@ describe('Backtest dataset 1', () => {
                         let uuid = timeframe.resultIndex[j];
             
                         if (result?.length) {
-                            Bot.log(`TEST: Strategy (${j}) '${uuid}'`);
+                            Bot.log(`TEST: Strategy '${uuid}' (${j}/${timeframe.result.length})`);
 
                             // Get strategy from storage, by UUID
                             let strategy: StrategyItem = Bot.getItem(uuid);

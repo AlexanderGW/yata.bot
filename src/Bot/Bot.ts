@@ -403,8 +403,11 @@ export const Bot: BotData = {
 						}
 
 						// All conditions within the set, match on timeframe(s)
-						if (conditionMatch.length === val.condition.length) {
-							Bot.log(`Subscription triggered (condition match) callback: ${val.name}`);
+						if (
+							conditionMatch.length === val.condition.length
+							&& val.timeframeAny?.[index]
+						) {
+							Bot.log(`Timeframe '${val.timeframeAny?.[index].uuid}' triggered (condition match) subscription callback: ${val.name}`);
 							
 							// Callback action for subscriber, pass the `BotSubscribeData` data
 							val.action(
