@@ -261,12 +261,11 @@ describe('Backtest dataset 1', () => {
                         let uuid = timeframe.resultIndex[j];
             
                         if (result?.length) {
-                            Bot.log(`TEST: Strategy '${uuid}' (${j}/${timeframe.result.length})`);
 
                             // Get strategy from storage, by UUID
                             let strategy: StrategyItem = Bot.getItem(uuid);
             
-                            Bot.log(`TEST: Strategy '${strategy.name}', scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
+                            Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
                             Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`);
             
                             let actualTimeframeResult: number[] = [];

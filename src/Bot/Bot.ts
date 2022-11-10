@@ -293,7 +293,7 @@ export const Bot: BotData = {
 							
 							// timeframeResult.push(result);
 
-							Bot.log(`signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}`);
+							// Bot.log(`signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}`);
 						}
 
 						let conditionMatch: Array<BotSubscribeConditionData> = [];
@@ -407,7 +407,7 @@ export const Bot: BotData = {
 							conditionMatch.length === val.condition.length
 							&& val.timeframeAny?.[index]
 						) {
-							Bot.log(`Timeframe '${val.timeframeAny?.[index].uuid}' triggered (condition match) subscription callback: ${val.name}`);
+							Bot.log(`Timeframe '${val.timeframeAny?.[index].uuid}' triggered subscription callback (signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}): ${val.name}`);
 							
 							// Callback action for subscriber, pass the `BotSubscribeData` data
 							val.action(

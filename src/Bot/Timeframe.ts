@@ -125,7 +125,7 @@ export class TimeframeItem implements TimeframeData {
 				if ((now - strategy.chart.lastUpdateTime) >= strategy.chart.pollTime) {
 					let date = new Date(strategy.chart.lastUpdateTime);
 
-					Bot.log(`Strategy '${strategy.uuid}' chart to be synced from: ${date.toISOString()}`);
+					Bot.log(`Strategy '${strategy.uuid}' chart '${strategy.chart.uuid}' to be synced from: ${date.toISOString()}`);
 
 					try {
 						strategy.chart.exchange.syncChart(
