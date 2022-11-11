@@ -37,7 +37,7 @@ export class OrderItem implements OrderData {
 	amount?: string = '0';
 	confirmed?: boolean = false;
 	exchange: ExchangeItem;
-	dryrun: boolean = false;
+	dryrun: boolean = true;
 	pair: PairItem;
 	position?: PositionItem;
 	price?: string = '0';
