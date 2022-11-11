@@ -75,7 +75,7 @@ describe('Backtest dataset 1', () => {
                 type: OrderType.LimitBuy,
                 amount: '10%' // of provided position
             });
-            // order1.execute();
+            order1.execute();
         } catch (err) {
             Bot.log(err as string);
         }

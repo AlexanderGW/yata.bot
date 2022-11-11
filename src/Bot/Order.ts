@@ -23,7 +23,7 @@ export type OrderData = {
 	amount?: string,
 	confirmed?: boolean,
 	exchange: ExchangeItem,
-	live?: boolean,
+	dryrun?: boolean,
 	pair: PairItem,
 	position?: PositionItem,
 	price?: string,
@@ -37,7 +37,7 @@ export class OrderItem implements OrderData {
 	amount?: string = '0';
 	confirmed?: boolean = false;
 	exchange: ExchangeItem;
-	live: boolean = false;
+	dryrun: boolean = false;
 	pair: PairItem;
 	position?: PositionItem;
 	price?: string = '0';
@@ -54,10 +54,10 @@ export class OrderItem implements OrderData {
 		if (data.hasOwnProperty('confirmed'))
 			this.confirmed = data.confirmed ? true : false;
 		this.exchange = data.exchange;
-		if (data.hasOwnProperty('live'))
-			this.live = data.live ? true : false;
-		else if (process.env.BOT_LIVE)
-			this.live = process.env.BOT_LIVE === '1' ? true : false;
+		if (data.hasOwnProperty('dryrun'))
+			this.dryrun = data.dryrun ? true : false;
+		else if (process.env.BOT_DRYRUN)
+			this.dryrun = process.env.BOT_DRYRUN === '0' ? false : true;
 		this.pair = data.pair;
 		if (data.hasOwnProperty('position'))
 			this.position = data.position;
@@ -74,7 +74,10 @@ export class OrderItem implements OrderData {
 
 	execute () {
 		// if (this.state )
-		// 	this.exchange.open();
+		// 	this.exchange.order(data);
+		// Bot.log(`Order '${this.uuid}' executed`);
+		// if (this.confirmed === true)
+		// 	Bot.log(`Order '${this.uuid}' confirmed`);
 	}
 }
 
