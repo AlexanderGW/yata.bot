@@ -65,21 +65,6 @@ describe('Backtest dataset 1', () => {
         	amount: '2.23523552'
         });
 
-        // Create an order, ready to be executed on exchange
-        try {
-            let order1 = Order.new({
-                exchange: exchangeKraken,
-                pair: pairEthBtc,
-                position: pos1,
-                price: '0.05',
-                type: OrderType.LimitBuy,
-                amount: '10%' // of provided position
-            });
-            order1.execute();
-        } catch (err) {
-            Bot.log(err as string);
-        }
-
         // Create a ETHBTC pair chart, and 1 minute, for Kraken exchange data
         let chartKrakenEthBtc4h = Chart.new({
             exchange: exchangeKraken,
@@ -238,6 +223,21 @@ describe('Backtest dataset 1', () => {
         ) => {
             // Bot.log(`TEST: chart: ${subscribe.chart.uuid}`);
             // Bot.log(`TEST: do: actionEthBtcBuy`);
+
+            // Create an order, ready to be executed on exchange
+            try {
+                let order1 = Order.new({
+                    exchange: exchangeKraken,
+                    pair: pairEthBtc,
+                    position: pos1,
+                    price: '0.05',
+                    type: OrderType.LimitBuy,
+                    amount: '10%' // of provided position
+                });
+                order1.execute();
+            } catch (err) {
+                Bot.log(err as string);
+            }
 
             if (subscribe.timeframeAny?.length) {
                 for (let i = 0; i < subscribe.timeframeAny.length; i++) {

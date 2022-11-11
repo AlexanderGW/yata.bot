@@ -75,7 +75,7 @@ export class OrderItem implements OrderData {
 	execute () {
 		// if (this.state )
 		// 	this.exchange.order(data);
-		// Bot.log(`Order '${this.uuid}' executed`);
+		Bot.log(`Order '${this.uuid}' executed`);
 		// if (this.confirmed === true)
 		// 	Bot.log(`Order '${this.uuid}' confirmed`);
 	}

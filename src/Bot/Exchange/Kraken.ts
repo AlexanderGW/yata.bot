@@ -1,6 +1,7 @@
 import { Bot, Log } from '../Bot';
 import { ChartCandleData, ChartItem } from '../Chart';
 import { ExchangeData, ExchangeInterface, ExchangeItem } from '../Exchange';
+import { OrderItem } from '../Order';
 
 const fs = require('fs');
 
@@ -36,6 +37,12 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			return this.symbols[symbol];
 
 		return symbol;
+	}
+
+	order (
+		order: OrderItem,
+	) {
+		
 	}
 
 	async primeChart (

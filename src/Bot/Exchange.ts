@@ -1,6 +1,7 @@
 import { ChartCandleData, ChartItem } from "./Chart";
 import { uuid } from 'uuidv4';
 import { Bot } from "./Bot";
+import { OrderItem } from "./Order";
 
 const fs = require('fs');
 
@@ -12,6 +13,10 @@ export type ExchangeData = {
 }
 
 export interface ExchangeInterface {
+	order: (
+		order: OrderItem,
+	) => void;
+
 	primeChart: (
 		chart: ChartItem,
 	) => void;
@@ -45,6 +50,12 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		if (chart.exchange.uuid === this.uuid)
 			return true;
 		return false;
+	}
+
+	order (
+		order: OrderItem,
+	) {
+		
 	}
 
 	primeChart (
