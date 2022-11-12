@@ -1,34 +1,31 @@
 import { Bot } from "./Bot";
 import { ExchangeItem } from "./Exchange";
 import { PairItem } from "./Pair";
-import { State } from "./State";
-import { uuid } from 'uuidv4';
 import { PositionItem } from "./Position";
+import { uuid } from 'uuidv4';
 
-export enum OrderState {
-	Closed = 0,
-	Open = 1,
+export enum OrderDirection {
+	Buy = 1,
+	Sell = 0,
 };
 
 export enum OrderType {
-	MarketBuy = 0,
-	MarketSell = 1,
-	LimitBuy = 2,
-	LimitSell = 3,
+	Market = 1,
+	Limit = 2,
 	TakeProfit = 4,
-	StopLoss = 5,
+	StopLoss = 8,
 };
 
 export type OrderData = {
 	amount?: string,
 	confirmed?: boolean,
-	exchange: ExchangeItem,
+	direction?: OrderDirection,
 	dryrun?: boolean,
+	exchange: ExchangeItem,
 	pair: PairItem,
 	position?: PositionItem,
 	price?: string,
 	related?: OrderItem,
-	state?: OrderState,
 	type?: OrderType,
 	uuid?: string,
 }
@@ -36,14 +33,14 @@ export type OrderData = {
 export class OrderItem implements OrderData {
 	amount?: string = '0';
 	confirmed?: boolean = false;
-	exchange: ExchangeItem;
+	direction?: OrderDirection = OrderDirection.Buy;
 	dryrun: boolean = true;
+	exchange: ExchangeItem;
 	pair: PairItem;
 	position?: PositionItem;
 	price?: string = '0';
 	related?: OrderItem;
-	state?: OrderState = OrderState.Closed;
-	type?: OrderType = OrderType.MarketBuy;
+	type?: OrderType = OrderType.Market;
 	uuid: string;
 
 	constructor (
@@ -54,10 +51,12 @@ export class OrderItem implements OrderData {
 		if (data.hasOwnProperty('confirmed'))
 			this.confirmed = data.confirmed ? true : false;
 		this.exchange = data.exchange;
+		if (data.hasOwnProperty('direction'))
+			this.direction = data.direction;
 		if (data.hasOwnProperty('dryrun'))
 			this.dryrun = data.dryrun ? true : false;
-		else if (process.env.BOT_DRYRUN)
-			this.dryrun = process.env.BOT_DRYRUN === '0' ? false : true;
+		else if (process.env.BOT_DRYRUN === '0')
+			this.dryrun = false;
 		this.pair = data.pair;
 		if (data.hasOwnProperty('position'))
 			this.position = data.position;
@@ -65,15 +64,19 @@ export class OrderItem implements OrderData {
 			this.price = data.price;
 		if (data.hasOwnProperty('related'))
 			this.related = data.related;
-		if (data.hasOwnProperty('state'))
-			this.state = data.state;
 		if (data.hasOwnProperty('type'))
 			this.type = data.type;
 		this.uuid = data.uuid ?? uuid();
 	}
 
 	execute () {
-		// if (this.state )
+		if (
+			!this.amount
+			|| this.amount === '0'
+		)
+			throw (`Order '${this.uuid}' amount is empty`);
+
+		// if (this.direction )
 		// 	this.exchange.order(data);
 		Bot.log(`Order '${this.uuid}' executed`);
 		// if (this.confirmed === true)
@@ -88,9 +91,8 @@ export const Order = {
 		if (
 			data.amount?.substring(data.amount.length - 1) === '%'
 			&& !data.hasOwnProperty('position')
-		) {
+		)
 			throw (`Order percentage amounts, require a position`);
-		}
 
 		let item = new OrderItem(data);
 		let uuid = Bot.setItem(item);
