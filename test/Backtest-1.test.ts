@@ -76,7 +76,7 @@ describe('Backtest dataset 1', () => {
         // Push Kraken exchange data to chart (if exchange/chart are compatible)
         try {
             // Request from Kraken
-            // exchangeKraken.primeChart(
+            // exchangeKraken.syncChart(
             // 	chartKrakenEthBtc4h
             // );
 

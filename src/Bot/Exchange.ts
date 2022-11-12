@@ -17,10 +17,6 @@ export interface ExchangeInterface {
 		order: OrderItem,
 	) => void;
 
-	primeChart: (
-		chart: ChartItem,
-	) => void;
-
 	syncChart: (
 		chart: ChartItem,
 	) => void;
@@ -54,12 +50,6 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 
 	order (
 		order: OrderItem,
-	) {
-		
-	}
-
-	primeChart (
-		chart: ChartItem,
 	) {
 		
 	}
@@ -149,7 +139,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	syncChart (
 		chart: ChartItem,
 	) {
-		
+		Bot.log(`Chart '${chart.uuid}' sync`);
 	}
 }
 
