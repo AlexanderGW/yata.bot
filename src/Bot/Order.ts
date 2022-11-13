@@ -88,12 +88,19 @@ export const Order = {
 	new (
 		data: OrderData,
 	): OrderItem {
-		if (
-			data.amount?.substring(data.amount.length - 1) === '%'
-			&& !data.hasOwnProperty('position')
-		)
-			throw (`Order percentage amounts, require a position`);
 
+		// A percentage of a position
+		if (data.amount?.substring(data.amount.length - 1) === '%') {
+			if (!data.hasOwnProperty('position'))
+				throw (`Order percentage amounts, require a position`);
+
+			const amountPercent = Number.parseFloat(data.amount.substring(0, data.amount.length - 1));
+			let positionAmount = '0';
+			if (data.position?.amount)
+				positionAmount = data.position.amount;
+			data.amount = ((parseFloat(positionAmount) / 100) * amountPercent).toString();
+		}
+		
 		let item = new OrderItem(data);
 		let uuid = Bot.setItem(item);
 

@@ -26,7 +26,7 @@ import {
 } from '../src/Helper/Analysis';
 import { uuid } from 'uuidv4';
 import { Position, PositionItem } from '../src/Bot/Position';
-import { Order, OrderType } from '../src/Bot/Order';
+import { Order, OrderDirection, OrderType } from '../src/Bot/Order';
 
 const fs = require('fs');
 
@@ -62,7 +62,7 @@ describe('Backtest dataset 1', () => {
         let pos1 = Position.new({
         	exchange: exchangeKraken,
         	pair: pairEthBtc,
-        	amount: '2.23523552'
+        	amount: '10.123456789'
         });
 
         // Create a ETHBTC pair chart, and 1 minute, for Kraken exchange data
@@ -227,12 +227,13 @@ describe('Backtest dataset 1', () => {
             // Create an order, ready to be executed on exchange
             try {
                 let order1 = Order.new({
+                    amount: '10%', // of provided position,
+                    direction: OrderDirection.Buy,
                     exchange: exchangeKraken,
                     pair: pairEthBtc,
                     position: pos1,
                     price: '0.05',
-                    type: OrderType.LimitBuy,
-                    amount: '10%' // of provided position
+                    type: OrderType.Limit,
                 });
                 order1.execute();
             } catch (err) {
