@@ -8,7 +8,7 @@ import { uuid } from 'uuidv4';
 const fs = require('fs');
 
 export class PaperItem extends ExchangeItem {
-	name: string;
+	name?: string;
 	uuid: string;
 
 	constructor (
