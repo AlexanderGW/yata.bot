@@ -157,105 +157,24 @@ export const Exchange = {
 		if (!data.hasOwnProperty('class'))
 			data.class = 'Paper';
 
-		// let exchangeClassName = data.class;
 		let importPath = `./Exchange/${data.class}`;
 		Bot.log(`Exchange import: ${importPath}`);
 
-		// const exchangeClass = require(importPath);
-		// console.log(`itemEval: ${exchangeClass}`);
-		// let itemEval = new exchangeClass(data);//`new ${exchangeClass}(data)`;
-		// console.log(`itemEval: ${typeof itemEval}`);
-		// let item = eval(itemEval);
-		// let uuid = Bot.setItem(item);
+		let item: any;
 
-		// return Bot.getItem(uuid);
-
-		try {
-			const className = `${data.class}Item`;
-
-			let newItem: any;
+		const className = `${data.class}Item`;
 			
-			// // Import exchange extension
-			await import(importPath).then(module => {
-				console.log(`module`);
-				console.log(module[className]);
+		// Import exchange extension
+		await import(importPath).then(module => {
+			let newItem: any = new module[className](data);
 
-				// let itemEval = `new ${module[className]}(data)`;
-				// console.log(`itemEval: ${typeof itemEval}`);
-				// console.log(itemEval);
-				// let item = eval(itemEval);
-				// console.log(`data`);
-				// console.log(data);
-				newItem = new module[className](data);
-				console.log(`newItem`);
-				console.log(newItem);
-
-				if (typeof newItem === className) {
-					
-				}
-
+			if (newItem.constructor.name === className) {
 				let uuid = Bot.setItem(newItem);
-				console.log(`uuid: ${uuid}`);
 
-				let item = Bot.getItem(uuid);
-				console.log(`item`);
-				console.log(item);
+				item = Bot.getItem(uuid);
+			}
+		}).catch(err => Bot.log(err.message, Log.Err));
 
-				return item;
-				
-			}).catch(err => Bot.log(err.message, Log.Err));
-		} catch (err) {
-			Bot.log(err as string);
-		}
-		
-		// try {
-		// 	// import(importPath).then(exports => {
-		// 	// 	console.log(`exports`);
-		// 	// 	console.log(exports);
-		// 	// });
-		// 	// console.error(`import`);
-		// 	// import(importPath).then(module => {
-		// 	// 	const className = `${data.class}Item`;
-		// 	// 	// console.log(`module`);
-		// 	// 	// console.log(module[className]);
-
-		// 	// 	// let itemEval = `new ${module[className]}(data)`;
-		// 	// 	// console.log(`itemEval: ${typeof itemEval}`);
-		// 	// 	// console.log(itemEval);
-		// 	// 	// let item = eval(itemEval);
-		// 	// 	let item = new module[className](data);
-		// 	// 	console.log(item);
-		// 	// 	let uuid = Bot.setItem(item);
-
-		// 	// 	return Bot.getItem(uuid);
-		// 	// }).catch(err => console.log(err.message));
-		// 	// async () => {
-		// 	// 	const {aComponent} = await import(importPath);
-		// 	// 	console.error(`aComponent`);
-		// 	// 	console.error(aComponent);
-		// 	//   }
-		// } catch (err) {
-		// 	console.error(`err`);
-		// 	console.error(err);
-		// }
-
-		// (async () => {
-		// 	// let exchangeClass = data.class;
-		// 	let importPath = `./Exchange/${exchangeClass}`;
-		// 	console.log(`importPath: ${importPath}`);
-			
-		// 	let exports = await import(importPath);
-		// 	//do something with @exports
-		// 	console.log(`exports`);
-		// 	console.log(exports);
-		// })();
-
-		// TODO: Find a better way than `eval`
-		// let itemEval = `new ${module}(data)`;
-		// console.log(`itemEval: ${itemEval}`);
-		// let item = eval(itemEval);
-		// let uuid = Bot.setItem(item);
-
-		// return Bot.getItem(uuid);
+		return item;
 	}
 };
