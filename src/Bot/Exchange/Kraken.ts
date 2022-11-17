@@ -1,7 +1,7 @@
 import { Bot, Log } from '../Bot';
 import { ChartCandleData, ChartItem } from '../Chart';
 import { ExchangeData, ExchangeInterface, ExchangeItem } from '../Exchange';
-import { OrderItem } from '../Order';
+import { OrderDirection, OrderItem, OrderType } from '../Order';
 
 const fs = require('fs');
 
@@ -39,10 +39,34 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		return symbol;
 	}
 
-	order (
+	async order (
 		order: OrderItem,
 	) {
-		
+		try {
+			let assetASymbol = this.translateSymbol(order.pair.a.symbol);
+			let assetBSymbol = this.translateSymbol(order.pair.b.symbol);
+
+			// All response assets are prefixed with an `X`. Add one to ease lookups
+			let pair = `X${assetASymbol}X${assetBSymbol}`;
+
+			let ordertype = 'market';
+
+			let responseJson = await this.handle?.api(
+
+				// Type
+				'AddOrder',
+
+				// Options
+				{
+					pair: pair,
+					ordertype: ordertype,//order.type,
+					type: order.direction === OrderDirection.Buy ? 'buy' : 'sell',
+					volume: order.amount,
+				}
+			);
+		} catch (error) {
+			console.error(error);
+		}
 	}
 
 	async syncChart (

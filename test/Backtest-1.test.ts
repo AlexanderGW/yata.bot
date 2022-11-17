@@ -6,7 +6,7 @@ dotenv.config();
 import { Asset } from '../src/Bot/Asset';
 import { Bot, BotSubscribeData } from '../src/Bot/Bot';
 import { Chart, ChartCandleData } from '../src/Bot/Chart';
-import { Kraken } from '../src/Bot/Exchange/Kraken';
+import { Kraken, KrakenItem } from '../src/Bot/Exchange/Kraken';
 import { Pair } from '../src/Bot/Pair';
 import { Strategy, StrategyItem } from '../src/Bot/Strategy';
 import { Timeframe } from '../src/Bot/Timeframe';
@@ -27,11 +27,23 @@ import {
 import { uuid } from 'uuidv4';
 import { Position, PositionItem } from '../src/Bot/Position';
 import { Order, OrderDirection, OrderType } from '../src/Bot/Order';
+import { Exchange } from '../src/Bot/Exchange';
 
 const fs = require('fs');
 
 describe('Backtest dataset 1', () => {
-    it('should match known chart datapoint analysis scenarios, against test JSON', () => {
+    it('should match known chart datapoint scenarios, against test JSON', async () => {
+
+        // Create Kraken exchange client
+        // let exchangeKrakenNew = await Exchange.new({
+        //     // class: 'Kraken',
+        //     name: 'Kraken',
+        //     key: process.env.KRAKEN_CLIENT_KEY,
+        //     secret: process.env.KRAKEN_CLIENT_SECRET,
+        // });
+
+        // console.log(`exchangeKrakenNew`);
+        // console.log(exchangeKrakenNew);
 
         // Create Kraken exchange client
         const exchangeKraken = Kraken.new({
