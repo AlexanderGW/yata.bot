@@ -7,7 +7,7 @@ const fs = require('fs');
 
 export type ExchangeData = {
 	class?: string,
-	name: string,
+	name?: string,
 	key?: string,
 	secret?: string,	
 	uuid?: string,
@@ -31,17 +31,16 @@ export interface ExchangeStorageInterface {
 }
 
 export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
-	name: string;
+	name?: string;
 	uuid: string;
 	
 	constructor (
 		data: ExchangeData,
 	) {
-		// if (data.hasOwnProperty('name'))
-		// 	this.name = data.name;
-		// else
-		// 	this.name = data.class;
-		this.name = data.name;
+		if (data.hasOwnProperty('name'))
+			this.name = data.name;
+		else
+			this.name = data.class;
 		this.uuid = data.uuid ?? uuid();
 	}
 
