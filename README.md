@@ -153,9 +153,11 @@ let pairEthBtc = Pair.new({
 ### `Exchange`
 A potential source of `Chart` data, or destination for `Exchange` actions. I.e. based on a `Bot.subscribe()` despatch to open/close a `Position`.
 
+Support for web3 RPC nodes, will be added.
+
 ```
-const exchangeKraken = Kraken.new({
-  name: 'Kraken',
+const exchangeKraken = Exchange.new({
+  class: 'Kraken', // Defaults to `Paper` class, `Kraken` in development
   key: process.env.KRAKEN_CLIENT_KEY,
   secret: process.env.KRAKEN_CLIENT_SECRET,
 });
