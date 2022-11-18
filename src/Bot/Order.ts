@@ -69,7 +69,7 @@ export class OrderItem implements OrderData {
 		this.uuid = data.uuid ?? uuid();
 	}
 
-	execute () {
+	async execute () {
 		if (
 			!this.amount
 			|| this.amount === '0'
@@ -78,9 +78,17 @@ export class OrderItem implements OrderData {
 
 		// if (this.direction )
 		// 	this.exchange.order(data);
-		Bot.log(`Order '${this.uuid}' executed`);
-		// if (this.confirmed === true)
-		// 	Bot.log(`Order '${this.uuid}' confirmed`);
+		Bot.log(`Order '${this.uuid}' ${OrderDirection.Buy ? 'buy' : 'sell'} (${this.type}) '${this.exchange.name}:${this.pair.a.symbol}X${this.pair.b.symbol}' for ${this.amount} at ${this.price} placed`);
+		
+		// Execute on exchange class, if dry-run is disabled
+		let result: boolean = false;
+		if (this.dryrun === false)
+			result = await this.exchange.order(this);
+		
+		if (result === true) {
+			this.confirmed = true;
+			Bot.log(`Order '${this.uuid}' confirmed`);
+		}
 	}
 }
 

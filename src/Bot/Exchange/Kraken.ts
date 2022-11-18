@@ -42,6 +42,8 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 	async order (
 		order: OrderItem,
 	) {
+		let result: boolean = false;
+
 		try {
 			let assetASymbol = this.translateSymbol(order.pair.a.symbol);
 			let assetBSymbol = this.translateSymbol(order.pair.b.symbol);
@@ -64,9 +66,13 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					volume: order.amount,
 				}
 			);
+
+			result = true;
 		} catch (error) {
 			console.error(error);
 		}
+
+		return result;
 	}
 
 	async syncChart (

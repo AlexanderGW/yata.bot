@@ -16,7 +16,7 @@ export type ExchangeData = {
 export interface ExchangeInterface {
 	order: (
 		order: OrderItem,
-	) => void;
+	) => Promise<boolean>;
 
 	syncChart: (
 		chart: ChartItem,
@@ -31,16 +31,18 @@ export interface ExchangeStorageInterface {
 }
 
 export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
-	name?: string;
+	class: string;
+	name: string;
 	uuid: string;
 	
 	constructor (
 		data: ExchangeData,
 	) {
+		this.class = data.class as string;
 		if (data.hasOwnProperty('name'))
-			this.name = data.name;
+			this.name = data.name as string;
 		else
-			this.name = data.class;
+			this.name = data.class as string;
 		this.uuid = data.uuid ?? uuid();
 	}
 
@@ -52,10 +54,10 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		return false;
 	}
 
-	order (
+	async order (
 		order: OrderItem,
 	) {
-		
+		return true;
 	}
 
 	refreshChart (
@@ -64,7 +66,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	) {
 		chart.refresh(data);
 
-		return; // Skip logging
+		return true; // Skip logging
 
 		const pad = (value: number) =>
 			value.toString().length == 1

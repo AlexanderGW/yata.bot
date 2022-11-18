@@ -34,7 +34,7 @@ describe('Backtest dataset 1', () => {
 
         // Create Kraken exchange client
         let exchangeKraken = await Exchange.new({
-            class: 'Kraken',
+            // class: 'Kraken',
             key: process.env.KRAKEN_CLIENT_KEY,
             secret: process.env.KRAKEN_CLIENT_SECRET,
         });
