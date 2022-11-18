@@ -80,10 +80,19 @@ export class OrderItem implements OrderData {
 		// 	this.exchange.order(data);
 		Bot.log(`Order '${this.uuid}' ${OrderDirection.Buy ? 'buy' : 'sell'} (${this.type}) '${this.exchange.name}:${this.pair.a.symbol}X${this.pair.b.symbol}' for ${this.amount} at ${this.price} placed`);
 		
-		// Execute on exchange class, if dry-run is disabled
 		let result: boolean = false;
-		if (this.dryrun === false)
+
+		// Not a test, send to exchange
+		if (this.dryrun === false) {
+			Bot.log(`Order '${this.uuid}' execute on '${this.exchange.uuid}'`);
 			result = await this.exchange.order(this);
+		}
+
+		// Dry-run testing
+		else {
+			Bot.log(`Dry-run: Order '${this.uuid}' execute on '${this.exchange.uuid}'`);
+			result = true;
+		}
 		
 		if (result === true) {
 			this.confirmed = true;
