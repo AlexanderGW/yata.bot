@@ -1,10 +1,11 @@
-import { Bot, Log } from '../Bot';
-import { ExchangeData, ExchangeInterface, ExchangeItem } from '../Exchange';
-import { OrderDirection, OrderItem, OrderType } from '../Order';
+import { Bot } from '../Bot';
+import { ExchangeData, ExchangeItem } from '../Exchange';
+import { OrderItem } from '../Order';
 
 const fs = require('fs');
 
 export class PaperItem extends ExchangeItem {
+	result: Array<OrderItem> = [];
 
 	constructor (
 		data: ExchangeData,
@@ -28,6 +29,8 @@ export class PaperItem extends ExchangeItem {
 				type: order.direction,
 				volume: order.amount,
 			});
+
+			this.result.push(order);
 
 			result = true;
 		} catch (error) {
