@@ -39,10 +39,10 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		return symbol;
 	}
 
-	async order (
+	async createOrder (
 		order: OrderItem,
 	) {
-		let result: boolean = false;
+		let orderResult: OrderItem = order;
 
 		try {
 			let assetASymbol = this.translateSymbol(order.pair.a.symbol);
@@ -70,13 +70,27 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 			// TODO: Handle responseJson
 
-			result = true;
+			order.confirmed = true;
 		} catch (error) {
 			console.error(error);
 		}
 
-		return result;
+		return orderResult;
 	}
+
+	// async cancelOrder (
+	// 	order: OrderItem,
+	// ) {
+	// 	let orderResult: OrderItem = order;
+	// 	return orderResult;
+	// }
+
+	// async editOrder (
+	// 	order: OrderItem,
+	// ) {
+	// 	let orderResult: OrderItem = order;
+	// 	return orderResult;
+	// }
 
 	async syncChart (
 		chart: ChartItem,

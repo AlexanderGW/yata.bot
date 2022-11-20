@@ -1,7 +1,7 @@
 import { ChartCandleData, ChartItem } from "./Chart";
 import { uuid } from 'uuidv4';
 import { Bot, Log } from "./Bot";
-import { OrderItem } from "./Order";
+import { OrderItem, OrderStatus } from "./Order";
 
 const fs = require('fs');
 
@@ -14,13 +14,23 @@ export type ExchangeData = {
 }
 
 export interface ExchangeInterface {
-	order: (
-		order: OrderItem,
-	) => Promise<boolean>;
-
 	syncChart: (
 		chart: ChartItem,
 	) => void;
+}
+
+export interface ExchangeBaseInterface {
+	cancelOrder: (
+		order: OrderItem,
+	) => Promise<OrderItem>;
+
+	createOrder: (
+		order: OrderItem,
+	) => Promise<OrderItem>;
+
+	editOrder: (
+		order: OrderItem,
+	) => Promise<OrderItem>;
 }
 
 export interface ExchangeStorageInterface {
@@ -30,9 +40,10 @@ export interface ExchangeStorageInterface {
 	) => void;
 }
 
-export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
-	class: string;
+export class ExchangeBase implements ExchangeBaseInterface {
+	class: string = '';
 	name: string;
+	result: Array<OrderItem> = [];
 	uuid: string;
 	
 	constructor (
@@ -46,18 +57,39 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		this.uuid = data.uuid ?? uuid();
 	}
 
+	async cancelOrder (
+		order: OrderItem,
+	) {
+		order.status = OrderStatus.Cancelled;
+		Bot.log(`Paper: Order '${order.uuid}' cancelled on exchange '${order.exchange.uuid}'`);
+		return order;
+	}
+
+	async createOrder (
+		order: OrderItem,
+	) {
+		order.confirmed = true;
+		Bot.log(`Paper: Order '${order.uuid}' created on exchange '${order.exchange.uuid}'`);
+		return order;
+	}
+
+	async editOrder (
+		order: OrderItem,
+	) {
+		let orderResult: OrderItem = order;
+		orderResult.status = OrderStatus.Cancelled;
+		Bot.log(`Paper: Order '${order.uuid}' edited on exchange '${order.exchange.uuid}'`);
+		return orderResult;
+	}
+}
+
+export class ExchangeItem extends ExchangeBase implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
 	compat (
 		chart: ChartItem,
 	) {
 		if (chart.exchange.uuid === this.uuid)
 			return true;
 		return false;
-	}
-
-	async order (
-		order: OrderItem,
-	) {
-		return true;
 	}
 
 	refreshChart (
@@ -153,28 +185,34 @@ export const Exchange = {
 	async new (
 		data: ExchangeData,
 	): Promise<any> {
-
-		// Default to `Paper` exchange
-		if (!data.hasOwnProperty('class'))
-			data.class = 'Paper';
-
-		let importPath = `./Exchange/${data.class}`;
-		Bot.log(`Exchange import: ${importPath}`);
-
 		let item: any;
 
-		const className = `${data.class}Item`;
-			
-		// Import exchange extension
-		await import(importPath).then(module => {
-			let newItem: any = new module[className](data);
+		// Exchange class specified
+		if (data.class?.length) {
+			let importPath = `./Exchange/${data.class}`;
+			Bot.log(`Exchange import: ${importPath}`);
 
-			if (newItem.constructor.name === className) {
-				let uuid = Bot.setItem(newItem);
+			const className = `${data.class}Item`;
+				
+			// Import exchange extension
+			await import(importPath).then(module => {
+				let newItem: any = new module[className](data);
 
-				item = Bot.getItem(uuid);
-			}
-		}).catch(err => Bot.log(err.message, Log.Err));
+				if (newItem.constructor.name === className) {
+					let uuid = Bot.setItem(newItem);
+
+					item = Bot.getItem(uuid);
+				}
+			}).catch(err => Bot.log(err.message, Log.Err));
+		}
+
+		// Default to base `Exchange` with paper trading
+		else {
+			let newItem: any = new ExchangeItem(data);
+			let uuid = Bot.setItem(newItem);
+
+			item = Bot.getItem(uuid);
+		}
 
 		return item;
 	}
