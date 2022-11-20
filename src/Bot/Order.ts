@@ -9,6 +9,12 @@ export enum OrderSide {
 	Sell = 0,
 };
 
+export enum OrderStatus {
+	Cancelled = 0,
+	Open = 1,
+	Filled = 2,
+};
+
 export enum OrderType {
 	Market = 1,
 	Limit = 2,
@@ -19,13 +25,15 @@ export enum OrderType {
 export type OrderData = {
 	amount?: string,
 	confirmed?: boolean,
-	side?: OrderSide,
 	dryrun?: boolean,
 	exchange: ExchangeItem,
+	filledAmount?: string,
 	pair: PairItem,
 	position?: PositionItem,
 	price?: string,
 	related?: OrderItem,
+	side?: OrderSide,
+	status?: OrderStatus,
 	type?: OrderType,
 	uuid?: string,
 }
@@ -33,13 +41,15 @@ export type OrderData = {
 export class OrderItem implements OrderData {
 	amount?: string = '0';
 	confirmed?: boolean = false;
-	side?: OrderSide = OrderSide.Buy;
 	dryrun: boolean = true;
 	exchange: ExchangeItem;
+	filledAmount?: string = '0';
 	pair: PairItem;
 	position?: PositionItem;
 	price?: string = '0';
 	related?: OrderItem;
+	side?: OrderSide = OrderSide.Buy;
+	status?: OrderStatus = OrderStatus.Open;
 	type?: OrderType = OrderType.Market;
 	uuid: string;
 
@@ -50,13 +60,13 @@ export class OrderItem implements OrderData {
 			this.amount = data.amount;
 		if (data.hasOwnProperty('confirmed'))
 			this.confirmed = data.confirmed ? true : false;
-		this.exchange = data.exchange;
-		if (data.hasOwnProperty('side'))
-			this.side = data.side;
 		if (data.hasOwnProperty('dryrun'))
 			this.dryrun = data.dryrun ? true : false;
 		else if (process.env.BOT_DRYRUN === '0')
 			this.dryrun = false;
+		this.exchange = data.exchange;
+		if (data.hasOwnProperty('filledAmount'))
+			this.filledAmount = data.filledAmount;
 		this.pair = data.pair;
 		if (data.hasOwnProperty('position'))
 			this.position = data.position;
@@ -64,6 +74,10 @@ export class OrderItem implements OrderData {
 			this.price = data.price;
 		if (data.hasOwnProperty('related'))
 			this.related = data.related;
+		if (data.hasOwnProperty('side'))
+			this.side = data.side;
+		if (data.hasOwnProperty('status'))
+		this.status = data.status;
 		if (data.hasOwnProperty('type'))
 			this.type = data.type;
 		this.uuid = data.uuid ?? uuid();
