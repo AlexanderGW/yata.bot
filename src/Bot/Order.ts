@@ -4,7 +4,7 @@ import { PairItem } from "./Pair";
 import { PositionItem } from "./Position";
 import { uuid } from 'uuidv4';
 
-export enum OrderDirection {
+export enum OrderSide {
 	Buy = 1,
 	Sell = 0,
 };
@@ -19,7 +19,7 @@ export enum OrderType {
 export type OrderData = {
 	amount?: string,
 	confirmed?: boolean,
-	direction?: OrderDirection,
+	side?: OrderSide,
 	dryrun?: boolean,
 	exchange: ExchangeItem,
 	pair: PairItem,
@@ -33,7 +33,7 @@ export type OrderData = {
 export class OrderItem implements OrderData {
 	amount?: string = '0';
 	confirmed?: boolean = false;
-	direction?: OrderDirection = OrderDirection.Buy;
+	side?: OrderSide = OrderSide.Buy;
 	dryrun: boolean = true;
 	exchange: ExchangeItem;
 	pair: PairItem;
@@ -51,8 +51,8 @@ export class OrderItem implements OrderData {
 		if (data.hasOwnProperty('confirmed'))
 			this.confirmed = data.confirmed ? true : false;
 		this.exchange = data.exchange;
-		if (data.hasOwnProperty('direction'))
-			this.direction = data.direction;
+		if (data.hasOwnProperty('side'))
+			this.side = data.side;
 		if (data.hasOwnProperty('dryrun'))
 			this.dryrun = data.dryrun ? true : false;
 		else if (process.env.BOT_DRYRUN === '0')
@@ -76,9 +76,9 @@ export class OrderItem implements OrderData {
 		)
 			throw (`Order '${this.uuid}' amount is empty`);
 
-		// if (this.direction )
+		// if (this.side )
 		// 	this.exchange.order(data);
-		Bot.log(`Order '${this.uuid}' ${OrderDirection.Buy ? 'buy' : 'sell'} (${this.type}) '${this.exchange.name}:${this.pair.a.symbol}X${this.pair.b.symbol}' for ${this.amount} at ${this.price} placed`);
+		Bot.log(`Order '${this.uuid}' ${OrderSide.Buy ? 'buy' : 'sell'} (${this.type}) '${this.exchange.name}:${this.pair.a.symbol}X${this.pair.b.symbol}' for ${this.amount} at ${this.price} placed`);
 		
 		let result: boolean = false;
 
