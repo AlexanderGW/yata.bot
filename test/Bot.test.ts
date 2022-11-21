@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import * as dotenv from 'dotenv';
 
 import { Bot, ItemBaseData } from '../src/Bot/Bot';
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
 
@@ -12,7 +12,7 @@ const fs = require('fs');
 describe('Bot tests', () => {
     it('should return same item with set/get', () => {
         let exchangeKraken: ItemBaseData = {
-            uuid: uuid(),
+            uuid: uuidv4(),
         };
 
         let returnedUuid = Bot.setItem(exchangeKraken);

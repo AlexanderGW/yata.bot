@@ -1,4 +1,4 @@
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 import { Bot } from './Bot';
 
 const talib = require('talib');
@@ -94,7 +94,7 @@ export class AnalysisItem implements AnalysisData {
 
 		this.config = config;
 
-		this.uuid = data.uuid ?? uuid();
+		this.uuid = data.uuid ?? uuidv4();
 		// Bot.log(`Added analysis: ${this.uuid}`);
 	}
 }

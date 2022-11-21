@@ -1,5 +1,5 @@
 import { ChartCandleData, ChartItem } from "./Chart";
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 import { Bot, Log } from "./Bot";
 import { OrderItem, OrderStatus } from "./Order";
 
@@ -17,9 +17,7 @@ export interface ExchangeInterface {
 	syncChart: (
 		chart: ChartItem,
 	) => void;
-}
 
-export interface ExchangeBaseInterface {
 	cancelOrder: (
 		order: OrderItem,
 	) => Promise<OrderItem>;
@@ -40,10 +38,11 @@ export interface ExchangeStorageInterface {
 	) => void;
 }
 
-export class ExchangeBase implements ExchangeBaseInterface {
+export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
 	class: string = '';
 	name: string;
-	result: Array<OrderItem> = [];
+	order: Array<OrderItem> = [];
+	orderIndex: string[] = [];
 	uuid: string;
 	
 	constructor (
@@ -54,14 +53,14 @@ export class ExchangeBase implements ExchangeBaseInterface {
 			this.name = data.name as string;
 		else
 			this.name = data.class as string;
-		this.uuid = data.uuid ?? uuid();
+		this.uuid = data.uuid ?? uuidv4();
 	}
 
 	async cancelOrder (
 		order: OrderItem,
 	) {
 		order.status = OrderStatus.Cancelled;
-		Bot.log(`Paper: Order '${order.uuid}' cancelled on exchange '${order.exchange.uuid}'`);
+		Bot.log(`Order '${order.uuid}' cancelled (paper) on exchange '${order.exchange.uuid}'`);
 		return order;
 	}
 
@@ -69,7 +68,7 @@ export class ExchangeBase implements ExchangeBaseInterface {
 		order: OrderItem,
 	) {
 		order.confirmed = true;
-		Bot.log(`Paper: Order '${order.uuid}' created on exchange '${order.exchange.uuid}'`);
+		Bot.log(`Order '${order.uuid}' created (paper) on exchange '${order.exchange.uuid}'`);
 		return order;
 	}
 
@@ -78,12 +77,10 @@ export class ExchangeBase implements ExchangeBaseInterface {
 	) {
 		let orderResult: OrderItem = order;
 		orderResult.status = OrderStatus.Cancelled;
-		Bot.log(`Paper: Order '${order.uuid}' edited on exchange '${order.exchange.uuid}'`);
+		Bot.log(`Order '${order.uuid}' edited (paper) on exchange '${order.exchange.uuid}'`);
 		return orderResult;
 	}
-}
 
-export class ExchangeItem extends ExchangeBase implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
 	compat (
 		chart: ChartItem,
 	) {

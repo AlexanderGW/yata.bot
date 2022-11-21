@@ -1,6 +1,6 @@
 import { Bot } from "./Bot";
 import { ExchangeItem } from "./Exchange";
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 
 export type AssetData = {
 	exchange: ExchangeItem,
@@ -26,7 +26,7 @@ export class AssetItem implements AssetData {
 		if (data.price)
 			this.price = data.price;
 		this.symbol = data.symbol;
-		this.uuid = data.uuid ?? uuid();
+		this.uuid = data.uuid ?? uuidv4();
 	}
 }
 

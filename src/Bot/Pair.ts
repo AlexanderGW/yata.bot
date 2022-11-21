@@ -1,6 +1,6 @@
 import { AssetItem } from "./Asset";
 import { Bot } from "./Bot";
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 
 export type PairData = {
 	a: AssetItem,
@@ -18,7 +18,7 @@ export class PairItem implements PairData {
 	) {
 		this.a = data.a;
 		this.b = data.b;
-		this.uuid = data.uuid ?? uuid();
+		this.uuid = data.uuid ?? uuidv4();
 	}
 }
 

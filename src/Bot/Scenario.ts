@@ -2,7 +2,7 @@ import { AnalysisData, AnalysisResultData, AnalysisItem, AnalysisExecuteResultDa
 import { Bot } from './Bot';
 import { ChartCandleData, ChartItem } from './Chart';
 import { StrategyExecuteData, StrategyItem } from './Strategy';
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 
 export type ScenarioConditionData = Array<Array<[string, string, number | string]>>;
 
@@ -52,7 +52,7 @@ export class ScenarioItem implements ScenarioData {
 		this.analysis = data.analysis;
 		this.condition = data.condition;
 		this.name = data.name;
-		this.uuid = data.uuid ?? uuid();
+		this.uuid = data.uuid ?? uuidv4();
 	}
 
 	test (

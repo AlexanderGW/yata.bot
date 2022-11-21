@@ -2,7 +2,7 @@ import { AnalysisResultData, AnalysisItem, AnalysisExecuteResultData } from "./A
 import { Bot } from "./Bot";
 import { ChartCandleData, ChartItem } from "./Chart";
 import { ScenarioConditionMatch, ScenarioItem } from "./Scenario";
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 
 const talib = require('talib');
 
@@ -35,7 +35,7 @@ export class StrategyItem implements StrategyData {
 		if (data.name)
 			this.name = data.name;
 		this.action = data.action;
-		this.uuid = data.uuid ?? uuid();
+		this.uuid = data.uuid ?? uuidv4();
 	}
 
 	/**

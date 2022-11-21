@@ -1,7 +1,7 @@
 import { Bot } from "./Bot";
 import { ExchangeItem } from "./Exchange";
 import { PairItem } from "./Pair";
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 
 export type PositionData = {
 	amount?: string,
@@ -23,7 +23,7 @@ export class PositionItem implements PositionData {
 			this.amount = data.amount;
 		this.exchange = data.exchange;
 		this.pair = data.pair;
-		this.uuid = data.uuid ?? uuid();
+		this.uuid = data.uuid ?? uuidv4();
 	}
 }
 

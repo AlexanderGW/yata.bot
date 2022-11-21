@@ -1,4 +1,4 @@
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 import { Bot, BotEvent, Log } from './Bot';
 import { ChartCandleData } from './Chart';
 import { StrategyItem } from "./Strategy";
@@ -55,7 +55,7 @@ export class TimeframeItem implements TimeframeData {
 		else
 			this.pollTime = 60000;
 		this.strategy = data.strategy;
-		this.uuid = data.uuid ?? uuid();
+		this.uuid = data.uuid ?? uuidv4();
 
 		// Start the interval, if timeframe is marked as active
 		if (this.active === true) {

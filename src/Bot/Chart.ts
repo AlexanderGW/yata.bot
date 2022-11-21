@@ -1,4 +1,4 @@
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 import { Bot } from "./Bot";
 import { ExchangeItem } from "./Exchange";
 import { PairItem } from "./Pair";
@@ -54,7 +54,7 @@ export class ChartItem implements ChartData {
 			this.candleTime = data.candleTime > 0 ? data.candleTime : 3600;
 		else
 			this.candleTime = 3600;
-		this.uuid = data.uuid ?? uuid();
+		this.uuid = data.uuid ?? uuidv4();
 	}
 
 	refresh (

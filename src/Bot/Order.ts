@@ -2,7 +2,7 @@ import { Bot } from "./Bot";
 import { ExchangeItem } from "./Exchange";
 import { PairItem } from "./Pair";
 import { PositionItem } from "./Position";
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 
 export enum OrderSide {
 	Buy = 1,
@@ -80,7 +80,7 @@ export class OrderItem implements OrderData {
 		this.status = data.status;
 		if (data.hasOwnProperty('type'))
 			this.type = data.type;
-		this.uuid = data.uuid ?? uuid();
+		this.uuid = data.uuid ?? uuidv4();
 	}
 
 	async execute () {
