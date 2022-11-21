@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import * as dotenv from 'dotenv';
 
 import { Bot, ItemBaseData } from '../src/Bot/Bot';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate } from 'uuid';
 
 dotenv.config();
 
@@ -14,6 +14,8 @@ describe('Bot tests', () => {
         let exchangeKraken: ItemBaseData = {
             uuid: uuidv4(),
         };
+        
+        expect(validate(exchangeKraken.uuid)).to.be.true;
 
         let returnedUuid = Bot.setItem(exchangeKraken);
         
