@@ -4,6 +4,12 @@ import { PairItem } from "./Pair";
 import { PositionItem } from "./Position";
 import { v4 as uuidv4 } from 'uuid';
 
+export enum OrderAction {
+	Cancel = 0,
+	Create = 1,
+	Edit = 2,
+}
+
 export enum OrderSide {
 	Buy = 1,
 	Sell = 0,
@@ -83,34 +89,97 @@ export class OrderItem implements OrderData {
 		this.uuid = data.uuid ?? uuidv4();
 	}
 
-	async execute () {
+	async execute (
+		action: OrderAction,
+	) {
 		if (
 			!this.amount
 			|| this.amount === '0'
 		)
 			throw (`Order '${this.uuid}' amount is empty`);
 
-		// if (this.side )
-		// 	this.exchange.order(data);
-		Bot.log(`Order '${this.uuid}' ${OrderSide.Buy ? 'buy' : 'sell'} (${this.type}) '${this.exchange.name}:${this.pair.a.symbol}X${this.pair.b.symbol}' for ${this.amount} at ${this.price} placed`);
-		
+		// Build log message
+		let logParts: string[] = [];
+
+		if (this.dryrun)
+			logParts.push('Dry-run:');
+
+		logParts.push(`Order '${this.uuid}'`);
+		logParts.push(`${this.exchange.name}:${this.pair.a.symbol}X${this.pair.b.symbol};`);
+		logParts.push(`action: ${action};`);
+		logParts.push(`type: ${this.type};`);
+		logParts.push(`side: ${this.side};`);
+		logParts.push(`amount: ${this.amount};`);
+		logParts.push(`price: ${this.price}`);
+
+		Bot.log(logParts.join(' '));
+
 		let orderResponse: OrderItem = this;
+		let logMessage: string = '';
 
-		// Not a test, send to exchange
-		if (this.dryrun === false) {
-			Bot.log(`Order '${this.uuid}' execute on '${this.exchange.uuid}'`);
-			orderResponse = await this.exchange.createOrder(this);
-		}
+		switch (action) {
+			case OrderAction.Cancel : {
+				logMessage = `Order '${this.uuid}' cancel on '${this.exchange.uuid}'`;
+				
+				// Dry-run testing
+				if (this.dryrun) {
+					Bot.log(`Dry-run: ${logMessage}`);
+					orderResponse.confirmed = true;
+				}
 
-		// Dry-run testing
-		else {
-			Bot.log(`Dry-run: Order '${this.uuid}' execute on '${this.exchange.uuid}'`);
-			orderResponse.confirmed = true;
+				// Not a test, send to exchange
+				else {
+					Bot.log(logMessage);
+					orderResponse = await this.exchange.cancelOrder(this);
+				}
+
+				break;
+			}
+
+			case OrderAction.Create : {
+				logMessage = `Order '${this.uuid}' create on '${this.exchange.uuid}'`;
+				
+				// Dry-run testing
+				if (this.dryrun) {
+					Bot.log(`Dry-run: ${logMessage}`);
+					orderResponse.confirmed = true;
+				}
+
+				// Not a test, send to exchange
+				else {
+					Bot.log(logMessage);
+					orderResponse = await this.exchange.createOrder(this);
+				}
+
+				break;
+			}
+
+			case OrderAction.Edit : {
+				logMessage = `Order '${this.uuid}' edited on '${this.exchange.uuid}'`;
+				
+				// Dry-run testing
+				if (this.dryrun) {
+					Bot.log(`Dry-run: ${logMessage}`);
+					orderResponse.confirmed = true;
+				}
+
+				// Not a test, send to exchange
+				else {
+					Bot.log(logMessage);
+					orderResponse = await this.exchange.editOrder(this);
+				}
+
+				break;
+			}
 		}
 		
 		if (orderResponse.confirmed === true) {
 			this.confirmed = true;
-			Bot.log(`Order '${this.uuid}' confirmed`);
+			logMessage = `Order '${this.uuid}' confirmed`;
+			if (this.dryrun)
+				logMessage = `Dry-run: ${logMessage}`;
+
+			Bot.log(logMessage);
 		}
 	}
 }
