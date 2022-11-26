@@ -24,7 +24,7 @@ import {
 	Sma20 as analysisSma20
 } from '../src/Helper/Analysis';
 import { Position } from '../src/Bot/Position';
-import { Order, OrderSide, OrderType } from '../src/Bot/Order';
+import { Order, OrderAction, OrderSide, OrderType } from '../src/Bot/Order';
 import { Exchange } from '../src/Bot/Exchange';
 
 const fs = require('fs');
@@ -234,7 +234,7 @@ describe('Backtest dataset 1', () => {
                     price: '0.05',
                     type: OrderType.Limit,
                 });
-                order1.execute();
+                order1.execute(OrderAction.Create);
             } catch (err) {
                 Bot.log(err as string);
             }
