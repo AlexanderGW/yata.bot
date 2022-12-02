@@ -40,6 +40,7 @@ export type OrderData = {
 	related?: OrderItem,
 	side?: OrderSide,
 	status?: OrderStatus,
+	transactionId?: string[],
 	type?: OrderType,
 	uuid?: string,
 }
@@ -56,6 +57,7 @@ export class OrderItem implements OrderData {
 	related?: OrderItem;
 	side?: OrderSide = OrderSide.Buy;
 	status?: OrderStatus = OrderStatus.Open;
+	transactionId?: string[] = [];
 	type?: OrderType = OrderType.Market;
 	uuid: string;
 
@@ -84,6 +86,8 @@ export class OrderItem implements OrderData {
 			this.side = data.side;
 		if (data.hasOwnProperty('status'))
 		this.status = data.status;
+		if (data.hasOwnProperty('transactionId'))
+			this.transactionId = data.transactionId;
 		if (data.hasOwnProperty('type'))
 			this.type = data.type;
 		this.uuid = data.uuid ?? uuidv4();
