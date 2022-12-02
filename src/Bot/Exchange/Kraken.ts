@@ -68,9 +68,15 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				}
 			);
 
-			// TODO: Handle responseJson
-
-			order.confirmed = true;
+			if (responseJson) {
+				if (responseJson.error) {
+					for (let i = 0; i < responseJson.error.length; i++) {
+						Bot.log(responseJson.error[i], Log.Err);
+					}
+				}
+				order.confirmed = true;
+				order.transactionId = responseJson.result.txid;
+			}
 		} catch (error) {
 			console.error(error);
 		}
