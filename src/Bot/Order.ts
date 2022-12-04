@@ -177,6 +177,7 @@ export class OrderItem implements OrderData {
 			}
 		}
 		
+		// Order response indicates confirmation
 		if (orderResponse.confirmed === true) {
 			this.confirmed = true;
 			logMessage = `Order '${this.uuid}' confirmed`;

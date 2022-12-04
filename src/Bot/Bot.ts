@@ -49,7 +49,7 @@ export type BotSignalData = {
 	total: number,
 };
 
-export type BotEventData = {
+export type BotDespatchData = {
 	event: BotEvent,
 	uuid: string,
 };
@@ -80,7 +80,7 @@ export type BotData = {
 		data: BotSubscribeData,
 	 ) => void,
 	 despatch: (
-		data: BotEventData,
+		data: BotDespatchData,
 	 ) => void,
 };
 
@@ -217,7 +217,7 @@ export const Bot: BotData = {
 	 * @param data 
 	 */
 	despatch (
-		data: BotEventData,
+		data: BotDespatchData,
 	) {
 		// Bot.log(`Bot.despatch()`);
 		// Bot.log(`event: ${data.event}`);

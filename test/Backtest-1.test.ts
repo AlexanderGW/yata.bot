@@ -32,22 +32,40 @@ const fs = require('fs');
 describe('Backtest dataset 1', () => {
     it('should match known chart datapoint scenarios, against test JSON', async () => {
 
-        // Create Kraken exchange client
-        let exchangeKraken = await Exchange.new({
-            // class: 'Kraken',
-            key: process.env.KRAKEN_CLIENT_KEY,
-            secret: process.env.KRAKEN_CLIENT_SECRET,
+        /**
+         * Backtesting with a cut-off point (see `maxTime` within one of the `Timeframe` below)
+         */
+
+        // Create exchange client
+        let exchangeDefaultPaper = await Exchange.new({
+            // Using all default options
         });
+
+        // Example Binance exchange client
+        // let exchangeBinance = await Exchange.new({
+        //     class: 'Binance',
+        //     key: process.env.BINANCE_CLIENT_KEY,
+        //     secret: process.env.BINANCE_CLIENT_SECRET,
+        // });
+
+        // Example Kraken exchange client
+        // let exchangeKraken = await Exchange.new({
+        //     class: 'Kraken',
+        //     key: process.env.KRAKEN_CLIENT_KEY,
+        //     secret: process.env.KRAKEN_CLIENT_SECRET,
+        // });
+
+        // Support for DEXs to be implemented
 
         // Create ETH asset
         let assetEth = Asset.new({
-            exchange: exchangeKraken,
+            exchange: exchangeDefaultPaper,
             symbol: 'ETH'
         });
 
         // Create BTC asset
         let assetBtc = Asset.new({
-            exchange: exchangeKraken,
+            exchange: exchangeDefaultPaper,
             symbol: 'BTC'
         });
 
@@ -59,24 +77,24 @@ describe('Backtest dataset 1', () => {
 
         // Create an existing position on exchange
         let pos1 = Position.new({
-        	exchange: exchangeKraken,
+        	exchange: exchangeDefaultPaper,
         	pair: pairEthBtc,
         	amount: '10.123456789'
         });
 
-        // Create a ETHBTC pair chart, and 1 minute, for Kraken exchange data
-        let chartKrakenEthBtc4h = Chart.new({
-            exchange: exchangeKraken,
+        // Create a ETHBTC pair chart, and 1 minute, for exchange data
+        let chartEthBtc4h = Chart.new({
+            exchange: exchangeDefaultPaper,
             pair: pairEthBtc,
             pollTime: 300, // 5m in seconds
             candleTime: 14400 // 4h in seconds
         });
 
-        // Push Kraken exchange data to chart (if exchange/chart are compatible)
+        // Push exchange data to chart (if exchange/chart are compatible)
         try {
-            // Request from Kraken
-            // exchangeKraken.syncChart(
-            // 	chartKrakenEthBtc4h
+            // Request from exchange (Binance, Kraken, etc.)
+            // exchangeDefaultPaper.syncChart(
+            // 	chartEthBtc4h
             // );
 
             // Load from storage
@@ -94,8 +112,8 @@ describe('Backtest dataset 1', () => {
 
             let responseJson = JSON.parse(response);
             if (responseJson) {
-                exchangeKraken.refreshChart(
-                    chartKrakenEthBtc4h,
+                exchangeDefaultPaper.refreshChart(
+                    chartEthBtc4h,
                     responseJson,
                 );
             }
@@ -111,7 +129,7 @@ describe('Backtest dataset 1', () => {
             analysis: [
                 analysisRsi14,
             ],
-            chart: chartKrakenEthBtc4h,
+            chart: chartEthBtc4h,
             name: 'BullishRsi14Oversold',
         });
 
@@ -126,7 +144,7 @@ describe('Backtest dataset 1', () => {
             analysis: [
                 analysisMacd12_26_9,
             ],
-            chart: chartKrakenEthBtc4h,
+            chart: chartEthBtc4h,
             name: 'BullishMacd12_26_9Crossover',
         });
 
@@ -141,7 +159,7 @@ describe('Backtest dataset 1', () => {
                 analysisSma20, // Must execute before `analysisBollinger20`
                 analysisBollinger20, // Depends on `analysisSma20` result
             ],
-            chart: chartKrakenEthBtc4h,
+            chart: chartEthBtc4h,
             name: 'BullishBollingerLowerCross',
         });
 
@@ -152,7 +170,7 @@ describe('Backtest dataset 1', () => {
             analysis: [
                 analysisSma20,
             ],
-            chart: chartKrakenEthBtc4h,
+            chart: chartEthBtc4h,
             name: 'BullishSma20Cross',
         });
 
@@ -160,7 +178,7 @@ describe('Backtest dataset 1', () => {
         let defaultTimeframe = Timeframe.new({
             active: false, // Run once, do not intiate a `setInterval()`
             intervalTime: 1000, // 1 second
-            maxTime: 86400000 * 100, // last 100 days
+            maxTime: 86400000 * 100, // last 100 days of the dataset
             strategy: [
                 // stratBullishMacd12_26_9Crossover,
                 // stratBullishRsi14Oversold,
@@ -173,7 +191,7 @@ describe('Backtest dataset 1', () => {
         let testTimeframe = Timeframe.new({
             active: false, // Run once, do not intiate a `setInterval()`
             intervalTime: 1500, // 1 second
-            maxTime: 86400000 * 50, // last 50 days
+            maxTime: 86400000 * 50, // last 50 days of the dataset
             strategy: [
                 // stratBullishMacd12_26_9Crossover,
                 stratBullishRsi14Oversold,
@@ -228,7 +246,7 @@ describe('Backtest dataset 1', () => {
                 let order1 = Order.new({
                     amount: '10%', // of provided position,
                     side: OrderSide.Buy,
-                    exchange: exchangeKraken,
+                    exchange: exchangeDefaultPaper,
                     pair: pairEthBtc,
                     position: pos1,
                     price: '0.05',
@@ -311,18 +329,20 @@ describe('Backtest dataset 1', () => {
 
         Bot.subscribe({
             action: actionEthBtcBuy,
-            chart: chartKrakenEthBtc4h,
+            chart: chartEthBtc4h,
             condition: [
                 ['total', '>=', '12'],
             ],
             // event: BotEvent.TimeframeResult,
-            name: 'buyEthBtcKraken',
+            name: 'buyEthBtc',
             timeframeAny: [
                 defaultTimeframe,
                 testTimeframe,
             ],
         });
 
+        // Execute the timeframes once each (both are defined `active` of `false`,
+        // so that they don't run every `intervalTime`)
         defaultTimeframe.execute();
         testTimeframe.execute();
     });

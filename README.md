@@ -18,6 +18,11 @@ tsc --watch
 Here is a basic overview of how the bot is currently structured. Subject to change, as this project is still in development.
 
 ### Subscribing to `Timeframe` changes
+Available condition values
+- `high` for the timeframe with the most amount of signals
+- `low` for the timeframe with the least amount of signals
+- `total` for the sum of all timeframe signals
+
 ```
 Bot.subscribe({
   action: (
@@ -167,11 +172,8 @@ const exchangeKraken = Exchange.new({
 All created items (i.e. `Pair.new()`) are kept in a simple global storage system, identified by their own UUID. Using `Bot.setItem(object): uuid` and `Bot.getItem(uuid): object`
 
 ## Todo
-
-- Monitor strategy signals within a timeframe; At Nth, trigger buy, sell, SL, etc.
-- Progressive chart for active strategies (currently parses the entire dataset).
 - JSON/YAML support for configurations
-- Expand `Bot.setItem` and `Bot.getItem` storage system (Redis, MongoDB, etc)
+- Expand `Bot.setItem` and `Bot.getItem` storage interface (Redis, MongoDB, etc)
 
 ## Caveats
 
