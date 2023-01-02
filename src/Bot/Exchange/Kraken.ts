@@ -149,6 +149,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					since: since,
 				}
 			);
+			// Bot.log(JSON.stringify(responseJson));
 
 			let etlData: ChartCandleData = {
 				close: [],
@@ -162,7 +163,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			};
 	
 			// Extract, transform, load response to chart
-			if (responseJson?.result.hasOwnProperty(pair)) {
+			if (responseJson?.result?.hasOwnProperty(pair)) {
 				let pairData = responseJson.result[pair];
 
 				let p: {
@@ -193,10 +194,11 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					chart,
 					etlData,
 				);
+			} else {
+				throw 'Invalid response from Kraken';
 			}
-			// Bot.log(etlData);
-		} catch (error) {
-			console.error(error);
+		} catch (err) {
+			Bot.log(err as string, Log.Err);
 		}
 	}
 }

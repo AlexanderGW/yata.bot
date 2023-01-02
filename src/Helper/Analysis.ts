@@ -1,4 +1,5 @@
-import { Analysis, AnalysisItem } from "../Bot/Analysis";
+import { Analysis } from "../Bot/Analysis";
+import { Bot } from "../Bot/Bot";
 
 // Relative Strength Index (RSI) 14
 export const Rsi14 = Analysis.new({
@@ -39,7 +40,6 @@ export const Sma20 = Analysis.new({
 	config: {
 		inRealField: 'close',
 		optInTimePeriod: 20,
-		// startIndex: 20,
 	},
 	type: 'SMA',
 });
@@ -72,11 +72,10 @@ export const Bollinger20 = Analysis.new({
 		inRealAnalysis: Sma20,
 		inRealField: 'outReal',
 		optInTimePeriod: 20,
-		startIndex: 21,
 	},
 	type: 'BBANDS',
 });
-// Bot.log(Bollinger20.explain);
+// console.log(Bollinger20.explain);
 
 // Moving Average Convergence/Divergence (MACD) with defaults
 export const Macd12_26_9 = Analysis.new({

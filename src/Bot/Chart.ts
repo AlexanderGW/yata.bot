@@ -65,7 +65,7 @@ export class ChartItem implements ChartData {
 			? (data.openTime[data.openTime.length - 1] * 1000)
 			: Date.now();
 		let now = new Date(this.lastUpdateTime);
-		Bot.log(`Chart '${this.uuid}' refresh`);
+		Bot.log(`Chart '${this.uuid}' refreshed`);
 	}
 }
 

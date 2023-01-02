@@ -236,20 +236,14 @@ export const Bot: BotData = {
 					string,
 					BotSubscribeData
 				]) {
-					// Bot.log(`subscriberIndex: ${key}`);
-					// Bot.log(`${val.timeframeAny[0].uuid}`);
-					// Bot.log(typeof val.timeframeAny);
-
 					let index = val.timeframeAny?.findIndex(timeframe => timeframe.uuid === data.uuid);
-					if (index && index >= 0) {
+					if (typeof index !== 'undefined' && index >= 0) {
 						let timeField: string = '';
 
 						if (val.chart.dataset?.hasOwnProperty('openTime'))
 							timeField = 'openTime';
 						else if (val.chart.dataset?.hasOwnProperty('closeTime'))
 							timeField = 'closeTime';
-
-						// Bot.log(`subscriberTimeframeIndex: ${index}`);
 
 						let signalResult: BotSignalData = {
 							high: 0,
@@ -264,20 +258,12 @@ export const Bot: BotData = {
 						 */
 						if (val.timeframeAny?.length) {
 
-							// Bot.log(`timeframeCount: ${val.timeframeAny.length}`);
-
 							// Process timeframes
 							for (let i = 0; i < val.timeframeAny.length; i++) {
 								let timeframe = val.timeframeAny[i];
-								// Bot.log(`Timeframe '${timeframe.uuid}'`);
-
-								// Bot.log(`timeframeResultCount: ${timeframe.result.length}`);
 
 								for (let j = 0; j < timeframe.result.length; j++) {
 									let result: any = timeframe.result[j];
-									// let uuid = timeframe.resultIndex[j];
-									// Bot.log(`Strategy (${j}) '${uuid}'`);
-									// Bot.log(`result.length: ${result?.length}`);
 
 									if (result?.length) {
 										signal.push(result.length);
@@ -293,7 +279,7 @@ export const Bot: BotData = {
 							
 							// timeframeResult.push(result);
 
-							// Bot.log(`signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}`);
+							Bot.log(`signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}`);
 						}
 
 						let conditionMatch: Array<BotSubscribeConditionData> = [];
