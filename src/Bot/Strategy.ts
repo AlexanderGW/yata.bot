@@ -1,8 +1,9 @@
 import { AnalysisResultData, AnalysisItem, AnalysisExecuteResultData } from "./Analysis";
-import { Bot } from "./Bot";
+import { Bot, Log } from "./Bot";
 import { ChartCandleData, ChartItem } from "./Chart";
 import { ScenarioConditionMatch, ScenarioItem } from "./Scenario";
 import { v4 as uuidv4 } from 'uuid';
+import { TimeframeItem } from "./Timeframe";
 
 const talib = require('talib');
 
@@ -16,6 +17,7 @@ export type StrategyData = {
 
 export type StrategyExecuteData = {
 	maxTime: number,
+	timeframe: TimeframeItem,
 }
 
 export class StrategyItem implements StrategyData {
@@ -130,6 +132,8 @@ export class StrategyItem implements StrategyData {
 			// Execute
 			let result: AnalysisResultData = talib.execute(executeOptions);
 
+			// console.log(result);
+
 			// Store results
 			this.result.push(result);
 			this.resultIndex.push(analysis.uuid);
@@ -169,7 +173,7 @@ export class StrategyItem implements StrategyData {
 					strategyExecuteData: data,
 				});
 			} catch (err) {
-				console.error(err);
+				Bot.log(err as string, Log.Err);
 			}
 		}
 

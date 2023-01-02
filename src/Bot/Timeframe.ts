@@ -102,7 +102,7 @@ export class TimeframeItem implements TimeframeData {
 		return false;
 	}
 
-	execute () {
+	async execute () {
 		if (!this.active)
 			Bot.log(`Timeframe '${this.uuid}' executed manually.`);
 
@@ -128,11 +128,11 @@ export class TimeframeItem implements TimeframeData {
 					Bot.log(`Strategy '${strategy.uuid}' chart '${strategy.chart.uuid}' to be synced from: ${date.toISOString()}`);
 
 					try {
-						strategy.chart.exchange.syncChart(
+						await strategy.chart.exchange.syncChart(
 							strategy.chart
 						);
 					} catch (err) {
-						console.error(err);
+						Bot.log(err as string, Log.Err);
 					}
 				}
 
@@ -140,6 +140,7 @@ export class TimeframeItem implements TimeframeData {
 				try {
 					let signal = strategy.execute({
 						maxTime: this.maxTime,
+						timeframe: this,
 					});
 
 					// Duplicate strategy result set within this timeframe
@@ -149,7 +150,7 @@ export class TimeframeItem implements TimeframeData {
 					this.result.push(signal);
 					this.resultIndex.push(strategy.uuid);
 				} catch (err) {
-					console.error(err);
+					Bot.log(err as string, Log.Err);
 				}
 			}
 
