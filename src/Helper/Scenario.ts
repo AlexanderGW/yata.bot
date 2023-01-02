@@ -55,7 +55,12 @@ export const BollingerBullishLowerCrossover = Scenario.new({
 	],
 	condition: [
 
-		// Three candles back
+		// Four candles back
+		[
+			['close', '<', 'outRealLowerBand'],
+		],
+
+		// Three...
 		[
 			['close', '<', 'outRealLowerBand'],
 		],
