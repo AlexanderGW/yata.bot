@@ -22,6 +22,8 @@ export type AnalysisExecuteResultData = {
 }
 
 export type AnalysisResultData = {
+	begIndex: number,
+	nbElement: number,
 	result?: AnalysisExecuteResultData,
 }
 
