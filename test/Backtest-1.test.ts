@@ -3,10 +3,10 @@ import { expect } from 'chai';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import { Asset } from '../src/Bot/Asset';
-import { Bot, BotSubscribeData } from '../src/Bot/Bot';
-import { Chart, ChartCandleData } from '../src/Bot/Chart';
-import { Pair } from '../src/Bot/Pair';
+import { Asset, AssetItem } from '../src/Bot/Asset';
+import { Bot, BotSubscribeData, Log } from '../src/Bot/Bot';
+import { Chart, ChartCandleData, ChartItem } from '../src/Bot/Chart';
+import { Pair, PairItem } from '../src/Bot/Pair';
 import { Strategy, StrategyItem } from '../src/Bot/Strategy';
 import { Timeframe } from '../src/Bot/Timeframe';
 
@@ -23,71 +23,85 @@ import {
 	Rsi14 as analysisRsi14,
 	Sma20 as analysisSma20
 } from '../src/Helper/Analysis';
-import { Position } from '../src/Bot/Position';
-import { Order, OrderAction, OrderSide, OrderType } from '../src/Bot/Order';
-import { Exchange } from '../src/Bot/Exchange';
+import { Position, PositionItem } from '../src/Bot/Position';
+import { Order, OrderAction, OrderItem, OrderSide, OrderType } from '../src/Bot/Order';
+import { Exchange, ExchangeItem } from '../src/Bot/Exchange';
 
 const fs = require('fs');
 
 describe('Backtest dataset 1', () => {
-    it('should match known chart datapoint scenarios, against test JSON', async () => {
+    let expectedResult: Array<number[]> = [];
+    let expectedResultIndex: string[] = [];
+
+    let actualResult: Array<number[]> = [];
+    let actualResultIndex: string[] = [];
+    
+    let exchangeDefaultPaper: ExchangeItem;
+    let assetEth: AssetItem;
+    let assetBtc: AssetItem;
+    let pairEthBtc: PairItem;
+    let pos1: PositionItem;
+    let chartEthBtc4h: ChartItem;
+    let order1: OrderItem;
+
+    let stratBullishRsi14Oversold: StrategyItem;
+    let stratBullishMacd12_26_9Crossover: StrategyItem;
+    let stratBullishBollinger20LowerCross: StrategyItem;
+    let stratBullishSma20Cross: StrategyItem;
+
+    before(async function () {
 
         /**
          * Backtesting with a cut-off point (see `maxTime` within one of the `Timeframe` below)
          */
 
         // Create exchange client
-        let exchangeDefaultPaper = await Exchange.new({
+        exchangeDefaultPaper = await Exchange.new({
             // Using all default options
         });
 
-        // Example Binance exchange client
-        // let exchangeBinance = await Exchange.new({
-        //     class: 'Binance',
-        //     key: process.env.BINANCE_CLIENT_KEY,
-        //     secret: process.env.BINANCE_CLIENT_SECRET,
-        // });
-
-        // Example Kraken exchange client
-        // let exchangeKraken = await Exchange.new({
-        //     class: 'Kraken',
-        //     key: process.env.KRAKEN_CLIENT_KEY,
-        //     secret: process.env.KRAKEN_CLIENT_SECRET,
-        // });
-
-        // Support for DEXs to be implemented
-
         // Create ETH asset
-        let assetEth = Asset.new({
+        assetEth = Asset.new({
             exchange: exchangeDefaultPaper,
             symbol: 'ETH'
         });
 
         // Create BTC asset
-        let assetBtc = Asset.new({
+        assetBtc = Asset.new({
             exchange: exchangeDefaultPaper,
             symbol: 'BTC'
         });
 
         // Create ETH BTC pair of assets
-        let pairEthBtc = Pair.new({
+        pairEthBtc = Pair.new({
             a: assetEth,
             b: assetBtc
         });
 
         // Create an existing position on exchange
-        let pos1 = Position.new({
+        pos1 = Position.new({
         	exchange: exchangeDefaultPaper,
         	pair: pairEthBtc,
         	amount: '10.123456789'
         });
 
         // Create a ETHBTC pair chart, and 1 minute, for exchange data
-        let chartEthBtc4h = Chart.new({
+        chartEthBtc4h = Chart.new({
             exchange: exchangeDefaultPaper,
             pair: pairEthBtc,
             pollTime: 300, // 5m in seconds
             candleTime: 14400 // 4h in seconds
+        });
+
+        // Create an order, ready to be executed on exchange
+        order1 = Order.new({
+            amount: '10%', // of provided position,
+            side: OrderSide.Buy,
+            exchange: exchangeDefaultPaper,
+            pair: pairEthBtc,
+            position: pos1,
+            price: '0.05',
+            type: OrderType.Limit,
         });
 
         // Push exchange data to chart (if exchange/chart are compatible)
@@ -99,7 +113,7 @@ describe('Backtest dataset 1', () => {
 
             // Load from storage
             let response: any = fs.readFileSync(
-                './test/2022-10-15-ethbtc-4h-700.json',
+                './test/Kraken-ETHBTC-2023-01-02-13-04-20.json',
                 'utf8',
                 function (
                     err: object,
@@ -122,7 +136,7 @@ describe('Backtest dataset 1', () => {
         }
 
         // RSI crossing upward into 30 range
-        let stratBullishRsi14Oversold = Strategy.new({
+        stratBullishRsi14Oversold = Strategy.new({
             action: [
                 [scenarioBullishRsi14Oversold],
             ],
@@ -134,12 +148,9 @@ describe('Backtest dataset 1', () => {
         });
 
         // MACD crossing upward
-        let stratBullishMacd12_26_9Crossover = Strategy.new({
+        stratBullishMacd12_26_9Crossover = Strategy.new({
             action: [
-
-                // Trigger another strategy, if this scenario matches
-                [scenarioBullishMacd12_26_9Crossover, stratBullishRsi14Oversold],
-                // [scenarioBullishMacd12_26_9Crossover],
+                [scenarioBullishMacd12_26_9Crossover],
             ],
             analysis: [
                 analysisMacd12_26_9,
@@ -148,7 +159,7 @@ describe('Backtest dataset 1', () => {
             name: 'BullishMacd12_26_9Crossover',
         });
 
-        let stratBullishBollinger20LowerCross = Strategy.new({
+        stratBullishBollinger20LowerCross = Strategy.new({
             action: [
 
                 // Trigger another strategy, if this scenario matches
@@ -163,7 +174,7 @@ describe('Backtest dataset 1', () => {
             name: 'BullishBollingerLowerCross',
         });
 
-        let stratBullishSma20Cross = Strategy.new({
+        stratBullishSma20Cross = Strategy.new({
             action: [
                 [scenarioSma20CrossUp],
             ],
@@ -173,25 +184,30 @@ describe('Backtest dataset 1', () => {
             chart: chartEthBtc4h,
             name: 'BullishSma20Cross',
         });
+    });
 
-        // Timeframes will trigger by default
+    beforeEach(function () {
+        expectedResult = [];
+        expectedResultIndex = [];
+
+        actualResult = [];
+        actualResultIndex = [];
+    });
+
+    it('should match known "stratBullishRsi14Oversold" scenarios', async () => {
+
+        // Define timeframe, which runs once
         let defaultTimeframe = Timeframe.new({
-            active: false, // Run once, do not intiate a `setInterval()`
-            intervalTime: 1000, // 1 second
-            maxTime: 86400000 * 100, // last 100 days of the dataset
-            strategy: [
-                // stratBullishMacd12_26_9Crossover,
-                // stratBullishRsi14Oversold,
-                stratBullishBollinger20LowerCross,
-                // stratBullishSma20Cross,
-            ],
-        });
+            // Run once, do not intiate a `setInterval()`
+            active: false,
+            
+            // 1 second
+            intervalTime: 1000,
 
-        // Timeframes will trigger by default
-        let testTimeframe = Timeframe.new({
-            active: false, // Run once, do not intiate a `setInterval()`
-            intervalTime: 1500, // 1 second
-            maxTime: 86400000 * 50, // last 50 days of the dataset
+            // last 100 days of the dataset
+            maxTime: 86400000 * 50,
+
+            // Strategies to run
             strategy: [
                 // stratBullishMacd12_26_9Crossover,
                 stratBullishRsi14Oversold,
@@ -200,156 +216,117 @@ describe('Backtest dataset 1', () => {
             ],
         });
 
-        // Timeframe strategy expected result dates (latest datapoint for matching scenarios)
-        let expectedResult: Array<number[]> = [];
-        let expectedResultIndex: string[] = [];
-
-        // Expected results for `Timeframe` defaultTimeframe
+        // Expected results for `defaultTimeframe`
         expectedResult.push([
-            1657684800000,
-            1658404800000,
-            1658865600000,
-            1659441600000,
-            1661198400000,
-            1661774400000,
-            1663084800000,
-            1663862400000,
-            1664395200000,
-            1665014400000,
+            1668945600000,
+            1669003200000,
+            1669060800000,
+            1671307200000,
         ]);
         expectedResultIndex.push(defaultTimeframe.uuid);
 
-        // Expected results for `Timeframe` testTimeframe
-        expectedResult.push([
-            1661616000000,
-            1663027200000,
-            1663084800000,
-            1663416000000,
-            1663560000000,
-            1663833600000,
-            1663862400000
-        ]);
-        expectedResultIndex.push(testTimeframe.uuid);
-
-        let actualResult: Array<number[]> = [];
-        let actualResultIndex: string[] = [];
-
-        // Check pot, allow action of fixed val, or %
-        const actionEthBtcBuy = (
-            subscribe: BotSubscribeData
-        ) => {
-            // Bot.log(`TEST: chart: ${subscribe.chart.uuid}`);
-            // Bot.log(`TEST: do: actionEthBtcBuy`);
-
-            // Create an order, ready to be executed on exchange
-            try {
-                let order1 = Order.new({
-                    amount: '10%', // of provided position,
-                    side: OrderSide.Buy,
-                    exchange: exchangeDefaultPaper,
-                    pair: pairEthBtc,
-                    position: pos1,
-                    price: '0.05',
-                    type: OrderType.Limit,
-                });
-                order1.execute(OrderAction.Create);
-            } catch (err) {
-                Bot.log(err as string);
-            }
-
-            if (subscribe.timeframeAny?.length) {
-                for (let i = 0; i < subscribe.timeframeAny.length; i++) {
-                    let timeframe = subscribe.timeframeAny[i];
-
-                    // Index timeframe UUID for test comparison
-                    actualResultIndex.push(timeframe.uuid);
-                    Bot.log(`TEST: Timeframe '${timeframe.uuid}'; timeframeResultCount: ${timeframe.result.length}`);
+        // For testing, capture timeframe subscription results
+        return new Promise((resolve, reject) => {
             
-                    let timeField: string = '';
-            
-                    if (subscribe.chart.dataset?.openTime)
-                        timeField = 'openTime';
-                    else if (subscribe.chart.dataset?.closeTime)
-                        timeField = 'closeTime';
-            
-                    for (let j = 0; j < timeframe.result.length; j++) {
-                        let result: any = timeframe.result[j];
-                        let uuid = timeframe.resultIndex[j];
-            
-                        if (result?.length) {
+            // Check pot, allow action of fixed val, or %
+            const botSubscriptionActionCallback = (
+                subscribe: BotSubscribeData
+            ) => {
 
-                            // Get strategy from storage, by UUID
-                            let strategy: StrategyItem = Bot.getItem(uuid);
-            
-                            Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
-                            Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`);
-            
-                            let actualTimeframeResult: number[] = [];
-
-                            // let strategy = Strategy.getResult
-                            for (let k = 0; k < result.length; k++) {
-                                let latestCandle = result[k].length - 1;
-                                let matchFirstCond = result[k][latestCandle][0];
-                                
-                                if (subscribe.chart.dataset?.hasOwnProperty(timeField)) {
-                                    let datasetValue = subscribe.chart.dataset[timeField as keyof ChartCandleData];
-                                    if (datasetValue) {
-                                        let date = new Date(parseInt(datasetValue[matchFirstCond.k] as string) * 1000);
-                                        
-                                        // Add time for test comparison
-                                        actualTimeframeResult.push(date.getTime());
-                                        
-                                        // resultTimes.push(date.toISOString());
-                                        Bot.log(`TEST: Match: ${date.toISOString()}`);
-                                        // Bot.log(date.getTime());
-                                        
-                                        // Output details on all matching scenario conditions
-                                        // for (let l = 0; l < result[k].length; l++) {
-                                        // 	Bot.log(result[k][l]);
-                                        // }
-                                    }
-                                }
-                            }
-
-                            actualResult.push(actualTimeframeResult);
-                        }
-                    }
+                // Execute order creation
+                try {
+                    order1.execute(OrderAction.Create);
+                } catch (err) {
+                    Bot.log(err as string);
                 }
 
-                // Bot.log(expectedResult);
-                // Bot.log(expectedResultIndex);
+                if (subscribe.timeframeAny?.length) {
+                    for (let i = 0; i < subscribe.timeframeAny.length; i++) {
+                        let timeframe = subscribe.timeframeAny[i];
 
-                // Bot.log(actualResult);
-                // Bot.log(actualResultIndex);
+                        // Index timeframe UUID for test comparison
+                        actualResultIndex.push(timeframe.uuid);
+                        Bot.log(`TEST: Timeframe '${timeframe.uuid}'; timeframeResultCount: ${timeframe.result.length}`, Log.Debug);
+                
+                        let timeField: string = '';
+                
+                        if (subscribe.chart.dataset?.openTime)
+                            timeField = 'openTime';
+                        else if (subscribe.chart.dataset?.closeTime)
+                            timeField = 'closeTime';
+                
+                        for (let j = 0; j < timeframe.result.length; j++) {
+                            let result: any = timeframe.result[j];
+                            let uuid = timeframe.resultIndex[j];
+                
+                            if (result?.length) {
 
+                                // Get strategy from storage, by UUID
+                                let strategy: StrategyItem = Bot.getItem(uuid);
+                
+                                Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`, Log.Debug);
+                                Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`, Log.Debug);
+                
+                                let actualTimeframeResult: number[] = [];
+
+                                // let strategy = Strategy.getResult
+                                for (let k = 0; k < result.length; k++) {
+                                    let latestCandle = result[k].length - 1;
+                                    let matchFirstCond = result[k][latestCandle][0];
+                                    
+                                    if (subscribe.chart.dataset?.hasOwnProperty(timeField)) {
+                                        let datasetValue = subscribe.chart.dataset[timeField as keyof ChartCandleData];
+                                        if (datasetValue) {
+                                            let date = new Date(parseInt(datasetValue[matchFirstCond.k] as string) * 1000);
+                                            
+                                            // Add time for test comparison
+                                            actualTimeframeResult.push(date.getTime());
+                                            
+                                            // resultTimes.push(date.toISOString());
+                                            Bot.log(`TEST: Match: (${date.getTime().toString()}) ${date.toISOString()}`, Log.Debug);
+                                            
+                                            // Output details on all matching scenario conditions
+                                            for (let l = 0; l < result[k].length; l++) {
+                                            	Bot.log(JSON.stringify(result[k][l]), Log.Debug);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                actualResult.push(actualTimeframeResult);
+                            }
+                        }
+                    }
+
+                    resolve('Ok');
+                } else {
+                    reject('No results');
+                }
+            };
+
+            Bot.subscribe({
+                action: botSubscriptionActionCallback,
+                chart: chartEthBtc4h,
+                condition: [
+                    ['total', '>=', '1'],
+                ],
+                // event: BotEvent.TimeframeResult,
+                name: 'buyEthBtc',
+                timeframeAny: [
+                    defaultTimeframe,
+                ],
+            });
+
+            // Execute the timeframes once each (both are defined `active` of `false`,
+            // so that they don't run every `intervalTime`)
+            defaultTimeframe.execute();
+        })
+
+        .then(
+            function (result) {
                 expect(JSON.stringify(actualResult)).to.equal(JSON.stringify(expectedResult));
                 expect(JSON.stringify(actualResultIndex)).to.equal(JSON.stringify(expectedResultIndex));
             }
-        };
-
-        Bot.subscribe({
-            action: actionEthBtcBuy,
-            chart: chartEthBtc4h,
-            condition: [
-                ['total', '>=', '12'],
-            ],
-            // event: BotEvent.TimeframeResult,
-            name: 'buyEthBtc',
-            timeframeAny: [
-                defaultTimeframe,
-                testTimeframe,
-            ],
-        });
-
-        // Execute the timeframes once each (both are defined `active` of `false`,
-        // so that they don't run every `intervalTime`)
-        defaultTimeframe.execute();
-        testTimeframe.execute();
+        );
     });
 });
-
-//.to.be.false;
-// expect(options.fpsLimit).to.equal(30);
-
-// expect(options.interactivity.modes.emitters).to.be.empty;
-// expect(options.particles.color).to.be.an("object").to.have.property("value").to.equal("#fff");
