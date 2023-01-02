@@ -7,9 +7,10 @@ const fs = require('fs');
  * Logging levels
  */
 export enum Log {
-	Info = 0,
-	Warn = 1,
-	Err = 2,
+	Debug = 0,
+	Info = 1,
+	Warn = 2,
+	Err = 4,
 }
 
 /**
