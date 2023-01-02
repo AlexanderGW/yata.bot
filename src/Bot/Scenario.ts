@@ -1,5 +1,5 @@
 import { AnalysisData, AnalysisResultData, AnalysisItem, AnalysisExecuteResultData } from './Analysis';
-import { Bot } from './Bot';
+import { Bot, Log } from './Bot';
 import { ChartCandleData, ChartItem } from './Chart';
 import { StrategyExecuteData, StrategyItem } from './Strategy';
 import { v4 as uuidv4 } from 'uuid';
@@ -108,22 +108,22 @@ export class ScenarioItem implements ScenarioData {
 						dataset = data.analysisData[i][1];
 						// Bot.log(dataset);
 
-						if (analysis.config && dataset.result?.hasOwnProperty(valueA)) {
+						// if (analysis.config && dataset.result?.hasOwnProperty(valueA)) {
 
-							// If undefined, set the `startIndex` to the chart dataset, minus the length of the analysis dataset.
-							if (
-								!analysis.config?.startIndex
-								&& data.chart.dataset?.open
-							) {
-								const datasetResultField = dataset.result[valueA as keyof AnalysisExecuteResultData];
-								if (datasetResultField) {
-									analysis.config.startIndex = (
-										data.chart.dataset.open.length
-										- datasetResultField.length
-									);
-								}
-							}
-						}
+						// 	// If undefined, set the `startIndex` to the chart dataset, minus the length of the analysis dataset.
+						// 	if (
+						// 		!analysis.config?.startIndex
+						// 		&& data.chart.dataset?.open
+						// 	) {
+						// 		const datasetResultField = dataset.result[valueA as keyof AnalysisExecuteResultData];
+						// 		if (datasetResultField) {
+						// 			analysis.config.startIndex = (
+						// 				data.chart.dataset.open.length
+						// 				- datasetResultField.length
+						// 			);
+						// 		}
+						// 	}
+						// }
 
 						// Check field exists within result dataset
 						if (dataset.result?.hasOwnProperty(valueA)) {
@@ -142,7 +142,7 @@ export class ScenarioItem implements ScenarioData {
 					conditionMatch.push({
 						valueB: valueB,
 					});
-				} else {
+				} else if (data.analysisData) {
 
 					// Walk through datasets
 					let analysis: AnalysisData;
@@ -156,20 +156,31 @@ export class ScenarioItem implements ScenarioData {
 						dataset = data.analysisData[i][1];
 
 						// If undefined, set the `startIndex` to the chart dataset, minus the length of the analysis dataset.
+						// if (dataset?.result?.hasOwnProperty(valueB)) {
+						// 	if (
+						// 		analysis?.config
+						// 		&& !analysis.config.startIndex
+						// 		&& data?.chart.dataset?.open
+						// 	) {
+						// 		const datasetResultField = dataset.result[valueB as keyof AnalysisExecuteResultData];
+						// 		if (datasetResultField) {
+						// 			analysis.config.startIndex = (
+						// 				data.chart.dataset.open.length
+						// 				- datasetResultField.length
+						// 			);
+						// 		}
+						// 	}
+
+						// 	conditionMatch.push({
+						// 		valueA: valueA,
+						// 	});
+						// }
+
+						// Check field exists within result dataset
 						if (dataset?.result?.hasOwnProperty(valueB)) {
-							if (
-								analysis?.config
-								&& !analysis.config.startIndex
-								&& data?.chart.dataset?.open
-							) {
-								const datasetResultField = dataset.result[valueB as keyof AnalysisExecuteResultData];
-								if (datasetResultField) {
-									analysis.config.startIndex = (
-										data.chart.dataset.open.length
-										- datasetResultField.length
-									);
-								}
-							}
+							conditionMatch.push({
+								valueA: valueA,
+							});
 						}
 					}
 				}
@@ -181,7 +192,7 @@ export class ScenarioItem implements ScenarioData {
 
 		let endPoint: number = 0;
 		if (data?.chart.dataset?.open?.length)
-			endPoint = data?.chart.dataset?.open?.length;
+			endPoint = data.chart.dataset.open.length;
 
 		// Walk through field values, on result dataset
 		let startPoint: number = 0;
@@ -195,6 +206,10 @@ export class ScenarioItem implements ScenarioData {
 				- Math.ceil((data.strategyExecuteData.maxTime / 1000) / data.chart.candleTime)
 			);
 		}
+
+		// Ensure `startPoint` is at least positive
+		if (startPoint < 0)
+			startPoint = 0;
 
 		// Bot.log(`startPoint: ${startPoint}`);
 
@@ -228,7 +243,9 @@ export class ScenarioItem implements ScenarioData {
 				let condition = this.condition[conditionSetIdx];
 				let conditionIdx: number = 0;
 
-				// Reset, reuse connection match variable
+				let lastConditionMatchCount: number = 0;
+
+				// Reset, reuse condition match variable
 				conditionMatch = [];
 
 				// Walk conditions within the set, and validate fields exists 
@@ -260,17 +277,25 @@ export class ScenarioItem implements ScenarioData {
 							analysis = data.analysisData[i][0];
 							dataset = data.analysisData[i][1];
 
-							let startIndex: number = 0;
+							// Establish the analysis result offset from the dataset
+							let startIndex: number = dataset.begIndex;
 							if (analysis?.config?.startIndex) {
 								startIndex = analysis.config.startIndex;
 							}
 
 							// `valueA` is an analysis result data field
 							if (dataset.result?.hasOwnProperty(valueA)) {
+								if (
 
-								// Skip while the data point range is out-of-scope (not enough data points)
-								if (k < startIndex + conditionDepth)
-									continue;
+									// Skip while the data point range is out-of-scope (not enough data points)
+									k < startIndex + conditionDepth
+
+									// Skip if we've exceeded the analysis result data points
+									|| (k - startIndex) > (dataset.nbElement - 1)
+									) {
+										analysisOffset = -1;
+										continue;
+								}
 
 								analysisOffset = (k - startIndex);
 
@@ -286,15 +311,27 @@ export class ScenarioItem implements ScenarioData {
 								
 								// `valueB` is an analysis result data field
 								if (dataset.result?.hasOwnProperty(valueB)) {
+									if (
+
+										// Skip while the data point range is out-of-scope (not enough data points)
+										k < startIndex + conditionDepth
 	
-									// Skip while the data point range is out-of-scope (not enough data points)
-									if (k < startIndex + conditionDepth)
-										continue;
-	
+										// Skip if we've exceeded the analysis result data points
+										|| (k - startIndex) > (dataset.nbElement - 1)
+										) {
+											analysisOffset = -1;
+											continue;
+									}
+
 									analysisOffset = (k - startIndex);
-	
+
+									// console.log(`analysisOffset: ${analysisOffset}`);
+									
 									const datasetResultField = dataset.result[valueB as keyof AnalysisExecuteResultData];
 									if (datasetResultField) {
+										// if (valueB === 'outRealLowerBand')
+										// 	console.log(`datasetResultField: ${datasetResultField.length}`);
+
 										valueBReal = Number.parseFloat(
 											datasetResultField[analysisOffset] as string
 										).toFixed(10);
@@ -304,6 +341,13 @@ export class ScenarioItem implements ScenarioData {
 							}
 						}
 					}
+
+					// Offset will be `-1`, if the data set is out of range of the analysis results
+					// If a scenario doesn't specify a field found within any analysis results, value is `undefined`
+					if (typeof analysisOffset === 'number' && analysisOffset < 0)
+						break;
+
+					// console.log(`k: ${k}`);
 
 					if (typeof valueAReal === 'undefined') {
 						if (data.chart.dataset?.hasOwnProperty(valueA)) {
@@ -432,11 +476,27 @@ export class ScenarioItem implements ScenarioData {
 							}
 						}
 					}
+
+					// If the condition set doesn't increment for each data point, its not a matching scenario
+					if (lastConditionMatchCount === conditionMatch.length)
+						break;
+					
+					lastConditionMatchCount = conditionMatch.length;
 				}
 
 				// All conditions within the set, match on this data frame
 				if (conditionMatch.length === condition.length) {
 					conditionSetMatch.push(conditionMatch);
+
+					// if (conditionMatch && conditionMatch.valueB === 'outRealLowerBand')
+					// let len: number = conditionMatch.length - 1;
+					// let idx = conditionMatch[len].k as number;
+					// if (data?.chart.dataset?.openTime) {
+					// 	let date = new Date(data?.chart.dataset?.openTime[idx] * 1000);
+					// 	console.log(`openTime: ${date.toISOString()}`);
+					// }
+					// console.log(conditionMatch);
+							
 				}
 
 				conditionSetIdx++;
@@ -449,9 +509,18 @@ export class ScenarioItem implements ScenarioData {
 				// Execute chained strategy, if provided
 				if (data.strategy) {
 					Bot.log(`Scenario '${this.name}' triggered strategy '${data.strategy.name}'`);
-					data.strategy.execute(
-						data.strategyExecuteData
-					);
+
+					// Try strategy
+					try {
+						let signal = data.strategy.execute(
+							data.strategyExecuteData
+						);
+
+						data.strategyExecuteData.timeframe.result.push(signal);
+						data.strategyExecuteData.timeframe.resultIndex.push(data.strategy.uuid);
+					} catch (err) {
+						Bot.log(err as string, Log.Err);
+					}
 				}
 			}
 		}
