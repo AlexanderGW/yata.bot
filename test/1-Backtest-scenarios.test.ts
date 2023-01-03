@@ -404,4 +404,49 @@ describe('Backtest dataset 1', () => {
             defaultTimeframe
         );
     });
+
+    it('should match known "stratBullishSma20Cross" scenarios', async () => {
+
+        // Define timeframe, which runs once
+        let defaultTimeframe = Timeframe.new({
+
+            // Prevent timeframe from running every `intervalTime`,
+            // and instead execute manually later.
+            keepalive: false,
+            
+            // 1 second
+            intervalTime: 1000,
+
+            // last 100 days of the dataset
+            windowTime: 86400000 * 50,
+
+            // Strategies to run
+            strategy: [
+                stratBullishSma20Cross,
+            ],
+        });
+
+        // Expected results for `stratBullishSma20Cross` against the dataset
+        expectedResult.push([
+            1668499200000,
+            1668873600000,
+            1669176000000,
+            1669708800000,
+            1670212800000,
+            1670515200000,
+            1670688000000,
+            1670889600000,
+            1670947200000,
+            1671465600000,
+            1671753600000,
+            1672099200000,
+            1672315200000,
+        ]);
+        expectedResultIndex.push(defaultTimeframe.uuid);
+
+        // Subscribe to timeframe with callback testing, and execute timeframe
+        return await botTimeframeHandler(
+            defaultTimeframe
+        );
+    });
 });
