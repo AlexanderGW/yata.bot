@@ -4,10 +4,10 @@ import { ChartCandleData } from './Chart';
 import { StrategyItem } from "./Strategy";
 
 export type TimeframeData = {
-	active?: boolean,
 	interval?: any,
 	intervalTime?: number, // Milliseconds
 	lastRunTime?: number, // Milliseconds
+	keepalive?: boolean,
 	maxTime?: number, // Milliseconds
 	name?: string,
 	pollTime?: number, // Milliseconds
@@ -16,9 +16,9 @@ export type TimeframeData = {
 }
 
 export class TimeframeItem implements TimeframeData {
-	active: boolean;
 	interval: any;
 	intervalTime: number;
+	keepalive: boolean;
 	lastRunTime: number;
 	maxTime: number;
 	name?: string;
@@ -31,10 +31,6 @@ export class TimeframeItem implements TimeframeData {
 	constructor (
 		data: TimeframeData,
 	) {
-		if (data.hasOwnProperty('active'))
-			this.active = data.active ? true : false;
-		else
-			this.active = true;
 		if (data.lastRunTime)
 			this.lastRunTime = data.lastRunTime > 0 ? data.lastRunTime : 0;
 		else
@@ -44,6 +40,10 @@ export class TimeframeItem implements TimeframeData {
 			this.intervalTime = data.intervalTime > 0 ? data.intervalTime : 60000;
 		else
 			this.intervalTime = 60000;
+		if (data.hasOwnProperty('keepalive'))
+			this.keepalive = data.keepalive ? true : false;
+		else
+			this.keepalive = true;
 		if (data.name)
 			this.name = data.name;
 		if (data.maxTime)
@@ -58,7 +58,7 @@ export class TimeframeItem implements TimeframeData {
 		this.uuid = data.uuid ?? uuidv4();
 
 		// Start the interval, if timeframe is marked as active
-		if (this.active === true) {
+		if (this.keepalive === true) {
 			setTimeout(
 				function (timeframe) {
 					timeframe.execute();
@@ -71,7 +71,7 @@ export class TimeframeItem implements TimeframeData {
 	}
 
 	activate () {
-		this.active = true;
+		this.keepalive = true;
 		this.interval = setInterval(
 			function (timeframe) {
 				timeframe.execute();
@@ -82,7 +82,7 @@ export class TimeframeItem implements TimeframeData {
 	}
 
 	deactivate () {
-		this.active = false;
+		this.keepalive = false;
 		clearInterval(this.interval);
 	}
 
@@ -103,7 +103,7 @@ export class TimeframeItem implements TimeframeData {
 	}
 
 	async execute () {
-		if (!this.active)
+		if (!this.keepalive)
 			Bot.log(`Timeframe '${this.uuid}' executed manually.`);
 
 		const now = Date.now();

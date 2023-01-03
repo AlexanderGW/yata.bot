@@ -160,7 +160,7 @@ describe('Backtest dataset 1', () => {
 
         // Timeframes will trigger by default
         let defaultTimeframe = Timeframe.new({
-            active: false, // Run once, do not intiate a `setInterval()`
+            keepalive: false, // Run once, do not intiate a `setInterval()`
             intervalTime: 1000, // 1 second
             maxTime: 86400000 * 100,//chartEthBtc4h.candleTime * 4000, // last four 4h candles (just enough for the four scenario datapoints) - rename: `windowTime`
             strategy: [
