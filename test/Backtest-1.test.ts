@@ -8,7 +8,7 @@ import { Bot, BotSubscribeData, Log } from '../src/Bot/Bot';
 import { Chart, ChartCandleData, ChartItem } from '../src/Bot/Chart';
 import { Pair, PairItem } from '../src/Bot/Pair';
 import { Strategy, StrategyItem } from '../src/Bot/Strategy';
-import { Timeframe } from '../src/Bot/Timeframe';
+import { Timeframe, TimeframeItem } from '../src/Bot/Timeframe';
 
 // Helpers
 import {
@@ -48,6 +48,138 @@ describe('Backtest dataset 1', () => {
     let stratBullishMacd12_26_9Crossover: StrategyItem;
     let stratBullishBollinger20LowerCross: StrategyItem;
     let stratBullishSma20Cross: StrategyItem;
+
+    const botSubscriptionActionCallbackHandler = async (
+        subscribe: BotSubscribeData,
+    ) => {
+        let actualResult: Array<number[]> = [];
+        let actualResultIndex: string[] = [];
+
+        if (subscribe.timeframeAny?.length) {
+            for (let i = 0; i < subscribe.timeframeAny.length; i++) {
+                let timeframe = subscribe.timeframeAny[i];
+
+                // Index timeframe UUID for test comparison
+                actualResultIndex.push(timeframe.uuid);
+                Bot.log(`TEST: Timeframe '${timeframe.uuid}'; timeframeResultCount: ${timeframe.result.length}`, Log.Debug);
+        
+                let timeField: string = '';
+        
+                if (subscribe.chart.dataset?.openTime)
+                    timeField = 'openTime';
+                else if (subscribe.chart.dataset?.closeTime)
+                    timeField = 'closeTime';
+        
+                for (let j = 0; j < timeframe.result.length; j++) {
+                    let result: any = timeframe.result[j];
+                    let uuid = timeframe.resultIndex[j];
+        
+                    if (result?.length) {
+
+                        // Get strategy from storage, by UUID
+                        let strategy: StrategyItem = Bot.getItem(uuid);
+        
+                        Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`, Log.Debug);
+                        Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`, Log.Debug);
+        
+                        let actualTimeframeResult: number[] = [];
+
+                        // let strategy = Strategy.getResult
+                        for (let k = 0; k < result.length; k++) {
+                            let latestCandle = result[k].length - 1;
+                            let matchFirstCond = result[k][latestCandle][0];
+                            
+                            if (subscribe.chart.dataset?.hasOwnProperty(timeField)) {
+                                let datasetValue = subscribe.chart.dataset[timeField as keyof ChartCandleData];
+                                if (datasetValue) {
+                                    let date = new Date(parseInt(datasetValue[matchFirstCond.k] as string) * 1000);
+                                    
+                                    // Add time for test comparison
+                                    actualTimeframeResult.push(date.getTime());
+                                    
+                                    // resultTimes.push(date.toISOString());
+                                    Bot.log(`TEST: Match: (${date.getTime().toString()}) ${date.toISOString()}`, Log.Debug);
+                                    
+                                    // Output details on all matching scenario conditions
+                                    for (let l = 0; l < result[k].length; l++) {
+                                        Bot.log(JSON.stringify(result[k][l]), Log.Debug);
+                                    }
+                                }
+                            }
+                        }
+
+                        actualResult.push(actualTimeframeResult);
+                    }
+                }
+            }
+
+            return {
+                actualResult,
+                actualResultIndex
+            };
+        }
+    };
+
+    const botTimeframeHandler = async function (
+        timeframe: TimeframeItem,
+    ) {
+        return new Promise((resolve, reject) => {
+            
+            // Check pot, allow action of fixed val, or %
+            const botSubscriptionActionCallback = async (
+                subscribe: BotSubscribeData
+            ) => {
+
+                // Handle `BotSubscribeData`
+                const botSubscriptionActionCallbackResult = await botSubscriptionActionCallbackHandler(
+                    subscribe
+                );
+
+                // Merge returned matches into tracked actual results
+                if (
+                    botSubscriptionActionCallbackResult?.actualResult.length
+                    && botSubscriptionActionCallbackResult?.actualResultIndex.length
+                ) {
+                    actualResult.push.apply(
+                        actualResult,
+                        botSubscriptionActionCallbackResult.actualResult
+                    );
+
+                    actualResultIndex.push.apply(
+                        actualResultIndex,
+                        botSubscriptionActionCallbackResult.actualResultIndex
+                    );
+
+                    resolve('Ok');
+                } else {
+                    reject('No results');
+                }
+            };
+
+            Bot.subscribe({
+                action: botSubscriptionActionCallback,
+                chart: chartEthBtc4h,
+                condition: [
+                    ['total', '>=', '1'],
+                ],
+                name: 'botSubscriptionActionCallback',
+                timeframeAny: [
+                    timeframe,
+                ],
+            });
+
+            // Execute the timeframes once each (both are defined `active:false`,
+            // so that they don't run every `intervalTime`)
+            timeframe.execute();
+        })
+
+        .then(
+            function (result) {
+                expect(JSON.stringify(actualResult)).to.equal(JSON.stringify(expectedResult));
+                expect(JSON.stringify(actualResultIndex)).to.equal(JSON.stringify(expectedResultIndex));
+            }
+        )
+    };
 
     before(async function () {
 
@@ -161,9 +293,6 @@ describe('Backtest dataset 1', () => {
 
         stratBullishBollinger20LowerCross = Strategy.new({
             action: [
-
-                // Trigger another strategy, if this scenario matches
-                // [scenarioBollingerBullishLowerCrossover, stratBullishRsi14Oversold],
                 [scenarioBollingerBullishLowerCrossover],
             ],
             analysis: [
@@ -198,6 +327,7 @@ describe('Backtest dataset 1', () => {
 
         // Define timeframe, which runs once
         let defaultTimeframe = Timeframe.new({
+
             // Run once, do not intiate a `setInterval()`
             active: false,
             
@@ -209,10 +339,7 @@ describe('Backtest dataset 1', () => {
 
             // Strategies to run
             strategy: [
-                // stratBullishMacd12_26_9Crossover,
                 stratBullishRsi14Oversold,
-                // stratBullishBollinger20LowerCross,
-                // stratBullishSma20Cross,
             ],
         });
 
@@ -226,107 +353,144 @@ describe('Backtest dataset 1', () => {
         expectedResultIndex.push(defaultTimeframe.uuid);
 
         // For testing, capture timeframe subscription results
-        return new Promise((resolve, reject) => {
-            
-            // Check pot, allow action of fixed val, or %
-            const botSubscriptionActionCallback = (
-                subscribe: BotSubscribeData
-            ) => {
-
-                // Execute order creation
-                try {
-                    order1.execute(OrderAction.Create);
-                } catch (err) {
-                    Bot.log(err as string);
-                }
-
-                if (subscribe.timeframeAny?.length) {
-                    for (let i = 0; i < subscribe.timeframeAny.length; i++) {
-                        let timeframe = subscribe.timeframeAny[i];
-
-                        // Index timeframe UUID for test comparison
-                        actualResultIndex.push(timeframe.uuid);
-                        Bot.log(`TEST: Timeframe '${timeframe.uuid}'; timeframeResultCount: ${timeframe.result.length}`, Log.Debug);
-                
-                        let timeField: string = '';
-                
-                        if (subscribe.chart.dataset?.openTime)
-                            timeField = 'openTime';
-                        else if (subscribe.chart.dataset?.closeTime)
-                            timeField = 'closeTime';
-                
-                        for (let j = 0; j < timeframe.result.length; j++) {
-                            let result: any = timeframe.result[j];
-                            let uuid = timeframe.resultIndex[j];
-                
-                            if (result?.length) {
-
-                                // Get strategy from storage, by UUID
-                                let strategy: StrategyItem = Bot.getItem(uuid);
-                
-                                Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`, Log.Debug);
-                                Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`, Log.Debug);
-                
-                                let actualTimeframeResult: number[] = [];
-
-                                // let strategy = Strategy.getResult
-                                for (let k = 0; k < result.length; k++) {
-                                    let latestCandle = result[k].length - 1;
-                                    let matchFirstCond = result[k][latestCandle][0];
-                                    
-                                    if (subscribe.chart.dataset?.hasOwnProperty(timeField)) {
-                                        let datasetValue = subscribe.chart.dataset[timeField as keyof ChartCandleData];
-                                        if (datasetValue) {
-                                            let date = new Date(parseInt(datasetValue[matchFirstCond.k] as string) * 1000);
-                                            
-                                            // Add time for test comparison
-                                            actualTimeframeResult.push(date.getTime());
-                                            
-                                            // resultTimes.push(date.toISOString());
-                                            Bot.log(`TEST: Match: (${date.getTime().toString()}) ${date.toISOString()}`, Log.Debug);
-                                            
-                                            // Output details on all matching scenario conditions
-                                            for (let l = 0; l < result[k].length; l++) {
-                                            	Bot.log(JSON.stringify(result[k][l]), Log.Debug);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                actualResult.push(actualTimeframeResult);
-                            }
-                        }
-                    }
-
-                    resolve('Ok');
-                } else {
-                    reject('No results');
-                }
-            };
-
-            Bot.subscribe({
-                action: botSubscriptionActionCallback,
-                chart: chartEthBtc4h,
-                condition: [
-                    ['total', '>=', '1'],
-                ],
-                // event: BotEvent.TimeframeResult,
-                name: 'buyEthBtc',
-                timeframeAny: [
-                    defaultTimeframe,
-                ],
-            });
-
-            // Execute the timeframes once each (both are defined `active` of `false`,
-            // so that they don't run every `intervalTime`)
-            defaultTimeframe.execute();
-        })
-
-        .then(
-            function (result) {
-                expect(JSON.stringify(actualResult)).to.equal(JSON.stringify(expectedResult));
-                expect(JSON.stringify(actualResultIndex)).to.equal(JSON.stringify(expectedResultIndex));
-            }
+        return await botTimeframeHandler(
+            defaultTimeframe
         );
     });
+
+    // it('should match known "stratBullishMacd12_26_9Crossover" scenarios', async () => {
+
+    //     // Define timeframe, which runs once
+    //     let defaultTimeframe = Timeframe.new({
+    //         // Run once, do not intiate a `setInterval()`
+    //         active: false,
+            
+    //         // 1 second
+    //         intervalTime: 1000,
+
+    //         // last 100 days of the dataset
+    //         maxTime: 86400000 * 50,
+
+    //         // Strategies to run
+    //         strategy: [
+    //             stratBullishMacd12_26_9Crossover,
+    //         ],
+    //     });
+
+    //     // Expected results for `defaultTimeframe`
+    //     expectedResult.push([
+    //         1668427200000,
+    //         1668484800000,
+    //         1668787200000,
+    //         1669147200000,
+    //         1669708800000,
+    //         1670500800000,
+    //         1670673600000,
+    //         1670932800000,
+    //         1671350400000,
+    //         1671739200000,
+    //         1671897600000,
+    //         1672315200000,
+    //         1672632000000,
+    //     ]);
+    //     expectedResultIndex.push(defaultTimeframe.uuid);
+
+    //     // For testing, capture timeframe subscription results
+    //     return new Promise((resolve, reject) => {
+            
+    //         // Check pot, allow action of fixed val, or %
+    //         const botSubscriptionActionCallback = (
+    //             subscribe: BotSubscribeData
+    //         ) => {
+    //             if (subscribe.timeframeAny?.length) {
+    //                 for (let i = 0; i < subscribe.timeframeAny.length; i++) {
+    //                     let timeframe = subscribe.timeframeAny[i];
+
+    //                     // Index timeframe UUID for test comparison
+    //                     actualResultIndex.push(timeframe.uuid);
+    //                     Bot.log(`TEST: Timeframe '${timeframe.uuid}'; timeframeResultCount: ${timeframe.result.length}`, Log.Debug);
+                
+    //                     let timeField: string = '';
+                
+    //                     if (subscribe.chart.dataset?.openTime)
+    //                         timeField = 'openTime';
+    //                     else if (subscribe.chart.dataset?.closeTime)
+    //                         timeField = 'closeTime';
+                
+    //                     for (let j = 0; j < timeframe.result.length; j++) {
+    //                         let result: any = timeframe.result[j];
+    //                         let uuid = timeframe.resultIndex[j];
+                
+    //                         if (result?.length) {
+
+    //                             // Get strategy from storage, by UUID
+    //                             let strategy: StrategyItem = Bot.getItem(uuid);
+                
+    //                             Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`, Log.Debug);
+    //                             Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`, Log.Debug);
+                
+    //                             let actualTimeframeResult: number[] = [];
+
+    //                             // let strategy = Strategy.getResult
+    //                             for (let k = 0; k < result.length; k++) {
+    //                                 let latestCandle = result[k].length - 1;
+    //                                 let matchFirstCond = result[k][latestCandle][0];
+                                    
+    //                                 if (subscribe.chart.dataset?.hasOwnProperty(timeField)) {
+    //                                     let datasetValue = subscribe.chart.dataset[timeField as keyof ChartCandleData];
+    //                                     if (datasetValue) {
+    //                                         let date = new Date(parseInt(datasetValue[matchFirstCond.k] as string) * 1000);
+                                            
+    //                                         // Add time for test comparison
+    //                                         actualTimeframeResult.push(date.getTime());
+                                            
+    //                                         // resultTimes.push(date.toISOString());
+    //                                         Bot.log(`TEST: Match: (${date.getTime().toString()}) ${date.toISOString()}`, Log.Debug);
+                                            
+    //                                         // Output details on all matching scenario conditions
+    //                                         for (let l = 0; l < result[k].length; l++) {
+    //                                         	Bot.log(JSON.stringify(result[k][l]), Log.Debug);
+    //                                         }
+    //                                     }
+    //                                 }
+    //                             }
+
+    //                             actualResult.push(actualTimeframeResult);
+    //                         }
+    //                     }
+    //                 }
+
+    //                 resolve('Ok');
+    //             } else {
+    //                 reject('No results');
+    //             }
+    //         };
+
+    //         Bot.subscribe({
+    //             action: botSubscriptionActionCallback,
+    //             chart: chartEthBtc4h,
+
+    //             // Subscribe to all timeframe runs
+    //             condition: [
+    //                 ['total', '>=', '0'],
+    //             ],
+    //             // event: BotEvent.TimeframeResult,
+    //             name: 'buyEthBtc',
+    //             timeframeAny: [
+    //                 defaultTimeframe,
+    //             ],
+    //         });
+
+    //         // Execute the timeframes once each (both are defined `active` of `false`,
+    //         // so that they don't run every `intervalTime`)
+    //         defaultTimeframe.execute();
+    //     })
+
+    //     .then(
+    //         function (result) {
+    //             expect(JSON.stringify(actualResult)).to.equal(JSON.stringify(expectedResult));
+    //             expect(JSON.stringify(actualResultIndex)).to.equal(JSON.stringify(expectedResultIndex));
+    //         }
+    //     );
+    // });
 });
