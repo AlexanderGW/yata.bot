@@ -8,11 +8,11 @@ export type TimeframeData = {
 	intervalTime?: number, // Milliseconds
 	lastRunTime?: number, // Milliseconds
 	keepalive?: boolean,
-	maxTime?: number, // Milliseconds
 	name?: string,
 	pollTime?: number, // Milliseconds
 	strategy: Array<StrategyItem>,
 	uuid?: string,
+	windowTime?: number, // Milliseconds
 }
 
 export class TimeframeItem implements TimeframeData {
@@ -20,13 +20,13 @@ export class TimeframeItem implements TimeframeData {
 	intervalTime: number;
 	keepalive: boolean;
 	lastRunTime: number;
-	maxTime: number;
 	name?: string;
 	pollTime: number;
 	result: object[] = [];
 	resultIndex: string[] = [];
 	strategy: Array<StrategyItem>;
 	uuid: string;
+	windowTime: number;
 
 	constructor (
 		data: TimeframeData,
@@ -46,16 +46,16 @@ export class TimeframeItem implements TimeframeData {
 			this.keepalive = true;
 		if (data.name)
 			this.name = data.name;
-		if (data.maxTime)
-			this.maxTime = data.maxTime > 0 ? data.maxTime : 900000;
-		else
-			this.maxTime = 900000;
 		if (data.pollTime)
 			this.pollTime = data.pollTime > 0 ? data.pollTime : 60000;
 		else
 			this.pollTime = 60000;
 		this.strategy = data.strategy;
 		this.uuid = data.uuid ?? uuidv4();
+		if (data.windowTime)
+			this.windowTime = data.windowTime > 0 ? data.windowTime : 900000;
+		else
+			this.windowTime = 900000;
 
 		// Start the interval, if timeframe is marked as active
 		if (this.keepalive === true) {
@@ -139,7 +139,7 @@ export class TimeframeItem implements TimeframeData {
 				// Try strategy
 				try {
 					let signal = strategy.execute({
-						maxTime: this.maxTime,
+						windowTime: this.windowTime,
 						timeframe: this,
 					});
 

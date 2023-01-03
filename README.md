@@ -47,7 +47,7 @@ Note: A `Timeframe` uses only milliseconds. Everything else is in seconds.
 ```
 let defaultTimeframe = Timeframe.new({
   intervalTime: 1000, // 1 second
-  maxTime: 86400000 * 30, // last 30 days
+  windowTime: 86400000 * 30, // last 30 days
   strategy: [
     stratBullishSma20Cross,
   ],
@@ -174,6 +174,8 @@ All created items (i.e. `Pair.new()`) are kept in a simple global storage system
 ## Todo
 - JSON/YAML support for configurations
 - Expand `Bot.setItem` and `Bot.getItem` storage interface (Redis, MongoDB, etc)
+- Scenario condition percentage values (change from previous datapoint)
+- Cleanup `Helper` structure
 
 ## Caveats
 

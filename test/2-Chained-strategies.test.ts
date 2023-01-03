@@ -33,7 +33,7 @@ describe('Backtest dataset 1', () => {
     it('should match the same data point on a chained strategy, against a truncated dataset', async () => {
 
         /**
-         * Backtesting with a cut-off point (see `maxTime` within one of the `Timeframe` below)
+         * Backtesting with a cut-off point (see `windowTime` within one of the `Timeframe` below)
          */
 
         // Create exchange client
@@ -162,7 +162,7 @@ describe('Backtest dataset 1', () => {
         let defaultTimeframe = Timeframe.new({
             keepalive: false, // Run once, do not intiate a `setInterval()`
             intervalTime: 1000, // 1 second
-            maxTime: 86400000 * 100,//chartEthBtc4h.candleTime * 4000, // last four 4h candles (just enough for the four scenario datapoints) - rename: `windowTime`
+            windowTime: 86400000 * 100,//chartEthBtc4h.candleTime * 4000, // last four 4h candles (just enough for the four scenario datapoints) - rename: `windowTime`
             strategy: [
                 // stratBullishMacd12_26_9Crossover,
                 stratBullishBollinger20LowerCross,

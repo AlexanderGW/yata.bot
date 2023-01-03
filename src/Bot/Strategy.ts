@@ -16,7 +16,7 @@ export type StrategyData = {
 }
 
 export type StrategyExecuteData = {
-	maxTime: number,
+	windowTime: number,
 	timeframe: TimeframeItem,
 }
 

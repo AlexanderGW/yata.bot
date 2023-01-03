@@ -337,7 +337,7 @@ describe('Backtest dataset 1', () => {
             intervalTime: 1000,
 
             // last 100 days of the dataset
-            maxTime: 86400000 * 50,
+            windowTime: 86400000 * 50,
 
             // Strategies to run
             strategy: [
@@ -372,7 +372,7 @@ describe('Backtest dataset 1', () => {
             intervalTime: 1000,
 
             // last 100 days of the dataset
-            maxTime: 86400000 * 50,
+            windowTime: 86400000 * 50,
 
             // Strategies to run
             strategy: [
