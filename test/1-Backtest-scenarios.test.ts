@@ -42,7 +42,6 @@ describe('Backtest dataset 1', () => {
     let pairEthBtc: PairItem;
     let pos1: PositionItem;
     let chartEthBtc4h: ChartItem;
-    let order1: OrderItem;
 
     let stratBullishRsi14Oversold: StrategyItem;
     let stratBullishMacd12_26_9Crossover: StrategyItem;
@@ -225,17 +224,6 @@ describe('Backtest dataset 1', () => {
             candleTime: 14400 // 4h in seconds
         });
 
-        // Create an order, ready to be executed on exchange
-        order1 = Order.new({
-            amount: '10%', // of provided position,
-            side: OrderSide.Buy,
-            exchange: exchangeDefaultPaper,
-            pair: pairEthBtc,
-            position: pos1,
-            price: '0.05',
-            type: OrderType.Limit,
-        });
-
         // Push exchange data to chart (if exchange/chart are compatible)
         try {
             // Request from exchange (Binance, Kraken, etc.)
@@ -343,7 +331,7 @@ describe('Backtest dataset 1', () => {
             ],
         });
 
-        // Expected results for `defaultTimeframe`
+        // Expected results for `stratBullishRsi14Oversold` against the dataset
         expectedResult.push([
             1668945600000,
             1669003200000,
@@ -352,7 +340,7 @@ describe('Backtest dataset 1', () => {
         ]);
         expectedResultIndex.push(defaultTimeframe.uuid);
 
-        // For testing, capture timeframe subscription results
+        // Subscribe to timeframe with callback testing, and execute timeframe
         return await botTimeframeHandler(
             defaultTimeframe
         );
@@ -362,6 +350,7 @@ describe('Backtest dataset 1', () => {
 
         // Define timeframe, which runs once
         let defaultTimeframe = Timeframe.new({
+
             // Run once, do not intiate a `setInterval()`
             active: false,
             
@@ -377,7 +366,7 @@ describe('Backtest dataset 1', () => {
             ],
         });
 
-        // Expected results for `defaultTimeframe`
+        // Expected results for `stratBullishMacd12_26_9Crossover` against the dataset
         expectedResult.push([
             1668427200000,
             1668484800000,
@@ -395,7 +384,7 @@ describe('Backtest dataset 1', () => {
         ]);
         expectedResultIndex.push(defaultTimeframe.uuid);
 
-        // For testing, capture timeframe subscription results
+        // Subscribe to timeframe with callback testing, and execute timeframe
         return await botTimeframeHandler(
             defaultTimeframe
         );
