@@ -40,7 +40,6 @@ describe('Backtest dataset 1', () => {
     let assetEth: AssetItem;
     let assetBtc: AssetItem;
     let pairEthBtc: PairItem;
-    let pos1: PositionItem;
     let chartEthBtc4h: ChartItem;
 
     let stratBullishRsi14Oversold: StrategyItem;
@@ -48,6 +47,14 @@ describe('Backtest dataset 1', () => {
     let stratBullishBollinger20LowerCross: StrategyItem;
     let stratBullishSma20Cross: StrategyItem;
 
+    /**
+     * Callback for timeframe subscriptions; processes the results of all subscribed 
+     * timeframes (in `subscribe.timeframeAny`) for eventual test comparison, and 
+     * outputs its findings to log for debugging
+     * 
+     * @param subscribe 
+     * @returns 
+     */
     const botSubscriptionActionCallbackHandler = async (
         subscribe: BotSubscribeData,
     ) => {
@@ -111,20 +118,26 @@ describe('Backtest dataset 1', () => {
                     }
                 }
             }
-
-            return {
-                actualResult,
-                actualResultIndex
-            };
         }
+
+        return {
+            actualResult,
+            actualResultIndex
+        };
     };
 
+    /**
+     * Subscribe to an established timeframe with callback testing, then execute timeframe.
+     * 
+     * @param timeframe 
+     * @returns 
+     */
     const botTimeframeHandler = async function (
         timeframe: TimeframeItem,
     ) {
         return new Promise((resolve, reject) => {
             
-            // Check pot, allow action of fixed val, or %
+            // Called if subscription conditions match
             const botSubscriptionActionCallback = async (
                 subscribe: BotSubscribeData
             ) => {
@@ -156,12 +169,24 @@ describe('Backtest dataset 1', () => {
             };
 
             Bot.subscribe({
+
+                // The callback function if conditons are matched
                 action: botSubscriptionActionCallback,
+
+                // The dataset to be used to cross reference the timeframe signals
                 chart: chartEthBtc4h,
+
+                // The signal conditions within a timeframe, that will trigger a callback
+                // NOTE: The following would trigger a callback whenever any of the timeframes 
+                // are triggered, no matter what signal count (this is good for testing)
                 condition: [
-                    ['total', '>=', '1'],
+                    ['total', '>=', '0'],
                 ],
+
+                // A friendly name...
                 name: 'botSubscriptionActionCallback',
+
+                // Subscribe to any of the following timeframes
                 timeframeAny: [
                     timeframe,
                 ],
@@ -181,10 +206,6 @@ describe('Backtest dataset 1', () => {
     };
 
     before(async function () {
-
-        /**
-         * Backtesting with a cut-off point (see `maxTime` within one of the `Timeframe` below)
-         */
 
         // Create exchange client
         exchangeDefaultPaper = await Exchange.new({
@@ -207,13 +228,6 @@ describe('Backtest dataset 1', () => {
         pairEthBtc = Pair.new({
             a: assetEth,
             b: assetBtc
-        });
-
-        // Create an existing position on exchange
-        pos1 = Position.new({
-        	exchange: exchangeDefaultPaper,
-        	pair: pairEthBtc,
-        	amount: '10.123456789'
         });
 
         // Create a ETHBTC pair chart, and 1 minute, for exchange data
