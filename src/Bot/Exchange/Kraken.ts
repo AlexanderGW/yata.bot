@@ -61,10 +61,21 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 				// Options
 				{
+
+					// Order type
 					pair: pair,
+
+					// Order type
 					ordertype: ordertype,
+
+					// Order quantity in terms of the base asset
 					type: order.side === OrderSide.Buy ? 'buy' : 'sell',
+
+					// Order quantity in terms of the base asset
 					volume: order.amount,
+
+					// Validate inputs only. Do not submit order.
+					validate: order.dryrun,
 				}
 			);
 
