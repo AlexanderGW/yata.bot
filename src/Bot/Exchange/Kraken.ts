@@ -51,9 +51,6 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			// All response assets are prefixed with an `X`. Add one to ease lookups
 			let pair = `X${assetASymbol}X${assetBSymbol}`;
 
-			// TODO: Order types order.type
-			let ordertype = 'market';
-
 			let responseJson = await this.handle?.api(
 
 				// Type
@@ -63,7 +60,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				{
 
 					// Order type
-					ordertype: ordertype,
+					ordertype: this.getOrderTypeValue(order),
 
 					// Order type
 					pair: pair,
@@ -71,7 +68,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					// Order price
 					price: order.price,
 
-					// Order quantity in terms of the base asset
+					// Order direction (buy/sell)
 					type: order.side === OrderSide.Buy ? 'buy' : 'sell',
 
 					// Set order UUID as reference
@@ -164,9 +161,6 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			// All response assets are prefixed with an `X`. Add one to ease lookups
 			let pair = `X${assetASymbol}X${assetBSymbol}`;
 
-			// TODO: Order types order.type
-			let ordertype = 'market';
-
 			let responseJson = await this.handle?.api(
 
 				// Type
@@ -176,7 +170,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				{
 
 					// Order type
-					ordertype: ordertype,
+					ordertype: this.getOrderTypeValue(order),
 
 					// Order type
 					pair: pair,
@@ -187,7 +181,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					// Transaction ID
 					txid: order.transactionId,
 
-					// Order quantity in terms of the base asset
+					// Order direction (buy/sell)
 					type: order.side === OrderSide.Buy ? 'buy' : 'sell',
 
 					// Set order UUID as reference
@@ -336,6 +330,33 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		} catch (err) {
 			Bot.log(err as string, Log.Err);
 		}
+	}
+
+	getOrderTypeValue (
+		order: OrderItem,
+	) {
+		let ordertype: string;
+
+		switch (order.type) {
+
+			case OrderType.Limit:
+				ordertype = 'limit';
+				break;
+
+			case OrderType.StopLoss:
+				ordertype = 'stop-loss';
+				break;
+
+			case OrderType.TakeProfit:
+				ordertype = 'take-profit';
+				break;
+
+			default:
+				ordertype = 'market';
+				break;
+		}
+
+		return ordertype;
 	}
 }
 
