@@ -1,7 +1,7 @@
 import { Bot, Log } from '../Bot';
 import { ChartCandleData, ChartItem } from '../Chart';
 import { ExchangeData, ExchangeInterface, ExchangeItem } from '../Exchange';
-import { OrderSide, OrderItem, OrderType } from '../Order';
+import { OrderSide, OrderItem, OrderType, OrderStatus } from '../Order';
 
 const fs = require('fs');
 
@@ -63,19 +63,25 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				{
 
 					// Order type
-					pair: pair,
+					ordertype: ordertype,
 
 					// Order type
-					ordertype: ordertype,
+					pair: pair,
+
+					// Order price
+					price: order.price,
 
 					// Order quantity in terms of the base asset
 					type: order.side === OrderSide.Buy ? 'buy' : 'sell',
 
-					// Order quantity in terms of the base asset
-					volume: order.amount,
+					// Set order UUID as reference
+					userref: order.uuid,
 
 					// Validate inputs only. Do not submit order.
 					validate: order.dryrun,
+
+					// Order quantity in terms of the base asset
+					volume: order.amount,
 				}
 			);
 
@@ -85,8 +91,15 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 						Bot.log(responseJson.error[i], Log.Err);
 					}
 				}
-				order.confirmed = true;
-				order.transactionId = responseJson.result.txid;
+
+				orderResult.confirmed = false;
+				
+				// Confirmed
+				if (responseJson.result.count > 0) {
+					orderResult.confirmed = true;
+					orderResult.status = OrderStatus.Open;
+					orderResult.transactionId = responseJson.result.txid;
+				}
 			}
 		} catch (error) {
 			console.error(error);
@@ -95,19 +108,131 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		return orderResult;
 	}
 
-	// async cancelOrder (
-	// 	order: OrderItem,
-	// ) {
-	// 	let orderResult: OrderItem = order;
-	// 	return orderResult;
-	// }
+	async cancelOrder (
+		order: OrderItem,
+	) {
+		let orderResult: OrderItem = order;
 
-	// async editOrder (
-	// 	order: OrderItem,
-	// ) {
-	// 	let orderResult: OrderItem = order;
-	// 	return orderResult;
-	// }
+		try {
+			let responseJson = await this.handle?.api(
+
+				// Type
+				'CancelOrder',
+
+				// Options
+				{
+
+					// Transaction ID
+					txid: order.transactionId,
+				}
+			);
+
+			if (responseJson) {
+				if (responseJson.error) {
+					for (let i = 0; i < responseJson.error.length; i++) {
+						Bot.log(responseJson.error[i], Log.Err);
+					}
+				}
+
+				orderResult.confirmed = false;
+				
+				// Response contains a count of one, with no pending state
+				if (
+					responseJson.result.count === 1
+					&& responseJson.result.pending === false
+				) {
+					orderResult.confirmed = true;
+					orderResult.status = OrderStatus.Cancelled;
+				}
+			}
+		} catch (error) {
+			console.error(error);
+		}
+
+		return orderResult;
+	}
+
+	async editOrder (
+		order: OrderItem,
+	) {
+		let orderResult: OrderItem = order;
+
+		try {
+			let assetASymbol = this.translateSymbol(order.pair.a.symbol);
+			let assetBSymbol = this.translateSymbol(order.pair.b.symbol);
+
+			// All response assets are prefixed with an `X`. Add one to ease lookups
+			let pair = `X${assetASymbol}X${assetBSymbol}`;
+
+			// TODO: Order types order.type
+			let ordertype = 'market';
+
+			let responseJson = await this.handle?.api(
+
+				// Type
+				'EditOrder',
+
+				// Options
+				{
+
+					// Order type
+					ordertype: ordertype,
+
+					// Order type
+					pair: pair,
+
+					// Order price
+					price: order.price,
+
+					// Transaction ID
+					txid: order.transactionId,
+
+					// Order quantity in terms of the base asset
+					type: order.side === OrderSide.Buy ? 'buy' : 'sell',
+
+					// Set order UUID as reference
+					userref: order.uuid,
+
+					// Validate inputs only. Do not submit order.
+					validate: order.dryrun,
+
+					// Order quantity in terms of the base asset
+					volume: order.amount,
+				}
+			);
+
+			if (responseJson) {
+				if (responseJson.error) {
+					for (let i = 0; i < responseJson.error.length; i++) {
+						Bot.log(responseJson.error[i], Log.Err);
+					}
+				}
+
+				orderResult.confirmed = false;
+
+				// Response carries previous, new foreign 
+				// transaction ID, and status is `Ok`
+				if (
+					responseJson.result.originaltxid === order.transactionId
+					&& responseJson.result.txid
+					&& responseJson.result.status === 'Ok'
+				) {
+					orderResult.confirmed = true;
+					orderResult.transactionId = responseJson.result.txid;
+				}
+
+				// Throw error
+				else if (responseJson.result.status === 'Err') {
+					throw responseJson.result.error_message;
+				}
+
+			}
+		} catch (error) {
+			console.error(error);
+		}
+
+		return orderResult;
+	}
 
 	async syncChart (
 		chart: ChartItem,
