@@ -95,81 +95,82 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	) {
 		chart.refresh(data);
 
-		// TODO: Conditional logging
-		return true; // Skip logging
+		// Check if datasets need to be stored
+		if (!process.env.BOT_EXCHANGE_STORE_DATASET || process.env.BOT_EXCHANGE_STORE_DATASET !== '1')
+			return true;
 
-		// const pad = (value: number) =>
-		// 	value.toString().length == 1
-		// 	? `0${value}`
-		// 	: value;
+		const pad = (value: number) =>
+			value.toString().length == 1
+			? `0${value}`
+			: value;
 
-		// const now = new Date();
+		const now = new Date();
 
-		// let pathParts = [
-		// 	chart.exchange.name,
-		// 	chart.pair.a.symbol + chart.pair.b.symbol,
-		// 	now.getUTCFullYear(),
-		// 	pad(now.getUTCMonth() + 1),
-		// 	pad(now.getUTCDate()),
-		// ];
-		// let path = pathParts.join('/');
-		// // Bot.log(path);
+		let pathParts = [
+			chart.exchange.name,
+			chart.pair.a.symbol + chart.pair.b.symbol,
+			now.getUTCFullYear(),
+			pad(now.getUTCMonth() + 1),
+			pad(now.getUTCDate()),
+		];
+		let path = pathParts.join('/');
+		// Bot.log(path);
 
-		// // return;
+		// return;
 
-		// let filenameParts = [
-		// 	chart.exchange.name,
-		// 	chart.pair.a.symbol + chart.pair.b.symbol,
-		// 	now.getUTCFullYear(),
-		// 	pad(now.getUTCMonth() + 1),
-		// 	pad(now.getUTCDate()),
-		// 	pad(now.getUTCHours()),
-		// 	pad(now.getUTCMinutes()),
-		// 	pad(now.getUTCSeconds()),
-		// ];
-		// let filename = filenameParts.join('-');
-		// // Bot.log(filename);
+		let filenameParts = [
+			chart.exchange.name,
+			chart.pair.a.symbol + chart.pair.b.symbol,
+			now.getUTCFullYear(),
+			pad(now.getUTCMonth() + 1),
+			pad(now.getUTCDate()),
+			pad(now.getUTCHours()),
+			pad(now.getUTCMinutes()),
+			pad(now.getUTCSeconds()),
+		];
+		let filename = filenameParts.join('-');
+		// Bot.log(filename);
 
-		// let responseJson = JSON.stringify(data);
+		let responseJson = JSON.stringify(data);
 
-		// let storagePath = `./storage/${path}`;
-		// let storageFile = `${storagePath}/${filename}.json`;
+		let storagePath = `./storage/${path}`;
+		let storageFile = `${storagePath}/${filename}.json`;
 
-		// try {
-		// 	if (!fs.existsSync(storagePath)) {
-		// 		fs.mkdirSync(
-		// 			storagePath,
-		// 			{
-		// 				recursive: true
-		// 			},
-		// 			(err: object) => {
-		// 				if (err)
-		// 					throw err;
+		try {
+			if (!fs.existsSync(storagePath)) {
+				fs.mkdirSync(
+					storagePath,
+					{
+						recursive: true
+					},
+					(err: object) => {
+						if (err)
+							throw err;
 
-		// 				Bot.log(`Directory created: ${storagePath}`);
-		// 			}
-		// 		)
-		// 	}
-		// } catch (err) {
-		// 	return Bot.log(err.message as string, Log.Err);
-		// }
+						Bot.log(`Directory created: ${storagePath}`);
+					}
+				)
+			}
+		} catch (err: any) {
+			return Bot.log(err.message as string, Log.Err);
+		}
 
-        // try {
-		// 	fs.writeFile(
-		// 		storageFile,
-		// 		responseJson,
-		// 		function (
-		// 			err: object
-		// 		) {
-		// 			if (err)
-		// 				throw err;
+        try {
+			fs.writeFile(
+				storageFile,
+				responseJson,
+				function (
+					err: object
+				) {
+					if (err)
+						throw err;
 					
-		// 			Bot.log(`Stored: ${storageFile}`);
-		// 		}
-		// 	);
-		// } catch (err) {
-		// 	return Bot.log(err.message as string, Log.Err);
-		// }
+					Bot.log(`Stored: ${storageFile}`);
+				}
+			);
+		} catch (err: any) {
+			return Bot.log(err.message as string, Log.Err);
+		}
 	}
 
 	syncChart (
