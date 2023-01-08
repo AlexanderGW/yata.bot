@@ -51,6 +51,11 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			// All response assets are prefixed with an `X`. Add one to ease lookups
 			let pair = `X${assetASymbol}X${assetBSymbol}`;
 
+			// Set empty `referenceId` as current time
+			if (order.referenceId === 0) {
+				order.referenceId = Math.floor(Date.now() / 1000);
+			}
+
 			let responseJson = await this.handle?.api(
 
 				// Type
@@ -71,8 +76,8 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					// Order direction (buy/sell)
 					type: order.side === OrderSide.Buy ? 'buy' : 'sell',
 
-					// Set order UUID as reference
-					userref: order.uuid,
+					// Set order `referenceId`
+					userref: order.referenceId,
 
 					// Validate inputs only. Do not submit order.
 					validate: order.dryrun,
@@ -81,6 +86,9 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					volume: order.amount,
 				}
 			);
+
+			// Log raw response
+			Bot.log(`Exchange '${this.uuid}' response; ` + JSON.stringify(responseJson), Log.Debug);
 
 			if (responseJson) {
 				if (responseJson.error) {
@@ -124,6 +132,9 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				}
 			);
 
+			// Log raw response
+			Bot.log(`Exchange '${this.uuid}' response; ` + JSON.stringify(responseJson), Log.Debug);
+
 			if (responseJson) {
 				if (responseJson.error) {
 					for (let i = 0; i < responseJson.error.length; i++) {
@@ -161,6 +172,11 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			// All response assets are prefixed with an `X`. Add one to ease lookups
 			let pair = `X${assetASymbol}X${assetBSymbol}`;
 
+			// Set empty `referenceId` as current time
+			if (order.referenceId === 0) {
+				order.referenceId = Math.floor(Date.now() / 1000);
+			}
+
 			let responseJson = await this.handle?.api(
 
 				// Type
@@ -184,8 +200,8 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					// Order direction (buy/sell)
 					type: order.side === OrderSide.Buy ? 'buy' : 'sell',
 
-					// Set order UUID as reference
-					userref: order.uuid,
+					// Set order `referenceId`
+					userref: order.referenceId,
 
 					// Validate inputs only. Do not submit order.
 					validate: order.dryrun,
@@ -194,6 +210,9 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					volume: order.amount,
 				}
 			);
+
+			// Log raw response
+			Bot.log(`Exchange '${this.uuid}' response; ` + JSON.stringify(responseJson), Log.Debug);
 
 			if (responseJson) {
 				if (responseJson.error) {
@@ -279,7 +298,9 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					since: since,
 				}
 			);
-			// Bot.log(JSON.stringify(responseJson));
+
+			// Log raw response
+			Bot.log(`Exchange '${this.uuid}' response; ` + JSON.stringify(responseJson), Log.Debug);
 
 			let etlData: ChartCandleData = {
 				close: [],
