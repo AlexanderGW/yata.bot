@@ -37,6 +37,7 @@ export type OrderData = {
 	pair: PairItem,
 	position?: PositionItem,
 	price?: string,
+	referenceId?: number | string;
 	related?: OrderItem,
 	side?: OrderSide,
 	status?: OrderStatus,
@@ -55,6 +56,7 @@ export class OrderItem implements OrderData {
 	pair: PairItem;
 	position?: PositionItem;
 	price?: string = '0';
+	referenceId?: number = 0;
 	related?: OrderItem;
 	side?: OrderSide = OrderSide.Buy;
 	status?: OrderStatus = OrderStatus.Open;
@@ -125,58 +127,30 @@ export class OrderItem implements OrderData {
 
 		let orderResponse: OrderItem = this;
 		let logMessage: string = '';
+				
+		// Dry-run testing
+		if (this.dryrun) {
+			logMessage = `Dry-run:`;
+		}
 
 		switch (action) {
 			case OrderAction.Cancel : {
-				logMessage = `Order '${this.uuid}' cancel on '${this.exchange.uuid}'`;
-				
-				// Dry-run testing
-				if (this.dryrun) {
-					Bot.log(`Dry-run: ${logMessage}`);
-					orderResponse.confirmed = true;
-				}
-
-				// Not a test, send to exchange
-				else {
-					Bot.log(logMessage);
-					orderResponse = await this.exchange.cancelOrder(this);
-				}
+				Bot.log(`${logMessage} Order '${this.uuid}' cancel on '${this.exchange.uuid}'`);
+				orderResponse = await this.exchange.cancelOrder(this);
 
 				break;
 			}
 
 			case OrderAction.Create : {
-				logMessage = `Order '${this.uuid}' create on '${this.exchange.uuid}'`;
-				
-				// Dry-run testing
-				if (this.dryrun) {
-					Bot.log(`Dry-run: ${logMessage}`);
-					orderResponse.confirmed = true;
-				}
-
-				// Not a test, send to exchange
-				else {
-					Bot.log(logMessage);
-					orderResponse = await this.exchange.createOrder(this);
-				}
+				Bot.log(`${logMessage} Order '${this.uuid}' create on '${this.exchange.uuid}'`);
+				orderResponse = await this.exchange.createOrder(this);
 
 				break;
 			}
 
 			case OrderAction.Edit : {
-				logMessage = `Order '${this.uuid}' edited on '${this.exchange.uuid}'`;
-				
-				// Dry-run testing
-				if (this.dryrun) {
-					Bot.log(`Dry-run: ${logMessage}`);
-					orderResponse.confirmed = true;
-				}
-
-				// Not a test, send to exchange
-				else {
-					Bot.log(logMessage);
-					orderResponse = await this.exchange.editOrder(this);
-				}
+				Bot.log(`${logMessage} Order '${this.uuid}' edited on '${this.exchange.uuid}'`);
+				orderResponse = await this.exchange.editOrder(this);
 
 				break;
 			}
@@ -185,12 +159,17 @@ export class OrderItem implements OrderData {
 		// Order response indicates confirmation
 		if (orderResponse.confirmed === true) {
 			this.confirmed = true;
-			logMessage = `Order '${this.uuid}' confirmed`;
-			if (this.dryrun)
+			logMessage = `Order '${this.uuid}' confirmed on '${this.exchange.uuid}'`;
+				
+			// Dry-run testing
+			if (this.dryrun) {
 				logMessage = `Dry-run: ${logMessage}`;
+			}
 
 			Bot.log(logMessage);
 		}
+
+		return orderResponse;
 	}
 }
 
