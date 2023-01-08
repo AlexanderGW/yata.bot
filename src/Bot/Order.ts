@@ -40,6 +40,7 @@ export type OrderData = {
 	related?: OrderItem,
 	side?: OrderSide,
 	status?: OrderStatus,
+	stopPrice?: string,
 	transactionId?: string[],
 	type?: OrderType,
 	uuid?: string,
@@ -57,6 +58,7 @@ export class OrderItem implements OrderData {
 	related?: OrderItem;
 	side?: OrderSide = OrderSide.Buy;
 	status?: OrderStatus = OrderStatus.Open;
+	stopPrice?: string = '0';
 	transactionId?: string[] = [];
 	type?: OrderType = OrderType.Market;
 	uuid: string;
@@ -86,6 +88,8 @@ export class OrderItem implements OrderData {
 			this.side = data.side;
 		if (data.hasOwnProperty('status'))
 		this.status = data.status;
+		if (data.hasOwnProperty('stopPrice'))
+			this.stopPrice = data.stopPrice;
 		if (data.hasOwnProperty('transactionId'))
 			this.transactionId = data.transactionId;
 		if (data.hasOwnProperty('type'))
@@ -115,6 +119,7 @@ export class OrderItem implements OrderData {
 		logParts.push(`side: ${this.side};`);
 		logParts.push(`amount: ${this.amount};`);
 		logParts.push(`price: ${this.price}`);
+		// logParts.push(`stopPrice: ${this.stopPrice}`);
 
 		Bot.log(logParts.join(' '));
 
