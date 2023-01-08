@@ -25,6 +25,11 @@ if (
         let pairEthBtc: PairItem;
         let position1: PositionItem;
         let order1: OrderItem;
+
+        let order1CreateMarketBuy: OrderItem;
+        let order1CancelLimitBuy: OrderItem;
+        let order1CreateLimitBuy: OrderItem;
+        let order1EditLimitBuy: OrderItem;
     
         before(async function () {
     
@@ -90,14 +95,14 @@ if (
     
         it('should validate market buy order creation', async () => {
     
-            // Create a market buy order, and execute create on exchange
+            // Execute market buy order create on exchange
             try {
                 // NOTE: `order1` has been defined above as a market buy order
     
                 // Response will contain original `order1` with any changes, such as 
                 // the exchange side transaction ID, and `confirmed` should be `true` if successful
                 // For the purposes of testing, we'll store the response in its own variable
-                let order1CreateMarketBuy = await order1.execute(OrderAction.Create);
+                order1CreateMarketBuy = await order1.execute(OrderAction.Create);
                 console.log(order1CreateMarketBuy);
             } catch (err) {
                 Bot.log(err as string, Log.Err);
@@ -106,7 +111,7 @@ if (
     
         it('should validate limit buy order creation', async () => {
     
-            // Create a limit buy order, and execute create on exchange
+            // Execute limit buy order create on exchange
             try {
                 // Modifying `order1`
                 // Price. For ETHBTC, This would be at the price of BTC
@@ -118,11 +123,55 @@ if (
                 // Response will contain original `order1` with any changes, such as 
                 // the exchange side transaction ID, and `confirmed` should be `true` if successful
                 // For the purposes of testing, we'll store the response in its own variable
-                let order1CreateLimitBuy = await order1.execute(OrderAction.Create);
+                order1CreateLimitBuy = await order1.execute(OrderAction.Create);
                 console.log(order1CreateLimitBuy);
             } catch (err) {
                 Bot.log(err as string, Log.Err);
             }
         });
+    
+        // it('should validate limit buy order edit', async () => {
+
+        //     // Execute limit buy order edit on exchange
+        //     try {
+        //         // Modifying `order1`
+
+        //         // Price. For ETHBTC, This would be at the price of BTC
+        //         order1CreateLimitBuy.price = '0.009';
+
+        //         // Type of order 
+        //         order1CreateLimitBuy.type = OrderType.Limit;
+
+        //         // Call requires `transactionId` value
+        //         order1CreateLimitBuy.transactionId = ['false'];
+
+        //         // Response will contain original `order1` with any changes, such as 
+        //         // the exchange side transaction ID, and `confirmed` should be `true` if successful
+        //         // For the purposes of testing, we'll store the response in its own variable
+        //         order1EditLimitBuy = await order1CreateLimitBuy.execute(OrderAction.Edit);
+        //         console.log(order1EditLimitBuy);
+        //     } catch (err) {
+        //         Bot.log(err as string, Log.Err);
+        //     }
+        // });
+    
+        // it('should validate limit buy order cancel', async () => {
+    
+        //     // Execute limit buy order cancel on exchange
+        //     try {
+        //         // Modifying `order1`
+
+        //         // Call requires `transactionId` value
+        //         order1CreateLimitBuy.transactionId = ['false'];
+
+        //         // Response will contain original `order1` with any changes, such as 
+        //         // the exchange side transaction ID, and `confirmed` should be `true` if successful
+        //         // For the purposes of testing, we'll store the response in its own variable
+        //         order1CancelLimitBuy = await order1CreateLimitBuy.execute(OrderAction.Cancel);
+        //         console.log(order1CancelLimitBuy);
+        //     } catch (err) {
+        //         Bot.log(err as string, Log.Err);
+        //     }
+        // });
     });
 }
