@@ -121,6 +121,8 @@ export const Bot: BotData = {
 				console.error(consoleString);
 			else if (level === Log.Warn)
 				console.warn(consoleString);
+			else if (level === Log.Debug)
+				console.debug(consoleString);
 			else
 				console.log(consoleString);
 		}
@@ -128,11 +130,13 @@ export const Bot: BotData = {
 		if (process.env.BOT_LOG_FILE && process.env.BOT_LOG_FILE === '1') {
 			let levelValue;
 			if (level === Log.Err)
-				levelValue = 2;
+				levelValue = 'E';
 			else if (level === Log.Warn)
-				levelValue = 1;
+				levelValue = 'W';
+			else if (level === Log.Debug)
+				levelValue = 'D';
 			else
-				levelValue = 0;
+				levelValue = 'I';
 
 			let consoleString = `${now.toISOString()}: ${levelValue}; ${string}`;
 
