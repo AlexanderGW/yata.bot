@@ -70,11 +70,11 @@ export class ChartItem implements ChartData {
 }
 
 export const Chart = {
-	new (
+	async new (
 		data: ChartData,
-	): ChartItem {
+	): Promise<ChartItem> {
 		let item = new ChartItem(data);
-		let uuid = Bot.setItem(item);
+		let uuid = await Bot.setItem(item);
 
 		return Bot.getItem(uuid);
 	}

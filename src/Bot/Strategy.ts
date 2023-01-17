@@ -182,11 +182,11 @@ export class StrategyItem implements StrategyData {
 }
 
 export const Strategy = {
-	new (
+	async new (
 		data: StrategyData,
-	): StrategyItem {
+	): Promise<StrategyItem> {
 		let item = new StrategyItem(data);
-		let uuid = Bot.setItem(item);
+		let uuid = await Bot.setItem(item);
 
 		return Bot.getItem(uuid);
 	}

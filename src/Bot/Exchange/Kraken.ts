@@ -382,11 +382,11 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 }
 
 export const Kraken = {
-	new (
+	async new (
 		data: ExchangeData,
-	): KrakenItem {
+	): Promise<KrakenItem> {
 		let item = new KrakenItem(data);
-		let uuid = Bot.setItem(item);
+		let uuid = await Bot.setItem(item);
 
 		return Bot.getItem(uuid);
 	}

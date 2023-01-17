@@ -1,7 +1,10 @@
 import { ChartItem } from "./Chart";
+import { StorageData, Storage, MemoryStorage } from "./Storage";
 import { TimeframeItem } from "./Timeframe";
+import { v4 as uuidv4 } from 'uuid';
 
 const fs = require('fs');
+const hash = require('object-hash');
 
 /**
  * Logging levels
@@ -65,18 +68,21 @@ export type BotDespatchData = {
 
 export type BotData = {
 	 subscriber: Array<BotSubscribeData>,
-	 item: object[],
+	 item: Storage[],
 	 itemIndex: string[],
 	 log: (
 		string: string,
 		level?: Log,
 	 ) => void,
+	 storage: (
+		data?: StorageData,
+	 ) => Promise<Storage>,
 	 getItem: (
 		uuid: string,
-	 ) => any,
+	 ) => Promise<any>,
 	 setItem: (
 		data: ItemBaseData,
-	 ) => string,
+	 ) => Promise<string>,
 	 subscribe: (
 		data: BotSubscribeData,
 	 ) => void,
@@ -164,19 +170,77 @@ export const Bot: BotData = {
 	},
 
 	/**
+	 * Storage interface
+	 * 
+	 * @param string 
+	 * @param level 
+	 */
+	async storage (
+		data?: StorageData,
+	) {
+		return new Promise((resolve, reject) => {
+			if (this.item.length === 0) {
+				let storageData: StorageData = {
+					class: 'Memory',
+				};
+				this.item.push(new MemoryStorage(storageData));
+				this.itemIndex.push('');
+			}
+
+			let storageHash = hash(data);
+
+			let index = this.itemIndex.findIndex((hash: string) => hash === storageHash);
+
+			if (index >= 0)
+				return this.item[index];
+
+			// TODO: Default StorageData
+
+			// Storage class specified
+			if (data?.class?.length) {
+				let className = (data.class as string).replace(/[^a-z0-9]/gi, '');
+				let importPath = `./Storage/${className}`;
+				Bot.log(`Storage import: ${importPath}`);
+					
+				// Import storage extension
+				import(importPath).then(module => {
+					let newItem: Storage = new module[className](data);
+
+					if (newItem.constructor.name === className) {
+						const index = this.item.length;
+						this.item.push(newItem);
+						this.itemIndex.push(storageHash);
+
+						resolve(this.item[index]);
+					}
+				}).catch(err => {
+					Bot.log(err.message, Log.Err);
+					reject(this.item[0]);
+				});
+			}
+
+			// Default to base `Storage` in memory
+			else {
+				resolve(this.item[0]);
+			}
+		});
+	},
+
+	/**
 	 * Lookup and return an item from general storage
 	 * 
 	 * @param {string} uuid 
 	 * @returns {object | false}
 	 */
-	getItem (
+	async getItem (
 		uuid: string,
-	): any {
-		let index = this.itemIndex.findIndex((_uuid : string) => _uuid === uuid);
-
-		if (index >= 0)
-			return this.item[index];
-		return false;
+	) {
+		try {
+			return (await this.storage()).getItem(uuid);
+		} catch (err) {
+			Bot.log(err as string, Log.Err);
+			return '';
+		}
 	},
 
 	/**
@@ -186,23 +250,15 @@ export const Bot: BotData = {
 	 * @param {object} data - Base item strcuture for storage
 	 * @returns {string} The items UUID
 	 */
-	setItem (
+	async setItem (
 		data: ItemBaseData,
-	): string {
-		let index = this.itemIndex.findIndex((_uuid: string) => _uuid === data.uuid);
-
-		// Reset existing item
-		if (index >= 0)
-			this.item[index] = data;
-		
-		// Store new item
-		else {
-			// let newIndex = this.item.length;
-			this.item.push(data);
-			this.itemIndex.push(data.uuid);
+	) {
+		try {
+			return (await this.storage()).setItem(data);
+		} catch (err) {
+			Bot.log(err as string, Log.Err);
+			return '';
 		}
-
-		return data.uuid;
 	},
 
 	/**

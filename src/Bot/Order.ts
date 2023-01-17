@@ -174,9 +174,9 @@ export class OrderItem implements OrderData {
 }
 
 export const Order = {
-	new (
+	async new (
 		data: OrderData,
-	): OrderItem {
+	): Promise<OrderItem> {
 
 		// A percentage of a position
 		if (data.amount?.substring(data.amount.length - 1) === '%') {
@@ -191,7 +191,7 @@ export const Order = {
 		}
 		
 		let item = new OrderItem(data);
-		let uuid = Bot.setItem(item);
+		let uuid = await Bot.setItem(item);
 
 		return Bot.getItem(uuid);
 	}

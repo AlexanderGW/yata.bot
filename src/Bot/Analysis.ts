@@ -102,12 +102,12 @@ export class AnalysisItem implements AnalysisData {
 }
 
 export const Analysis = {
-	new (
+	async new (
 		data: AnalysisData,
-	): AnalysisItem {
+	): Promise<AnalysisItem> {
 		let item = new AnalysisItem(data);
-		let uuid = Bot.setItem(item);
+		let uuid = await Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return await Bot.getItem(uuid);
 	}
 };

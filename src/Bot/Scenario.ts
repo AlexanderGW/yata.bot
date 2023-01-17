@@ -530,11 +530,11 @@ export class ScenarioItem implements ScenarioData {
 }
 
 export const Scenario = {
-	new (
+	async new (
 		data: ScenarioData,
-	): ScenarioItem {
+	): Promise<ScenarioItem> {
 		let item = new ScenarioItem(data);
-		let uuid = Bot.setItem(item);
+		let uuid = await Bot.setItem(item);
 
 		return Bot.getItem(uuid);
 	}

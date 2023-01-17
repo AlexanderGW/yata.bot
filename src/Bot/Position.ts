@@ -28,11 +28,11 @@ export class PositionItem implements PositionData {
 }
 
 export const Position = {
-	new (
+	async new (
 		data: PositionData,
-	): PositionItem {
+	): Promise<PositionItem> {
 		let item = new PositionItem(data);
-		let uuid = Bot.setItem(item);
+		let uuid = await Bot.setItem(item);
 
 		return Bot.getItem(uuid);
 	}

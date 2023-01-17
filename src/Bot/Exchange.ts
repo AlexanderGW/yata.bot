@@ -183,24 +183,27 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 export const Exchange = {
 	async new (
 		data: ExchangeData,
-	): Promise<any> {
+	): Promise<ExchangeItem> {
 		let item: any;
 
 		// Exchange class specified
 		if (data.class?.length) {
+			let className = (data.class as string).replace(/[^a-z0-9]/gi, '');
 			let importPath = `./Exchange/${data.class}`;
 			Bot.log(`Exchange import: ${importPath}`);
 
-			const className = `${data.class}Item`;
+			// Class must be prefixed with `Item`, so as not to conflict, 
+			// and indicate is a storable item
+			className = `${className}Item`;
 				
 			// Import exchange extension
-			await import(importPath).then(module => {
+			await import(importPath).then(async (module) => {
 				let newItem: any = new module[className](data);
 
 				if (newItem.constructor.name === className) {
-					let uuid = Bot.setItem(newItem);
+					let uuid = await Bot.setItem(newItem);
 
-					item = Bot.getItem(uuid);
+					item = await Bot.getItem(uuid);
 				}
 			}).catch(err => Bot.log(err.message, Log.Err));
 		}
@@ -208,9 +211,9 @@ export const Exchange = {
 		// Default to base `Exchange` with paper trading
 		else {
 			let newItem: any = new ExchangeItem(data);
-			let uuid = Bot.setItem(newItem);
+			let uuid = await Bot.setItem(newItem);
 
-			item = Bot.getItem(uuid);
+			item = await Bot.getItem(uuid);
 		}
 
 		return item;

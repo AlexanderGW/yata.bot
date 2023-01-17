@@ -23,11 +23,11 @@ export class PairItem implements PairData {
 }
 
 export const Pair = {
-	new (
+	async new (
 		data: PairData,
-	): PairItem {
+	): Promise<PairItem> {
 		let item = new PairItem(data);
-		let uuid = Bot.setItem(item);
+		let uuid = await Bot.setItem(item);
 
 		return Bot.getItem(uuid);
 	}

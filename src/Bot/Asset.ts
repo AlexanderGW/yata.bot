@@ -31,12 +31,12 @@ export class AssetItem implements AssetData {
 }
 
 export const Asset = {
-	new (
+	async new (
 		data: AssetData,
-	): AssetItem {
+	): Promise<AssetItem> {
 		let item = new AssetItem(data);
-		let uuid = Bot.setItem(item);
+		let uuid = await Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return await Bot.getItem(uuid);
 	}
 };
