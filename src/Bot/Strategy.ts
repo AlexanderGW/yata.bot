@@ -59,7 +59,7 @@ export class StrategyItem implements StrategyData {
 	 */
 	getResult (
 		analysis: AnalysisItem
-	): AnalysisResultData | boolean {
+	): AnalysisResultData | false {
 		let index = this.resultIndex.findIndex(_uuid => _uuid === analysis.uuid);
 
 		if (index >= 0)
@@ -70,7 +70,7 @@ export class StrategyItem implements StrategyData {
 	/**
 	 * Execute all analysis on the strategy
 	 */
-	execute (
+	async execute (
 		data: StrategyExecuteData,
 	) {
 		let analysis: AnalysisItem;
@@ -94,7 +94,7 @@ export class StrategyItem implements StrategyData {
 				if (!inRealField)
 					throw ('Analysis dataset input field is unknown.');
 
-				let analysisResult = this.getResult(analysis.config.inRealAnalysis);
+				let analysisResult = this.getResult(await analysis.config.inRealAnalysis);
 				if (analysisResult === false)
 					throw ('No result found for provided analysis, make sure it executes before this analysis.');
 
@@ -184,10 +184,10 @@ export class StrategyItem implements StrategyData {
 export const Strategy = {
 	new (
 		data: StrategyData,
-	): StrategyItem {
+	): Promise<StrategyItem> {
 		let item = new StrategyItem(data);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(item.uuid);
 	}
 };

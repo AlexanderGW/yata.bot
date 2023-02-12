@@ -72,10 +72,10 @@ export class ChartItem implements ChartData {
 export const Chart = {
 	new (
 		data: ChartData,
-	): ChartItem {
+	): Promise<ChartItem> {
 		let item = new ChartItem(data);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(item.uuid);
 	}
 };

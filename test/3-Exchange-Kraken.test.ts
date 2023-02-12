@@ -41,25 +41,25 @@ if (
             });
     
             // Create ETH asset
-            assetEth = Asset.new({
+            assetEth = await Asset.new({
                 exchange: exchangeKraken,
                 symbol: 'ETH'
             });
     
             // Create BTC asset
-            assetBtc = Asset.new({
+            assetBtc = await Asset.new({
                 exchange: exchangeKraken,
                 symbol: 'BTC'
             });
     
             // Create ETH BTC pair of assets
-            pairEthBtc = Pair.new({
+            pairEthBtc = await Pair.new({
                 a: assetEth,
                 b: assetBtc
             });
     
             // Create an existing position on exchange
-            position1 = Position.new({
+            position1 = await Position.new({
                 exchange: exchangeKraken,
                 pair: pairEthBtc,
     
@@ -67,7 +67,7 @@ if (
                 amount: '0.1'
             });
     
-            order1 = Order.new({
+            order1 = await Order.new({
     
                 // Percentages can only be used if a `position` is provided, otherwise e.g. 0.01
                 // For ETHBTC, this would be the amount of ETH

@@ -25,10 +25,10 @@ export class PairItem implements PairData {
 export const Pair = {
 	new (
 		data: PairData,
-	): PairItem {
+	): Promise<PairItem> {
 		let item = new PairItem(data);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(item.uuid);
 	}
 };

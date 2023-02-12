@@ -43,9 +43,7 @@ describe('Backtest dataset 1', () => {
     let chartEthBtc4h: ChartItem;
 
     let stratBullishRsi14Oversold: StrategyItem;
-    let stratBullishMacd12_26_9Crossover: StrategyItem;
     let stratBullishBollinger20LowerCross: StrategyItem;
-    let stratBullishSma20Cross: StrategyItem;
 
     /**
      * Callback for timeframe subscriptions; processes the results of all subscribed 
@@ -162,6 +160,7 @@ describe('Backtest dataset 1', () => {
                         botSubscriptionActionCallbackResult.actualResultIndex
                     );
 
+                    // if (actualResult.length === 2)
                     resolve('Ok');
                 } else {
                     reject('No results');
@@ -180,7 +179,7 @@ describe('Backtest dataset 1', () => {
                 // NOTE: The following would trigger a callback whenever any of the timeframes 
                 // are triggered, no matter what signal count (this is good for testing)
                 condition: [
-                    ['total', '>=', '0'],
+                    ['total', '>', '0'],
                 ],
 
                 // A friendly name...
@@ -259,6 +258,11 @@ describe('Backtest dataset 1', () => {
 
             let responseJson = JSON.parse(response);
             if (responseJson) {
+                for (let i in responseJson) {
+                    responseJson[i] = responseJson[i].slice(26,74);
+                    // console.log(responseJson[i][responseJson[i].length - 1]);
+                }
+                
                 exchangeDefaultPaper.refreshChart(
                     chartEthBtc4h,
                     responseJson,
@@ -280,21 +284,11 @@ describe('Backtest dataset 1', () => {
             name: 'BullishRsi14Oversold',
         });
 
-        // MACD crossing upward
-        stratBullishMacd12_26_9Crossover = Strategy.new({
-            action: [
-                [scenarioBullishMacd12_26_9Crossover],
-            ],
-            analysis: [
-                analysisMacd12_26_9,
-            ],
-            chart: chartEthBtc4h,
-            name: 'BullishMacd12_26_9Crossover',
-        });
-
         stratBullishBollinger20LowerCross = Strategy.new({
             action: [
-                [scenarioBollingerBullishLowerCrossover],
+
+                // Trigger another strategy, if this scenario matches
+                [scenarioBollingerBullishLowerCrossover, stratBullishRsi14Oversold],
             ],
             analysis: [
                 analysisSma20, // Must execute before `analysisBollinger20`
@@ -302,17 +296,6 @@ describe('Backtest dataset 1', () => {
             ],
             chart: chartEthBtc4h,
             name: 'BullishBollingerLowerCross',
-        });
-
-        stratBullishSma20Cross = Strategy.new({
-            action: [
-                [scenarioSma20CrossUp],
-            ],
-            analysis: [
-                analysisSma20,
-            ],
-            chart: chartEthBtc4h,
-            name: 'BullishSma20Cross',
         });
     });
 
@@ -324,7 +307,7 @@ describe('Backtest dataset 1', () => {
         actualResultIndex = [];
     });
 
-    it('should match known "stratBullishRsi14Oversold" scenarios', async () => {
+    it('should trigger chained strategy', async () => {
 
         // Define timeframe, which runs once
         let defaultTimeframe = Timeframe.new({
@@ -337,110 +320,22 @@ describe('Backtest dataset 1', () => {
             intervalTime: 1000,
 
             // last 100 days of the dataset
-            windowTime: 86400000 * 50,
+            windowTime: 86400000 * 100,
 
             // Strategies to run
             strategy: [
-                stratBullishRsi14Oversold,
+                stratBullishBollinger20LowerCross,
             ],
         });
 
         // Expected results for `stratBullishRsi14Oversold` against the dataset
         expectedResult.push([
-            1668945600000,
-            1669003200000,
-            1669060800000,
-            1671307200000,
+            1663084800000,
         ]);
-        expectedResultIndex.push(defaultTimeframe.uuid);
 
-        // Subscribe to timeframe with callback testing, and execute timeframe
-        return await botTimeframeHandler(
-            defaultTimeframe
-        );
-    });
-
-    it('should match known "stratBullishMacd12_26_9Crossover" scenarios', async () => {
-
-        // Define timeframe, which runs once
-        let defaultTimeframe = Timeframe.new({
-
-            // Prevent timeframe from running every `intervalTime`,
-            // and instead execute manually later.
-            keepalive: false,
-            
-            // 1 second
-            intervalTime: 1000,
-
-            // last 100 days of the dataset
-            windowTime: 86400000 * 50,
-
-            // Strategies to run
-            strategy: [
-                stratBullishMacd12_26_9Crossover,
-            ],
-        });
-
-        // Expected results for `stratBullishMacd12_26_9Crossover` against the dataset
+        // Expected results for `stratBullishBollinger20LowerCross` against the dataset
         expectedResult.push([
-            1668427200000,
-            1668484800000,
-            1668787200000,
-            1669147200000,
-            1669708800000,
-            1670500800000,
-            1670673600000,
-            1670932800000,
-            1671350400000,
-            1671739200000,
-            1671897600000,
-            1672315200000,
-            1672632000000,
-        ]);
-        expectedResultIndex.push(defaultTimeframe.uuid);
-
-        // Subscribe to timeframe with callback testing, and execute timeframe
-        return await botTimeframeHandler(
-            defaultTimeframe
-        );
-    });
-
-    it('should match known "stratBullishSma20Cross" scenarios', async () => {
-
-        // Define timeframe, which runs once
-        let defaultTimeframe = Timeframe.new({
-
-            // Prevent timeframe from running every `intervalTime`,
-            // and instead execute manually later.
-            keepalive: false,
-            
-            // 1 second
-            intervalTime: 1000,
-
-            // last 100 days of the dataset
-            windowTime: 86400000 * 50,
-
-            // Strategies to run
-            strategy: [
-                stratBullishSma20Cross,
-            ],
-        });
-
-        // Expected results for `stratBullishSma20Cross` against the dataset
-        expectedResult.push([
-            1668499200000,
-            1668873600000,
-            1669176000000,
-            1669708800000,
-            1670212800000,
-            1670515200000,
-            1670688000000,
-            1670889600000,
-            1670947200000,
-            1671465600000,
-            1671753600000,
-            1672099200000,
-            1672315200000,
+            1663084800000,
         ]);
         expectedResultIndex.push(defaultTimeframe.uuid);
 

@@ -7,7 +7,7 @@ import {
 } from "../Helper/Analysis";
 
 // Scenario for analysis events
-export const BullishRsi14Oversold = Scenario.new({
+export const BullishRsi14Oversold = await Scenario.new({
 	analysis: [
 		analysisRsi14
 	],
@@ -27,7 +27,7 @@ export const BullishRsi14Oversold = Scenario.new({
 	name: 'scenarioBullishRsi14Oversold',
 });
 
-export const BullishMacd12_26_9Crossover = Scenario.new({
+export const BullishMacd12_26_9Crossover = await Scenario.new({
 	analysis: [
 		analysisMacd12_26_9,
 	],
@@ -48,7 +48,7 @@ export const BullishMacd12_26_9Crossover = Scenario.new({
 	name: 'scenarioBullishMacd12_26_9Crossover',
 });
 
-export const BollingerBullishLowerCrossover = Scenario.new({
+export const BollingerBullishLowerCrossover = await Scenario.new({
 	analysis: [
 		analysisSma20, // Must execute before `analysisBollinger20`
 		analysisBollinger20, // Depends on `analysisSma20` result
@@ -86,7 +86,7 @@ export const BollingerBullishLowerCrossover = Scenario.new({
 });
 
 // Candles closing about the 20 SMA
-export const Sma20CrossUp = Scenario.new({
+export const Sma20CrossUp = await Scenario.new({
 	analysis: [
 		analysisSma20,
 	],

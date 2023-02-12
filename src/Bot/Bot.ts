@@ -1,6 +1,8 @@
 import { ChartItem } from "./Chart";
 import { TimeframeItem } from "./Timeframe";
 
+const redis = require('redis');
+
 const fs = require('fs');
 
 /**
@@ -73,10 +75,10 @@ export type BotData = {
 	 ) => void,
 	 getItem: (
 		uuid: string,
-	 ) => any,
+	 ) => Promise<any>,
 	 setItem: (
 		data: ItemBaseData,
-	 ) => string,
+	 ) => Promise<string>,
 	 subscribe: (
 		data: BotSubscribeData,
 	 ) => void,
@@ -169,14 +171,24 @@ export const Bot: BotData = {
 	 * @param {string} uuid 
 	 * @returns {object | false}
 	 */
-	getItem (
+	async getItem (
 		uuid: string,
-	): any {
-		let index = this.itemIndex.findIndex((_uuid : string) => _uuid === uuid);
+	): Promise<string> {
+		// let index = this.itemIndex.findIndex((_uuid : string) => _uuid === uuid);
 
-		if (index >= 0)
-			return this.item[index];
-		return false;
+		// if (index >= 0)
+		// 	return this.item[index];
+		// return false;
+		let client: any = redis.createClient({
+			// host: '127.0.0.1',
+			// port: 6379,
+		});
+		return new Promise((resolve, reject) => {
+			client.get(uuid, (err: any, result: any) => {
+				if (err) return reject(err);
+				resolve(JSON.parse(result));
+			});
+		});
 	},
 
 	/**
@@ -186,23 +198,33 @@ export const Bot: BotData = {
 	 * @param {object} data - Base item strcuture for storage
 	 * @returns {string} The items UUID
 	 */
-	setItem (
+	async setItem (
 		data: ItemBaseData,
-	): string {
-		let index = this.itemIndex.findIndex((_uuid: string) => _uuid === data.uuid);
+	): Promise<string> {
+		return new Promise((resolve, reject) => {
+			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === data.uuid);
 
-		// Reset existing item
-		if (index >= 0)
-			this.item[index] = data;
-		
-		// Store new item
-		else {
-			// let newIndex = this.item.length;
-			this.item.push(data);
-			this.itemIndex.push(data.uuid);
-		}
+			// Reset existing item
+			if (index >= 0)
+				this.item[index] = data;
+			
+			// Store new item
+			else {
+				// let newIndex = this.item.length;
+				this.item.push(data);
+				this.itemIndex.push(data.uuid);
+			}
 
-		return data.uuid;
+			// return data.uuid;
+			let client: any = redis.createClient({
+				// host: '127.0.0.1',
+				// port: 6379,
+			});
+			client.set(data.uuid, JSON.stringify(data), (err: any, result: any) => {
+			if (err) return reject(err);
+				resolve(result);
+			});
+		});
 	},
 
 	/**

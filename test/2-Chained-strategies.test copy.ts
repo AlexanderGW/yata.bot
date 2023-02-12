@@ -115,6 +115,8 @@ describe('Backtest dataset 1', () => {
             let responseJson = JSON.parse(response);
             if (responseJson) {
 
+                // TODO: There is something wrong with BBAND analysis offset - check all DP and analysis offset logic
+
                 for (let i in responseJson) {
                     responseJson[i] = responseJson[i].slice(26,74);
                     // console.log(responseJson[i][responseJson[i].length - 1]);
@@ -200,6 +202,22 @@ describe('Backtest dataset 1', () => {
             const actionEthBtcBuy = (
                 subscribe: BotSubscribeData
             ) => {
+
+                // Create an order, ready to be executed on exchange
+                try {
+                    let order1 = Order.new({
+                        amount: '10%', // of provided position,
+                        side: OrderSide.Buy,
+                        exchange: exchangeDefaultPaper,
+                        pair: pairEthBtc,
+                        position: pos1,
+                        price: '0.05',
+                        type: OrderType.Limit,
+                    });
+                    order1.execute(OrderAction.Create);
+                } catch (err) {
+                    Bot.log(err as string);
+                }
 
                 if (subscribe.timeframeAny?.length) {
                     for (let i = 0; i < subscribe.timeframeAny.length; i++) {

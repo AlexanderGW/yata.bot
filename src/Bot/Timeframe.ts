@@ -168,12 +168,12 @@ export class TimeframeItem implements TimeframeData {
 }
 
 export const Timeframe = {
-	new (
+	async new (
 		data: TimeframeData,
-	): TimeframeItem {
+	): Promise<TimeframeItem> {
 		let item = new TimeframeItem(data);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return await Bot.getItem(item.uuid);
 	}
 };

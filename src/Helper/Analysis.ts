@@ -2,7 +2,7 @@ import { Analysis } from "../Bot/Analysis";
 import { Bot } from "../Bot/Bot";
 
 // Relative Strength Index (RSI) 14
-export const Rsi14 = Analysis.new({
+export const Rsi14 = await Analysis.new({
 	name: 'RSI',
 	config: {
 		inRealField: 'close',
@@ -14,7 +14,7 @@ export const Rsi14 = Analysis.new({
 // Bot.log(analysisanalysisRsi14.explain);
 
 // Exponential Moving Average (SMA) 20
-export const Ema20 = Analysis.new({
+export const Ema20 = await Analysis.new({
 	name: 'EMA20',
 	config: {
 		inRealField: 'close',
@@ -25,7 +25,7 @@ export const Ema20 = Analysis.new({
 // Bot.log(analysisEma20.explain);
 
 // Exponential Moving Average (SMA) 100
-export const Ema100 = Analysis.new({
+export const Ema100 = await Analysis.new({
 	name: 'EMA100',
 	config: {
 		inRealField: 'close',
@@ -35,7 +35,7 @@ export const Ema100 = Analysis.new({
 });
 
 // Simple Moving Average (SMA) 20
-export const Sma20 = Analysis.new({
+export const Sma20 = await Analysis.new({
 	name: 'SMA20',
 	config: {
 		inRealField: 'close',
@@ -46,7 +46,7 @@ export const Sma20 = Analysis.new({
 // Bot.log(Sma20.explain);
 
 // Simple Moving Average (SMA) 50
-export const Sma50 = Analysis.new({
+export const Sma50 = await Analysis.new({
 	name: 'SMA50',
 	config: {
 		inRealField: 'close',
@@ -56,7 +56,7 @@ export const Sma50 = Analysis.new({
 });
 
 // Simple Moving Average (SMA) 200
-export const Sma200 = Analysis.new({
+export const Sma200 = await Analysis.new({
 	name: 'SMA200',
 	config: {
 		inRealField: 'close',
@@ -66,7 +66,7 @@ export const Sma200 = Analysis.new({
 });
 
 // Bollinger Bands (dependent on SMA20 result)
-export const Bollinger20 = Analysis.new({
+export const Bollinger20 = await Analysis.new({
 	name: 'Bollinger20',
 	config: {
 		inRealAnalysis: Sma20,
@@ -78,7 +78,7 @@ export const Bollinger20 = Analysis.new({
 // console.log(Bollinger20.explain);
 
 // Moving Average Convergence/Divergence (MACD) with defaults
-export const Macd12_26_9 = Analysis.new({
+export const Macd12_26_9 = await Analysis.new({
 	name: 'MACDDefault12_26_9',
 	config: {
 		inRealField: 'close',

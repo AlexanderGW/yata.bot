@@ -30,10 +30,10 @@ export class PositionItem implements PositionData {
 export const Position = {
 	new (
 		data: PositionData,
-	): PositionItem {
+	): Promise<PositionItem> {
 		let item = new PositionItem(data);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(item.uuid);
 	}
 };

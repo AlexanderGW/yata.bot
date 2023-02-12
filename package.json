@@ -4,7 +4,7 @@
   "description": "TBC",
   "main": "index.ts",
   "scripts": {
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\", \"target\": \"es2017\", \"strict\": true, \"strictNullChecks\": true}' mocha -r ts-node/register 'test/**/*.ts'"
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"es2022\", \"target\": \"es2022\", \"strict\": true, \"moduleResolution\": \"node\", \"strictNullChecks\": true}' mocha -r ts-node/register test/1-Backtest-scenarios.ts"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,8 @@
   "dependencies": {
     "dotenv": "^16.0.3",
     "kraken-api": "^1.0.1",
+    "object-hash": "^3.0.0",
+    "redis": "^4.6.1",
     "talib": "^1.1.4",
     "uuid": "^9.0.0"
   },

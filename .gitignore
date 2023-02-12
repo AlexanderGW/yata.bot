@@ -1,5 +1,5 @@
 .env
 dist
 node_modules
-storage/log
-storage/dataset
+storage/log/*.log
+storage/dataset/*.json

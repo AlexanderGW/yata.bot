@@ -33,10 +33,10 @@ export class AssetItem implements AssetData {
 export const Asset = {
 	new (
 		data: AssetData,
-	): AssetItem {
+	): Promise<AssetItem> {
 		let item = new AssetItem(data);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(item.uuid);
 	}
 };

@@ -384,10 +384,10 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 export const Kraken = {
 	new (
 		data: ExchangeData,
-	): KrakenItem {
+	): Promise<KrakenItem> {
 		let item = new KrakenItem(data);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(item.uuid);
 	}
 };

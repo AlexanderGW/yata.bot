@@ -200,7 +200,7 @@ export const Exchange = {
 				if (newItem.constructor.name === className) {
 					let uuid = Bot.setItem(newItem);
 
-					item = Bot.getItem(uuid);
+					item = Bot.getItem(newItem.uuid);
 				}
 			}).catch(err => Bot.log(err.message, Log.Err));
 		}
@@ -210,7 +210,7 @@ export const Exchange = {
 			let newItem: any = new ExchangeItem(data);
 			let uuid = Bot.setItem(newItem);
 
-			item = Bot.getItem(uuid);
+			item = Bot.getItem(newItem.uuid);
 		}
 
 		return item;

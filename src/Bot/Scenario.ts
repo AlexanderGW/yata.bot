@@ -532,10 +532,10 @@ export class ScenarioItem implements ScenarioData {
 export const Scenario = {
 	new (
 		data: ScenarioData,
-	): ScenarioItem {
+	): Promise<ScenarioItem> {
 		let item = new ScenarioItem(data);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(item.uuid);
 	}
 };
