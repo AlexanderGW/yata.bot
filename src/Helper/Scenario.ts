@@ -133,7 +133,24 @@ export const Sma20BearishCross = Scenario.new({
 
 
 
+export const Rsi14BullishOverbought = Scenario.new({
+	analysis: [
+		analysisRsi14
+	],
+	condition: [
 
+		// Previous candle
+		[
+			['outReal', '<=', 70],
+		],
+
+		// Latest candle
+		[
+			['outReal', '>=', 70],
+		],
+	],
+	name: 'scenarioRsi14BullishOversold',
+});
 
 export const Rsi14BullishOversold = Scenario.new({
 	analysis: [
@@ -148,7 +165,6 @@ export const Rsi14BullishOversold = Scenario.new({
 
 		// Latest candle
 		[
-			// ['open', '<=', 0.067],
 			['outReal', '>=', 30],
 		],
 	],
