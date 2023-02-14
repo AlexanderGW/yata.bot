@@ -26,6 +26,24 @@ export const BullishRsi14Oversold = Scenario.new({
 	],
 	name: 'scenarioBullishRsi14Oversold',
 });
+export const BearishRsi14Oversold = Scenario.new({
+	analysis: [
+		analysisRsi14
+	],
+	condition: [
+
+		// Previous candle
+		[
+			['outReal', '>=', 30],
+		],
+
+		// Latest candle
+		[
+			['outReal', '<=', 30],
+		],
+	],
+	name: 'scenarioBearishRsi14Oversold',
+});
 
 export const BullishMacd12_26_9Crossover = Scenario.new({
 	analysis: [
