@@ -6,6 +6,25 @@ import {
 	Sma20 as analysisSma20
 } from "../Helper/Analysis";
 
+export const Rsi14BearishOverbought = Scenario.new({
+	analysis: [
+		analysisRsi14
+	],
+	condition: [
+
+		// Previous candle
+		[
+			['outReal', '>=', 70],
+		],
+
+		// Latest candle
+		[
+			['outReal', '<=', 70],
+		],
+	],
+	name: 'scenarioRsi14BearishOversold',
+});
+
 export const Rsi14BearishOversold = Scenario.new({
 	analysis: [
 		analysisRsi14
