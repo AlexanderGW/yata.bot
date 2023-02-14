@@ -85,19 +85,19 @@ export const BollingerBullishLowerCrossover = Scenario.new({
 	name: 'scenarioBollingerBullishLowerCrossover',
 });
 
-// Candles closing about the 20 SMA
+// Closing about the 20 SMA
 export const Sma20CrossUp = Scenario.new({
 	analysis: [
 		analysisSma20,
 	],
 	condition: [
 
-		// Three candles back
+		// Three...
 		[
 			['close', '<', 'outReal'],
 		],
 
-		// Two...
+		// Two candles back
 		[
 			['close', '<', 'outReal'],
 		],
@@ -113,4 +113,34 @@ export const Sma20CrossUp = Scenario.new({
 		],
 	],
 	name: 'scenarioSma20CrossUp',
+});
+
+// Closing below the 20 SMA
+export const Sma20CrossDown = Scenario.new({
+	analysis: [
+		analysisSma20,
+	],
+	condition: [
+
+		// Three...
+		[
+			['close', '>', 'outReal'],
+		],
+
+		// Two candles back
+		[
+			['close', '>', 'outReal'],
+		],
+
+		// Previous candle
+		[
+			['close', '<=', 'outReal'],
+		],
+
+		// Latest candle
+		[
+			['close', '<=', 'outReal'],
+		],
+	],
+	name: 'scenarioSma20CrossDown',
 });
