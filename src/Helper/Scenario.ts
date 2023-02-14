@@ -48,6 +48,27 @@ export const BullishMacd12_26_9Crossover = Scenario.new({
 	name: 'scenarioBullishMacd12_26_9Crossover',
 });
 
+export const BearishMacd12_26_9Crossover = Scenario.new({
+	analysis: [
+		analysisMacd12_26_9,
+	],
+	condition: [
+
+		// Previous candle
+		[
+			['outMACDHist', '>', 0],
+		],
+
+		// Latest candle
+		[
+			['outMACDHist', '<=', 0],
+		],
+
+		// Fields: outMACD, outMACDSignal, outMACDHist
+	],
+	name: 'scenarioBearishMacd12_26_9Crossover',
+});
+
 export const BollingerBullishLowerCrossover = Scenario.new({
 	analysis: [
 		analysisSma20, // Must execute before `analysisBollinger20`
