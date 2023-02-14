@@ -6,27 +6,7 @@ import {
 	Sma20 as analysisSma20
 } from "../Helper/Analysis";
 
-// Scenario for analysis events
-export const BullishRsi14Oversold = Scenario.new({
-	analysis: [
-		analysisRsi14
-	],
-	condition: [
-
-		// Previous candle
-		[
-			['outReal', '<=', 30],
-		],
-
-		// Latest candle
-		[
-			// ['open', '<=', 0.067],
-			['outReal', '>=', 30],
-		],
-	],
-	name: 'scenarioBullishRsi14Oversold',
-});
-export const BearishRsi14Oversold = Scenario.new({
+export const Rsi14BearishOversold = Scenario.new({
 	analysis: [
 		analysisRsi14
 	],
@@ -42,31 +22,10 @@ export const BearishRsi14Oversold = Scenario.new({
 			['outReal', '<=', 30],
 		],
 	],
-	name: 'scenarioBearishRsi14Oversold',
+	name: 'scenarioRsi14BearishOversold',
 });
 
-export const BullishMacd12_26_9Crossover = Scenario.new({
-	analysis: [
-		analysisMacd12_26_9,
-	],
-	condition: [
-
-		// Previous candle
-		[
-			['outMACDHist', '<', 0],
-		],
-
-		// Latest candle
-		[
-			['outMACDHist', '>=', 0],
-		],
-
-		// Fields: outMACD, outMACDSignal, outMACDHist
-	],
-	name: 'scenarioBullishMacd12_26_9Crossover',
-});
-
-export const BearishMacd12_26_9Crossover = Scenario.new({
+export const Macd12_26_9BearishCross = Scenario.new({
 	analysis: [
 		analysisMacd12_26_9,
 	],
@@ -84,47 +43,10 @@ export const BearishMacd12_26_9Crossover = Scenario.new({
 
 		// Fields: outMACD, outMACDSignal, outMACDHist
 	],
-	name: 'scenarioBearishMacd12_26_9Crossover',
+	name: 'scenarioMacd12_26_9BearishCross',
 });
 
-export const BollingerBullishLowerCrossover = Scenario.new({
-	analysis: [
-		analysisSma20, // Must execute before `analysisBollinger20`
-		analysisBollinger20, // Depends on `analysisSma20` result
-	],
-	condition: [
-
-		// Four candles back
-		[
-			['close', '<', 'outRealLowerBand'],
-		],
-
-		// Three...
-		[
-			['close', '<', 'outRealLowerBand'],
-		],
-
-		// Two...
-		[
-			['close', '<', 'outRealLowerBand'],
-		],
-
-		// Previous candle
-		[
-			['close', '<', 'outRealLowerBand'],
-		],
-
-		// Latest candle
-		[
-			['close', '>=', 'outRealLowerBand'],
-		],
-
-		// Fields: outRealUpperBand, outRealLowerBand, outRealMiddleBand
-	],
-	name: 'scenarioBollingerBullishLowerCrossover',
-});
-
-export const BollingerBearishUpperCrossover = Scenario.new({
+export const BollingerBearishUpperCross = Scenario.new({
 	analysis: [
 		analysisSma20, // Must execute before `analysisBollinger20`
 		analysisBollinger20, // Depends on `analysisSma20` result
@@ -158,41 +80,10 @@ export const BollingerBearishUpperCrossover = Scenario.new({
 
 		// Fields: outRealUpperBand, outRealLowerBand, outRealMiddleBand
 	],
-	name: 'scenarioBollingerBearishUpperCrossover',
+	name: 'scenarioBollingerBearishUpperCross',
 });
 
-// Closing about the 20 SMA
-export const Sma20CrossUp = Scenario.new({
-	analysis: [
-		analysisSma20,
-	],
-	condition: [
-
-		// Three...
-		[
-			['close', '<', 'outReal'],
-		],
-
-		// Two candles back
-		[
-			['close', '<', 'outReal'],
-		],
-
-		// Previous candle
-		[
-			['close', '>=', 'outReal'],
-		],
-
-		// Latest candle
-		[
-			['close', '>=', 'outReal'],
-		],
-	],
-	name: 'scenarioSma20CrossUp',
-});
-
-// Closing below the 20 SMA
-export const Sma20CrossDown = Scenario.new({
+export const Sma20BearishCross = Scenario.new({
 	analysis: [
 		analysisSma20,
 	],
@@ -218,5 +109,116 @@ export const Sma20CrossDown = Scenario.new({
 			['close', '<=', 'outReal'],
 		],
 	],
-	name: 'scenarioSma20CrossDown',
+	name: 'scenarioSma20BearishCross',
+});
+
+
+
+
+
+export const Rsi14BullishOversold = Scenario.new({
+	analysis: [
+		analysisRsi14
+	],
+	condition: [
+
+		// Previous candle
+		[
+			['outReal', '<=', 30],
+		],
+
+		// Latest candle
+		[
+			// ['open', '<=', 0.067],
+			['outReal', '>=', 30],
+		],
+	],
+	name: 'scenarioRsi14BullishOversold',
+});
+
+export const Macd12_26_9BullishCross = Scenario.new({
+	analysis: [
+		analysisMacd12_26_9,
+	],
+	condition: [
+
+		// Previous candle
+		[
+			['outMACDHist', '<', 0],
+		],
+
+		// Latest candle
+		[
+			['outMACDHist', '>=', 0],
+		],
+
+		// Fields: outMACD, outMACDSignal, outMACDHist
+	],
+	name: 'scenarioMacd12_26_9BullishCross',
+});
+
+export const BollingerBullishLowerCross = Scenario.new({
+	analysis: [
+		analysisSma20, // Must execute before `analysisBollinger20`
+		analysisBollinger20, // Depends on `analysisSma20` result
+	],
+	condition: [
+
+		// Four candles back
+		[
+			['close', '<', 'outRealLowerBand'],
+		],
+
+		// Three...
+		[
+			['close', '<', 'outRealLowerBand'],
+		],
+
+		// Two...
+		[
+			['close', '<', 'outRealLowerBand'],
+		],
+
+		// Previous candle
+		[
+			['close', '<', 'outRealLowerBand'],
+		],
+
+		// Latest candle
+		[
+			['close', '>=', 'outRealLowerBand'],
+		],
+
+		// Fields: outRealUpperBand, outRealLowerBand, outRealMiddleBand
+	],
+	name: 'scenarioBollingerBullishLowerCross',
+});
+
+export const Sma20BullishCross = Scenario.new({
+	analysis: [
+		analysisSma20,
+	],
+	condition: [
+
+		// Three...
+		[
+			['close', '<', 'outReal'],
+		],
+
+		// Two candles back
+		[
+			['close', '<', 'outReal'],
+		],
+
+		// Previous candle
+		[
+			['close', '>=', 'outReal'],
+		],
+
+		// Latest candle
+		[
+			['close', '>=', 'outReal'],
+		],
+	],
+	name: 'scenarioSma20BullishCross',
 });

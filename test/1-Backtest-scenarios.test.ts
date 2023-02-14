@@ -12,10 +12,10 @@ import { Timeframe, TimeframeItem } from '../src/Bot/Timeframe';
 
 // Helpers
 import {
-	BollingerBullishLowerCrossover as scenarioBollingerBullishLowerCrossover,
-	BullishMacd12_26_9Crossover as scenarioBullishMacd12_26_9Crossover,
-	BullishRsi14Oversold as scenarioBullishRsi14Oversold,
-	Sma20CrossUp as scenarioSma20CrossUp
+	BollingerBullishLowerCross as scenarioBollingerBullishLowerCross,
+	Macd12_26_9BullishCross as scenarioMacd12_26_9BullishCross,
+	Rsi14BullishOversold as scenarioRsi14BullishOversold,
+	Sma20BullishCross as scenarioSma20BullishCross
 } from '../src/Helper/Scenario';
 import {
 	Bollinger20 as analysisBollinger20,
@@ -42,8 +42,8 @@ describe('Backtest dataset 1', () => {
     let pairEthBtc: PairItem;
     let chartEthBtc4h: ChartItem;
 
-    let stratBullishRsi14Oversold: StrategyItem;
-    let stratBullishMacd12_26_9Crossover: StrategyItem;
+    let stratRsi14BullishOversold: StrategyItem;
+    let stratMacd12_26_9BullishCross: StrategyItem;
     let stratBullishBollinger20LowerCross: StrategyItem;
     let stratBullishSma20Cross: StrategyItem;
 
@@ -269,44 +269,44 @@ describe('Backtest dataset 1', () => {
         }
 
         // RSI crossing upward into 30 range
-        stratBullishRsi14Oversold = Strategy.new({
+        stratRsi14BullishOversold = Strategy.new({
             action: [
-                [scenarioBullishRsi14Oversold],
+                [scenarioRsi14BullishOversold],
             ],
             analysis: [
                 analysisRsi14,
             ],
             chart: chartEthBtc4h,
-            name: 'BullishRsi14Oversold',
+            name: 'Rsi14BullishOversold',
         });
 
         // MACD crossing upward
-        stratBullishMacd12_26_9Crossover = Strategy.new({
+        stratMacd12_26_9BullishCross = Strategy.new({
             action: [
-                [scenarioBullishMacd12_26_9Crossover],
+                [scenarioMacd12_26_9BullishCross],
             ],
             analysis: [
                 analysisMacd12_26_9,
             ],
             chart: chartEthBtc4h,
-            name: 'BullishMacd12_26_9Crossover',
+            name: 'Macd12_26_9BullishCross',
         });
 
         stratBullishBollinger20LowerCross = Strategy.new({
             action: [
-                [scenarioBollingerBullishLowerCrossover],
+                [scenarioBollingerBullishLowerCross],
             ],
             analysis: [
                 analysisSma20, // Must execute before `analysisBollinger20`
                 analysisBollinger20, // Depends on `analysisSma20` result
             ],
             chart: chartEthBtc4h,
-            name: 'BullishBollingerLowerCross',
+            name: 'BollingerBullishLowerCross',
         });
 
         stratBullishSma20Cross = Strategy.new({
             action: [
-                [scenarioSma20CrossUp],
+                [scenarioSma20BullishCross],
             ],
             analysis: [
                 analysisSma20,
@@ -324,7 +324,7 @@ describe('Backtest dataset 1', () => {
         actualResultIndex = [];
     });
 
-    it('should match known "stratBullishRsi14Oversold" scenarios', async () => {
+    it('should match known "stratRsi14BullishOversold" scenarios', async () => {
 
         // Define timeframe, which runs once
         let defaultTimeframe = Timeframe.new({
@@ -341,11 +341,11 @@ describe('Backtest dataset 1', () => {
 
             // Strategies to run
             strategy: [
-                stratBullishRsi14Oversold,
+                stratRsi14BullishOversold,
             ],
         });
 
-        // Expected results for `stratBullishRsi14Oversold` against the dataset
+        // Expected results for `stratRsi14BullishOversold` against the dataset
         expectedResult.push([
             1668945600000,
             1669003200000,
@@ -360,7 +360,7 @@ describe('Backtest dataset 1', () => {
         );
     });
 
-    it('should match known "stratBullishMacd12_26_9Crossover" scenarios', async () => {
+    it('should match known "stratMacd12_26_9BullishCross" scenarios', async () => {
 
         // Define timeframe, which runs once
         let defaultTimeframe = Timeframe.new({
@@ -377,11 +377,11 @@ describe('Backtest dataset 1', () => {
 
             // Strategies to run
             strategy: [
-                stratBullishMacd12_26_9Crossover,
+                stratMacd12_26_9BullishCross,
             ],
         });
 
-        // Expected results for `stratBullishMacd12_26_9Crossover` against the dataset
+        // Expected results for `stratMacd12_26_9BullishCross` against the dataset
         expectedResult.push([
             1668427200000,
             1668484800000,

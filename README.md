@@ -64,7 +64,7 @@ One or more `Analysis` result sets, for a given `Chart`, looking for one or more
 ```
 let stratBullishSma20Cross = Strategy.new({
   action: [
-    [scenarioSma20CrossUp],
+    [scenarioSma20BullishCross],
   ],
   analysis: [
     analysisSma20,
@@ -78,7 +78,7 @@ let stratBullishSma20Cross = Strategy.new({
 One or more sets of conditions against one or more sets of `Analysis` and/or `Chart` metrics.
 
 ```
-const Sma20CrossUp = Scenario.new({
+const Sma20BullishCross = Scenario.new({
   analysis: [
     analysisSma20,
   ],
@@ -104,7 +104,7 @@ const Sma20CrossUp = Scenario.new({
       ['close', '>=', 'outReal'],
     ],
   ],
-  name: 'scenarioSma20CrossUp',
+  name: 'scenarioSma20BullishCross',
 });
 ```
 

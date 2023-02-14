@@ -12,10 +12,10 @@ import { Timeframe } from '../src/Bot/Timeframe';
 
 // Helpers
 import {
-	BollingerBullishLowerCrossover as scenarioBollingerBullishLowerCrossover,
-	BullishMacd12_26_9Crossover as scenarioBullishMacd12_26_9Crossover,
-	BullishRsi14Oversold as scenarioBullishRsi14Oversold,
-	Sma20CrossUp as scenarioSma20CrossUp
+	BollingerBullishLowerCross as scenarioBollingerBullishLowerCross,
+	Macd12_26_9BullishCross as scenarioMacd12_26_9BullishCross,
+	Rsi14BullishOversold as scenarioRsi14BullishOversold,
+	Sma20BullishCross as scenarioSma20BullishCross
 } from '../src/Helper/Scenario';
 import {
 	Bollinger20 as analysisBollinger20,
@@ -132,30 +132,30 @@ describe('Backtest dataset 1', () => {
         }
 
         // RSI crossing upward into 30 range
-        let stratBullishRsi14Oversold = Strategy.new({
+        let stratRsi14BullishOversold = Strategy.new({
             action: [
-                [scenarioBullishRsi14Oversold],
+                [scenarioRsi14BullishOversold],
             ],
             analysis: [
                 analysisRsi14,
             ],
             chart: chartEthBtc4h,
-            name: 'BullishRsi14Oversold',
+            name: 'Rsi14BullishOversold',
         });
 
         let stratBullishBollinger20LowerCross = Strategy.new({
             action: [
 
                 // Trigger another strategy, if this scenario matches
-                [scenarioBollingerBullishLowerCrossover, stratBullishRsi14Oversold],
-                // [scenarioBollingerBullishLowerCrossover],
+                [scenarioBollingerBullishLowerCross, stratRsi14BullishOversold],
+                // [scenarioBollingerBullishLowerCross],
             ],
             analysis: [
                 analysisSma20, // Must execute before `analysisBollinger20`
                 analysisBollinger20, // Depends on `analysisSma20` result
             ],
             chart: chartEthBtc4h,
-            name: 'BullishBollingerLowerCross',
+            name: 'BollingerBullishLowerCross',
         });
 
         // Timeframes will trigger by default
@@ -164,9 +164,9 @@ describe('Backtest dataset 1', () => {
             intervalTime: 1000, // 1 second
             windowTime: 86400000 * 100,//chartEthBtc4h.candleTime * 4000, // last four 4h candles (just enough for the four scenario datapoints) - rename: `windowTime`
             strategy: [
-                // stratBullishMacd12_26_9Crossover,
+                // stratMacd12_26_9BullishCross,
                 stratBullishBollinger20LowerCross,
-                // stratBullishRsi14Oversold,
+                // stratRsi14BullishOversold,
                 // stratBullishSma20Cross,
             ],
         });
@@ -180,7 +180,7 @@ describe('Backtest dataset 1', () => {
             1663084800000,
         ]);
 
-        // Second identical timestamp for `stratBullishRsi14Oversold`
+        // Second identical timestamp for `stratRsi14BullishOversold`
         expectedResult.push([
             1663084800000,
         ]);
