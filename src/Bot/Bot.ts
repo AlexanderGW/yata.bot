@@ -303,92 +303,61 @@ export const Bot: BotData = {
 							valueAReal = signalResult[valueA as keyof BotSignalData] ?? valueA;
 							valueBReal = signalResult[valueB as keyof BotSignalData] ?? valueB;
 
-							// Bot.log({
-							// 	valueA: valueA,
-							// 	valueAReal: valueAReal,
-							// 	operator: operator,
-							// 	valueB: valueB,
-							// 	valueBReal: valueBReal,
-							// });
-
 							if (valueAReal) {
+								let match = false;
 								switch (operator) {
 									case '<': {
-										if (valueAReal < valueBReal) {
-											conditionMatch.push({
-												valueA: valueA,
-												valueAReal: valueAReal,
-												operator: operator,
-												valueB: valueB,
-												valueBReal: valueBReal,
-											});
-										}
+										if (valueAReal < valueBReal)
+											match = true;
 										break;
 									}
 									case '<=': {
-										if (valueAReal <= valueBReal) {
-											conditionMatch.push({
-												valueA: valueA,
-												valueAReal: valueAReal,
-												operator: operator,
-												valueB: valueB,
-												valueBReal: valueBReal,
-											});
-										}
+										if (valueAReal <= valueBReal)
+											match = true;
 										break;
 									}
 		
 									case '>': {
-										if (valueAReal > valueBReal) {
-											conditionMatch.push({
-												valueA: valueA,
-												valueAReal: valueAReal,
-												operator: operator,
-												valueB: valueB,
-												valueBReal: valueBReal,
-											});
-										}
+										if (valueAReal > valueBReal)
+											match = true;
 										break;
 									}
 		
 									case '>=': {
-										if (valueAReal >= valueBReal) {
-											conditionMatch.push({
-												valueA: valueA,
-												valueAReal: valueAReal,
-												operator: operator,
-												valueB: valueB,
-												valueBReal: valueBReal,
-											});
-										}
+										if (valueAReal >= valueBReal)
+											match = true;
 										break;
 									}
 		
 									case '==': {
-										if (valueAReal == valueBReal) {
-											conditionMatch.push({
-												valueA: valueA,
-												valueAReal: valueAReal,
-												operator: operator,
-												valueB: valueB,
-												valueBReal: valueBReal,
-											});
-										}
+										if (valueAReal == valueBReal)
+											match = true;
 										break;
 									}
 		
 									case '!=': {
-										if (valueAReal != valueBReal) {
-											conditionMatch.push({
-												valueA: valueA,
-												valueAReal: valueAReal,
-												operator: operator,
-												valueB: valueB,
-												valueBReal: valueBReal,
-											});
-										}
+										if (valueAReal != valueBReal)
+											match = true;
 										break;
 									}
+								}
+
+								if (match) {
+									// Bot.log({
+									// 	valueA: valueA,
+									// 	valueAReal: valueAReal,
+									// 	operator: operator,
+									// 	valueB: valueB,
+									// 	valueBReal: valueBReal,
+									// });
+
+									conditionMatch.push({
+										valueA: valueA,
+										valueAReal: valueAReal,
+										operator: operator,
+										valueB: valueB,
+										valueBReal: valueBReal,
+									});
 								}
 							}
 						}
