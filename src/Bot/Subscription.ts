@@ -1,15 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Bot, BotEvent, BotSubscribeData, Log } from './Bot';
+import { Bot, BotEvent, Log } from './Bot';
 import { ChartCandleData, ChartItem } from './Chart';
 import { StrategyItem } from "./Strategy";
 import { TimeframeItem } from './Timeframe';
 
-export type BotSubscribeCallbackData = (
-	subscribe: BotSubscribeData,
+export type SubscriptionCallbackData = (
+	subscribe: SubscriptionData,
 ) => void;
 
 export type SubscriptionData = {
-	action: BotSubscribeCallbackData,
+	action: SubscriptionCallbackData,
 	condition: Array<[string, string, string]>,
 	chart: ChartItem,
 	name?: string,
@@ -27,7 +27,7 @@ export type SubscriptionInterface = {
 };
 
 export class SubscriptionItem implements SubscriptionData {
-	action: BotSubscribeCallbackData;
+	action: SubscriptionCallbackData;
 	condition: Array<[string, string, string]>;
 	chart: ChartItem;
 	name?: string;

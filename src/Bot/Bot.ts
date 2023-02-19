@@ -1,5 +1,5 @@
 import { ChartItem } from "./Chart";
-import { Subscription } from "./Subscription";
+import { Subscription, SubscriptionData } from "./Subscription";
 import { TimeframeItem } from "./Timeframe";
 
 const fs = require('fs');
@@ -20,22 +20,6 @@ export enum Log {
 export enum BotEvent {
 	TimeframeResult = 100,
 }
-
-export type BotSubscribeCallbackData = (
-	subscribe: BotSubscribeData,
-) => void;
-
-/**
- * Event subscriber data
- */
-export type BotSubscribeData = {
-	action: BotSubscribeCallbackData,
-	condition: Array<[string, string, string]>,
-	chart: ChartItem,
-	name?: string,
-	timeframeAny?: TimeframeItem[],
-	timeframeTotal?: TimeframeItem[],
-};
 
 export type BotSubscribeConditionData = {
 	valueA: string,
@@ -65,7 +49,6 @@ export type BotDespatchData = {
 }
 
 export type BotData = {
-	 subscriber: Array<BotSubscribeData>,
 	 item: object[],
 	 itemIndex: string[],
 	 log: (
@@ -78,20 +61,12 @@ export type BotData = {
 	 setItem: (
 		data: ItemBaseData,
 	 ) => string,
-	//  subscribe: (
-	// 	data: BotSubscribeData,
-	//  ) => void,
 	 despatch: (
 		data: BotDespatchData,
 	 ) => void,
 };
 
 export const Bot: BotData = {
-
-	/**
-	 * Event subscribers
-	 */
-	subscriber: [],
 
 	/**
 	 * Legacy item storage
@@ -207,17 +182,6 @@ export const Bot: BotData = {
 	},
 
 	/**
-	 * Event subscriber
-	 * 
-	 * @param data 
-	 */
-	// subscribe (
-	// 	data: BotSubscribeData,
-	// ) {
-	// 	this.subscriber.push(data);
-	// },
-
-	/**
 	 * Despatcher for event subscribers
 	 * 
 	 * @param data 
@@ -240,7 +204,7 @@ export const Bot: BotData = {
 					val
 				]: [
 					string,
-					BotSubscribeData
+					SubscriptionData
 				]) {
 					let index = val.timeframeAny?.findIndex(timeframe => timeframe.uuid === data.uuid);
 					if (typeof index !== 'undefined' && index >= 0) {
@@ -370,7 +334,7 @@ export const Bot: BotData = {
 						) {
 							Bot.log(`Timeframe '${val.timeframeAny?.[index].uuid}' triggered subscription callback (signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}): ${val.name}`);
 							
-							// Callback action for subscriber, pass the `BotSubscribeData` data
+							// Callback action for subscriber, pass the `SubscriptionData` data
 							val.action(
 								val
 							);

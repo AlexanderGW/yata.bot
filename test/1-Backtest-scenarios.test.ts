@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { Asset, AssetItem } from '../src/Bot/Asset';
-import { Bot, BotSubscribeData, Log } from '../src/Bot/Bot';
+import { Bot, Log } from '../src/Bot/Bot';
 import { Chart, ChartCandleData, ChartItem } from '../src/Bot/Chart';
 import { Pair, PairItem } from '../src/Bot/Pair';
 import { Strategy, StrategyItem } from '../src/Bot/Strategy';
@@ -26,7 +26,7 @@ import {
 import { Position, PositionItem } from '../src/Bot/Position';
 import { Order, OrderAction, OrderItem, OrderSide, OrderType } from '../src/Bot/Order';
 import { Exchange, ExchangeItem } from '../src/Bot/Exchange';
-import { Subscription } from '../src/Bot/Subscription';
+import { Subscription, SubscriptionData } from '../src/Bot/Subscription';
 
 const fs = require('fs');
 
@@ -57,7 +57,7 @@ describe('Backtest dataset 1', () => {
      * @returns 
      */
     const botSubscriptionActionCallbackHandler = async (
-        subscribe: BotSubscribeData,
+        subscribe: SubscriptionData,
     ) => {
         let actualResult: Array<number[]> = [];
         let actualResultIndex: string[] = [];
@@ -140,10 +140,10 @@ describe('Backtest dataset 1', () => {
             
             // Called if subscription conditions match
             const botSubscriptionActionCallback = async (
-                subscribe: BotSubscribeData
+                subscribe: SubscriptionData
             ) => {
 
-                // Handle `BotSubscribeData`
+                // Handle `SubscriptionData`
                 const botSubscriptionActionCallbackResult = await botSubscriptionActionCallbackHandler(
                     subscribe
                 );

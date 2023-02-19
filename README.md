@@ -24,9 +24,9 @@ Available condition values
 - `total` for the sum of all timeframe signals
 
 ```
-Bot.subscribe({
+Subscription.new({
   action: (
-    subscribe: BotSubscribeData
+    subscribe: SubscriptionData
   ) => {},
   chart: chartKrakenEthBtc4h,
   condition: [
@@ -156,7 +156,7 @@ let pairEthBtc = Pair.new({
 ```
 
 ### `Exchange`
-A potential source of `Chart` data, or destination for `Exchange` actions. I.e. based on a `Bot.subscribe()` despatch to open/close a `Position`.
+A potential source of `Chart` data, or destination for `Exchange` actions. I.e. based on a `Subscription` despatch to open/close a `Position`.
 
 Support for web3 RPC nodes, will be added.
 

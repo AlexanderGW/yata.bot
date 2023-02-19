@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { Asset } from '../src/Bot/Asset';
-import { Bot, BotSubscribeData, Log } from '../src/Bot/Bot';
+import { Bot, Log } from '../src/Bot/Bot';
 import { Chart, ChartCandleData } from '../src/Bot/Chart';
 import { Pair } from '../src/Bot/Pair';
 import { Strategy, StrategyItem } from '../src/Bot/Strategy';
@@ -26,7 +26,7 @@ import {
 import { Position } from '../src/Bot/Position';
 import { Order, OrderAction, OrderSide, OrderType } from '../src/Bot/Order';
 import { Exchange } from '../src/Bot/Exchange';
-import { Subscription } from '../src/Bot/Subscription';
+import { Subscription, SubscriptionData } from '../src/Bot/Subscription';
 
 const fs = require('fs');
 
@@ -195,7 +195,7 @@ describe('Backtest dataset 1', () => {
 
             // Check pot, allow action of fixed val, or %
             const actionEthBtcBuy = (
-                subscribe: BotSubscribeData
+                subscribe: SubscriptionData
             ) => {
 
                 // Create an order, ready to be executed on exchange
