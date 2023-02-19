@@ -26,6 +26,7 @@ import {
 import { Position } from '../src/Bot/Position';
 import { Order, OrderAction, OrderSide, OrderType } from '../src/Bot/Order';
 import { Exchange } from '../src/Bot/Exchange';
+import { Subscription } from '../src/Bot/Subscription';
 
 const fs = require('fs');
 
@@ -278,7 +279,7 @@ describe('Backtest dataset 1', () => {
             };
 
             // Established subscriber on Timeframe `defaultTimeframe`
-            Bot.subscribe({
+            Subscription.new({
                 action: actionEthBtcBuy,
                 chart: chartEthBtc4h,
                 condition: [

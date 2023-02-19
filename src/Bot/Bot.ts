@@ -1,4 +1,5 @@
 import { ChartItem } from "./Chart";
+import { Subscription } from "./Subscription";
 import { TimeframeItem } from "./Timeframe";
 
 const fs = require('fs');
@@ -77,9 +78,9 @@ export type BotData = {
 	 setItem: (
 		data: ItemBaseData,
 	 ) => string,
-	 subscribe: (
-		data: BotSubscribeData,
-	 ) => void,
+	//  subscribe: (
+	// 	data: BotSubscribeData,
+	//  ) => void,
 	 despatch: (
 		data: BotDespatchData,
 	 ) => void,
@@ -210,11 +211,11 @@ export const Bot: BotData = {
 	 * 
 	 * @param data 
 	 */
-	subscribe (
-		data: BotSubscribeData,
-	) {
-		this.subscriber.push(data);
-	},
+	// subscribe (
+	// 	data: BotSubscribeData,
+	// ) {
+	// 	this.subscriber.push(data);
+	// },
 
 	/**
 	 * Despatcher for event subscribers
@@ -234,7 +235,7 @@ export const Bot: BotData = {
 			 * A `Timeframe` has finished an iteration
 			 */
 			case BotEvent.TimeframeResult : {
-				Object.entries(this.subscriber).forEach(function([
+				Object.entries(Subscription.item).forEach(function([
 					key,
 					val
 				]: [

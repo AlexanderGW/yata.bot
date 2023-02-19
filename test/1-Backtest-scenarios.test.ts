@@ -26,6 +26,7 @@ import {
 import { Position, PositionItem } from '../src/Bot/Position';
 import { Order, OrderAction, OrderItem, OrderSide, OrderType } from '../src/Bot/Order';
 import { Exchange, ExchangeItem } from '../src/Bot/Exchange';
+import { Subscription } from '../src/Bot/Subscription';
 
 const fs = require('fs');
 
@@ -168,7 +169,7 @@ describe('Backtest dataset 1', () => {
                 }
             };
 
-            Bot.subscribe({
+            Subscription.new({
 
                 // The callback function if conditons are matched
                 action: botSubscriptionActionCallback,

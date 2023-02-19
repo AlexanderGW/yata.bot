@@ -12,6 +12,7 @@ import { Position } from './Bot/Position';
 import { Order } from './Bot/Order';
 import { Analysis, AnalysisItem } from './Bot/Analysis';
 import { Storage } from './Bot/Storage';
+import { Subscription } from './Bot/Subscription';
 
 const fs = require('fs');
 
@@ -44,6 +45,9 @@ try {
 		// console.log(`playbookObject`);
 		// console.log(playbookObject);
 
+		if (!playbookObject.hasOwnProperty('version'))
+			throw(`Missing required 'version' key`);
+
 		if (playbookObject.version > 1)
 			throw(`Unsupported schema version`);
 
@@ -58,7 +62,8 @@ try {
 			analysis: Analysis,
 			scenario: Scenario,
 			strategy: Strategy,
-			timeframe: Timeframe
+			timeframe: Timeframe,
+			subscription: Subscription,
 		};
 		const playbookTypeKeys = Object.keys(playbookTypes);
 
@@ -102,7 +107,11 @@ try {
 			timeframe: {
 				itemIndex: [],
 				item: [],
-			}
+			},
+			subscription: {
+				itemIndex: [],
+				item: [],
+			},
 		};
 
 		// Process YAML components
@@ -157,7 +166,7 @@ try {
 									}
 
 									finalObject[key] = finalValue;
-									// console.log((finalObject[key]));
+									// console.log(finalObject[key]);
 								}
 								
 								else {
@@ -167,7 +176,10 @@ try {
 						}
 						
 						// Handle strategy `action`
-						else if(key === 'action') {
+						else if(
+							typeKey === 'strategy'
+							&& key === 'action'
+						) {
 							let finalValue: Array<[ScenarioItem, StrategyItem?]> = [];
 							let finalValueSet: any = [];
 							for (let valueIdx in value) {
@@ -193,11 +205,26 @@ try {
 							}
 
 							finalObject[key] = finalValue;
-							// console.log((finalObject[key]));
+							// console.log(finalObject[key]);
+						}
+
+						// Handle subscription `action`
+						else if(
+							typeKey === 'subscription'
+							&& key === 'action'
+						) {
+							console.log(`typeKey: ${typeKey}, key: ${key}`);
+							console.log(finalObject[key]);
+						}
+						
+						// Validate scenario and subscription `condition` sets
+						else if(key === 'condition') {
+							// TODO: Nesting on scenario
+							console.log(`typeKey: ${typeKey}, key: ${key}`);
+							console.log(finalObject[key]);
 						}
 
 						// Handle subscriptrion `timeframeAny`
-						// TODO: Migrate `Bot.subscribe` to `Subscription` item model?
 						else if(key === 'timeframeAny') {
 							let finalValue: Array<AnalysisItem | StrategyItem> = [];
 							for (let valueIdx in value) {
@@ -209,11 +236,11 @@ try {
 							}
 
 							finalObject[key] = finalValue;
-							// console.log((finalObject[key]));
+							// console.log(finalObject[key]);
 						}
 
 						// Parse short-hand notation strings, on `Time` suffixed properties
-						if (key.slice(-4) === 'Time' && typeof value === 'string') {
+						else if (key.slice(-4) === 'Time' && typeof value === 'string') {
 							const shno = value.slice(-1);
 							const integer = parseInt(value.slice(0, -1));
 							// console.log(`integer: ${integer}, shno: ${shno}`);
@@ -240,7 +267,9 @@ try {
 							finalObject[key] = value;
 						}
 					}
-					console.log(finalObject);
+
+					if (typeKey === 'subscription')
+						console.log(finalObject);
 	
 					let item = typeObject.new(finalObject);
 					playbookCache[typeKey].item.push(item);
@@ -252,6 +281,8 @@ try {
 		});
 
 		// TODO: Implement subscription handling
+
+		// TODO: Timeframe exec
 	}
 } catch (err) {
 	Bot.log(JSON.stringify(err), Log.Err);
