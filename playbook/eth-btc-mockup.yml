@@ -1,0 +1,98 @@
+# MOCKUP FOR YAML TEMPLATE PARSING AND TESTING
+
+version: 1
+
+dryrun: true
+
+# Subscriptions
+subscription:
+  ethbtc4hBuy:
+    action:
+      - orderEthbtcBuy.execute(OrderAction.Create)
+    chart: ethbtc4h
+    condition:
+      - [total, =>, 0]
+    timeframeAny:
+      - timeframeRsi14BullishOversold
+
+# Assets
+asset:
+  btc:
+    exchange: paper
+    symbol: btc
+  eth:
+    exchange: paper
+    symbol: eth
+
+# Charts
+chart:
+  ethbtc4h:
+    exchange: paper
+    pair: ethbtc
+    pollTime: 5m # 300
+    candleTime: 4h # 14400
+
+# Exchanges
+exchange:
+  paper:
+  kraken:
+
+# Orders
+order:
+  orderEthbtcBuy:
+    amount: 10%
+    exchange: paper
+    pair: ethbtc
+    position: ethbtc,
+    side: buy
+    type: market
+    # type: limit:-5%
+
+# Positions
+position:
+  ethbtc:
+    exchange: paper
+    pair: ethbtc
+
+# Pairs
+pair:
+  ethbtc:
+    a: eth
+    b: btc
+
+# Strategies
+strategy:
+  stratRsi14BullishOversold:
+    action:
+      - [scenarioRsi14BullishOversold]
+    analysis:
+      - analysisRsi14
+    chart: ethbtc4h
+  stratMacd12_26_9BullishCross:
+    action:
+      - [scenarioMacd12_26_9BullishCross]
+    analysis:
+      - analysisMacd12_26_9
+    chart: ethbtc4h
+  stratBullishBollinger20LowerCross:
+    action:
+      - [scenarioBollingerBullishLowerCross]
+    analysis:
+      - analysisSma20
+      - analysisBollinger20
+    chart: ethbtc4h
+  stratBullishSma20Cross:
+    action:
+      - [scenarioSma20BullishCross]
+    analysis:
+      - analysisSma20
+    chart: ethbtc4h
+
+# Timeframes
+timeframe:
+  timeframeRsi14BullishOversold:
+    intervalTime: 1s # 1000
+    keepalive: false # Runs once
+    strategy:
+      - stratRsi14BullishOversold
+    windowTime: 50d # 86400000 * 50

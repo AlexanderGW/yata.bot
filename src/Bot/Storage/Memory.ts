@@ -11,7 +11,7 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 	/**
 	 * Lookup and return an item from general storage
 	 * 
-	 * @param {string} uuid 
+	 * @param {string} uuid
 	 * @returns {object}
 	 */
 	async getItem (
@@ -58,7 +58,8 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 				return data.uuid;
 			}
 		} catch (err) {
-			console.error(err);
+			Bot.log(err as string, Log.Err);
+			
 			return '';
 		}
 	}

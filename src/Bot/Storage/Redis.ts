@@ -47,8 +47,8 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 			value = JSON.parse(valueRaw as string);
 
 			return value;
-		} catch (error) {
-			Bot.log(error as string, Log.Err);
+		} catch (err) {
+			Bot.log(err as string, Log.Err);
 
 			return {};
 		}
@@ -84,7 +84,8 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 				return data.uuid;
 			}
 		} catch (err) {
-			console.error(err);
+			Bot.log(err as string, Log.Err);
+			
 			return '';
 		}
 	}
