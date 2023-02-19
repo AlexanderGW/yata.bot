@@ -1,7 +1,9 @@
 # MOCKUP FOR YAML TEMPLATE PARSING AND TESTING
 
+# Playbook schema version, required
 version: 1
 
+# Paper trading, default is `true`
 dryrun: true
 
 # Subscriptions
@@ -11,9 +13,18 @@ subscription:
       - orderEthbtcBuy.execute(OrderAction.Create)
     chart: ethbtc4h
     condition:
-      - [total, =>, 0]
+      - [total, '=>', 0]
     timeframeAny:
       - timeframeRsi14BullishOversold
+
+# Analysis
+analysis:
+  analysisRsi14:
+    config:
+      inRealField: close
+      optInTimePeriod: 14
+      startIndex: 14
+    type: RSI
 
 # Assets
 asset:
@@ -60,32 +71,32 @@ pair:
     a: eth
     b: btc
 
+# Scenarios
+scenario:
+  scenarioRsi14BullishOversold:
+    analysis:
+      - analysisRsi14
+    condition:
+      -
+        # Previous candle
+        - [outReal, '<=', 30]
+
+        # Latest candle
+        - [outReal, '>=', 30]
+
 # Strategies
 strategy:
-  stratRsi14BullishOversold:
+  strat11111:
     action:
       - [scenarioRsi14BullishOversold]
     analysis:
       - analysisRsi14
     chart: ethbtc4h
-  stratMacd12_26_9BullishCross:
+  stratRsi14BullishOversold:
     action:
-      - [scenarioMacd12_26_9BullishCross]
+      - [scenarioRsi14BullishOversold, strat11111]
     analysis:
-      - analysisMacd12_26_9
-    chart: ethbtc4h
-  stratBullishBollinger20LowerCross:
-    action:
-      - [scenarioBollingerBullishLowerCross]
-    analysis:
-      - analysisSma20
-      - analysisBollinger20
-    chart: ethbtc4h
-  stratBullishSma20Cross:
-    action:
-      - [scenarioSma20BullishCross]
-    analysis:
-      - analysisSma20
+      - analysisRsi14
     chart: ethbtc4h
 
 # Timeframes
