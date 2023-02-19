@@ -43,7 +43,7 @@ order:
     amount: 10%
     exchange: paper
     pair: ethbtc
-    position: ethbtc,
+    position: ethbtc
     side: buy
     type: market
     # type: limit:-5%
@@ -91,7 +91,7 @@ strategy:
 # Timeframes
 timeframe:
   timeframeRsi14BullishOversold:
-    intervalTime: 1s # 1000
+    intervalTime: 1000
     keepalive: false # Runs once
     strategy:
       - stratRsi14BullishOversold

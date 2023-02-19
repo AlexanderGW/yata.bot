@@ -45,7 +45,7 @@ try {
 		console.log(playbookObject);
 
 		// Process in order of component dependencies
-		const playbookItems = {
+		const playbookTypes = {
 			exchange: Exchange,
 			asset: Asset,
 			pair: Pair,
@@ -57,32 +57,113 @@ try {
 			strategy: Strategy,
 			timeframe: Timeframe
 		};
+		const playbookTypeKeys = Object.keys(playbookTypes);
+
+		let playbookCache: any = {
+			exchange: {
+				itemIndex: [],
+				item: [],
+			},
+			asset: {
+				itemIndex: [],
+				item: [],
+			},
+			pair: {
+				itemIndex: [],
+				item: [],
+			},
+			position: {
+				itemIndex: [],
+				item: [],
+			},
+			order: {
+				itemIndex: [],
+				item: [],
+			},
+			chart: {
+				itemIndex: [],
+				item: [],
+			},
+			analysis: {
+				itemIndex: [],
+				item: [],
+			},
+			scenario: {
+				itemIndex: [],
+				item: [],
+			},
+			strategy: {
+				itemIndex: [],
+				item: [],
+			},
+			timeframe: {
+				itemIndex: [],
+				item: [],
+			}
+		};
 
 		// Process YAML components
-		Object.entries(playbookItems).forEach(([itemKey, itemObject]) => {
+		Object.entries(playbookTypes).forEach(([itemKey, itemObject]) => {
 			// console.log(`key: ${key}`);
 			// console.log(`${object}`);
 
 			if (itemKey in playbookObject) {
-				console.log(`itemKey: ${itemKey}`);
+				// console.log(`itemKey: ${itemKey}`);
 				// console.log(playbookObject[itemKey]);
 
 				Object.entries(playbookObject[itemKey]).forEach(([name, object]) => {
-					// console.log(`key: ${key}`);
-					// console.log(`${object}`);
-		
-					console.log(`name: ${name}`);
-					console.log(object);
+					// console.log(`name: ${name}`);
+					// console.log(object);
 
-					const parsedObject = {
-						// ...object,
+					const finalObject: any = {
+						...object as object,
 						name
 					};
-					// TODO: Walk `time` suffixed fields, and parse SHNO values
-					console.log(parsedObject);
+
+					for (let key in finalObject) {
+						let value = finalObject[key];
+
+						if (playbookTypeKeys.indexOf(key) >= 0) {
+							// playbookCache[key]
+							// finalObject[key] = value;
+							let index = playbookCache[key].itemIndex.findIndex((_uuid: string) => _uuid === value);
+							if (index >= 0)
+								finalObject[key] = playbookCache[key].item[index];
+						}
+
+						// Parse short-hand notation strings
+						if (key.slice(-4) === 'Time' && typeof value === 'string') {
+							const shno = value.slice(-1);
+							const integer = parseInt(value.slice(0, -1));
+							// console.log(`integer: ${integer}, shno: ${shno}`);
+
+							switch (shno) {
+								case 's':
+									value = integer * 1000;
+									break;
+								case 'm':
+									value = integer * 60000;
+									break;
+								case 'h':
+									value = integer * 3600000;
+									break;
+								case 'd':
+									value = integer * 86400000;
+									break;
+								case 'w':
+									value = integer * 604800000;
+									break;
+							}
+							finalObject[key] = value;
+						}
+					}
+					// console.log(finalObject);
 	
-					// let item = itemObject.new(parsedObject);
-					// console.log(item);
+					let item = itemObject.new(finalObject);
+					playbookCache[itemKey].item.push(item);
+					playbookCache[itemKey].itemIndex.push(name);
+					console.log(`item`);
+					console.log(item);
 				});
 			}
 		});
