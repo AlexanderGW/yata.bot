@@ -1,7 +1,7 @@
 # TradeBot
 Still in very early stages of development. Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.com/package/talib).
 
-Following a concept of strategies, which look for scenarios (definable sets of conditions over a number of data frames) on chart and/or technical analysis; firing events (such as buy, sell, SL, etc.), based on the number of signals within a given time frame.
+Following a concept of timeframes with strategies, which look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
 
 ## Testing
 Mocha, Chai unit test coverage. Currently tests a known dataset for strategy scenarios, against two timeframes.
@@ -13,6 +13,22 @@ npm test
 ```
 tsc --watch
 ```
+
+## Todo
+- In-progress: JSON/YAML support for configurations
+- In-progress: Expand `Bot.setItem` and `Bot.getItem` storage interface (File, Memory, Redis, MongoDB, etc)
+- Scenario condition percentage values (changes from previous datapoints)
+- Cleanup `Helper` structure
+
+## Environment
+See `.env.example` for bot configuration options, and exchange API keys
+ 
+## Playbooks
+Bot instances can be configured using YAML templates called playbooks, stored in the `~/playbook/<name>.yml` directory. Replace `<name>` with actual template name.
+
+Run with `npm run playbook <name>` (with the YML extension)
+
+See `~/playbook/eth-btc-mockup.yml` for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions, on an ETH/BTC pair.
 
 ## Structure
 Here is a basic overview of how the bot is currently structured. Subject to change, as this project is still in development.
@@ -170,12 +186,6 @@ const exchangeKraken = Exchange.new({
 
 ## Storage
 All created items (i.e. `Pair.new()`) are kept in a simple global storage system, identified by their own UUID. Using `Bot.setItem(object): uuid` and `Bot.getItem(uuid): object`
-
-## Todo
-- JSON/YAML support for configurations
-- Expand `Bot.setItem` and `Bot.getItem` storage interface (Redis, MongoDB, etc)
-- Scenario condition percentage values (change from previous datapoint)
-- Cleanup `Helper` structure
 
 ## Caveats
 
