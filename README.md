@@ -23,10 +23,15 @@ tsc --watch
 ## Environment
 See `.env.example` for bot configuration options, and exchange API keys
  
-## Playbooks
+## Playbooks (YAML templates)
 Bot instances can be configured using YAML templates called playbooks, stored in the `~/playbook/<name>.yml` directory. Replace `<name>` with actual template name.
 
-Run with `npm run playbook <name>` (with the YML extension)
+### Running templates
+Without the YML file extension.
+
+```
+npm run playbook <name>
+```
 
 See `~/playbook/eth-btc-mockup.yml` for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions, on an ETH/BTC pair.
 
