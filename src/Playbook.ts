@@ -17,9 +17,9 @@ import { Subscription, SubscriptionItem } from './Bot/Subscription';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const fs = require('fs');
+(async () => {
+	const fs = require('fs');
 
-try {
 	const playbookName = process.argv[2];
 	const playbookPath = `./playbook/${playbookName}.yml`;
 	// console.log(`playbookPath: ${playbookPath}`);
@@ -42,7 +42,9 @@ try {
 	];
 
 	// Types to be processed in order of component dependencies
-	const playbookTypes = {
+	const playbookTypes: {
+		[index: string]: any,
+	} = {
 		exchange: Exchange,
 		asset: Asset,
 		pair: Pair,
@@ -67,13 +69,13 @@ try {
 			itemIndex: string[],
 			item: ExchangeItem[],
 		},
-		asset: {
-			itemIndex: string[],
-			item: AssetItem[],
-		},
 		pair: {
 			itemIndex: string[],
 			item: PairItem[],
+		},
+		asset: {
+			itemIndex: string[],
+			item: AssetItem[],
 		},
 		position: {
 			itemIndex: string[],
@@ -112,11 +114,11 @@ try {
 			itemIndex: [],
 			item: [],
 		},
-		asset: {
+		pair: {
 			itemIndex: [],
 			item: [],
 		},
-		pair: {
+		asset: {
 			itemIndex: [],
 			item: [],
 		},
@@ -165,43 +167,46 @@ try {
 	if (playbookObject.version > 1)
 		throw(`Unsupported schema version`);
 	
+	// Set dryrun state
+	let dryrun = true;
+	if (playbookObject.hasOwnProperty('dryrun'))
+		dryrun = playbookObject.dryrun;
+	else if (process.env.BOT_DRYRUN === '0')
+		dryrun = false;
+
 	// Process YAML components
-	Object.entries(playbookTypes).forEach(([typeKey, typeObject]) => {
+	for (let typeKey in playbookTypes) {
+		const typeObject = playbookTypes[typeKey];
 		// console.log(`key: ${typeKey}`);
 		// console.log(`${typeObject}`);
 	
 		if (typeKey in playbookObject) {
 			// console.log(`typeKey: ${typeKey}`);
 			// console.log(playbookObject[typeKey]);
-	
-			Object.entries(playbookObject[typeKey]).forEach(([name, objectTypeData]) => {
-				// console.log(`name: ${name}`);
+
+			for (let itemName in playbookObject[typeKey]) {
+				// console.log(`itemName: ${itemName}`);
 				// console.log(object);
 	
-				const finalObject: any = {
-					...objectTypeData as object,
-					name
+				let finalItemData: any = {
+					...playbookObject[typeKey][itemName] as object,
+					name: itemName
 				};
 	
-				for (let key in finalObject) {
+				for (let key in finalItemData) {
 					// console.log(`finalKey: ${key}`);
-					let value = finalObject[key];
+					let value = finalItemData[key];
 	
 					// Property matches a playbook item key, attempt to add existing reference
 					if (playbookTypeKeys.indexOf(key) >= 0) {
-						// playbookCache[key]
-						// finalObject[key] = value;
-	
-						// if (!playbookCache.hasOwnProperty(key)) {
-						// 	throw (`aaaa`);
-						// }
-	
+
+						// Establish item reference
 						if (typeof value === 'string') {
 							let cacheIdx = playbookCache[key].itemIndex.findIndex((_uuid: string) => _uuid === value);
 							if (cacheIdx < 0)
-								throw (`Item '${name}' key '${key}' referenced item '${value}' not found`);
+								throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value}' not found`);
 	
-							finalObject[key] = playbookCache[key].item[cacheIdx];
+							finalItemData[key] = playbookCache[key].item[cacheIdx];
 						} else {
 							// console.log(`key: ${key}`);
 							// console.log(typeof value);
@@ -216,19 +221,32 @@ try {
 								for (let valueIdx in value) {
 									let cacheIdx = playbookCache[key].itemIndex.findIndex((_uuid: string) => _uuid === value[valueIdx]);
 									if (cacheIdx < 0)
-										throw (`Item '${name}' key '${key}' referenced item '${value[valueIdx]}' not found`);
+										throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value[valueIdx]}' not found`);
 	
 									finalValue.push(playbookCache[key].item[cacheIdx]);
 								}
 	
-								finalObject[key] = finalValue;
-								// console.log(finalObject[key]);
+								finalItemData[key] = finalValue;
+								// console.log(finalItemData[key]);
 							}
 							
 							else {
-								throw (`Unsupported: Item '${name}' key '${key}' value '${JSON.stringify(value)}'`);
+								throw (`Unsupported: Type '${typeKey}' item '${itemName}' key '${key}' value '${JSON.stringify(value)}'`);
 							}
 						}
+					}
+
+					// Handle pair assets
+					else if(
+						typeKey === 'pair'
+						&& (key === 'a' || key === 'b')
+					) {
+						let cacheIdx = playbookCache.asset.itemIndex.findIndex((_uuid: string) => _uuid === value);
+						if (cacheIdx < 0)
+							throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced asset '${value}' not found`);
+
+						finalItemData[key] = playbookCache.asset.item[cacheIdx];
+						// console.log(finalItemData[key]);
 					}
 					
 					// Handle strategy `action`
@@ -244,7 +262,7 @@ try {
 							// `Scenario` lookup
 							let cacheIdx = playbookCache.scenario.itemIndex.findIndex((_uuid: string) => _uuid === value[valueIdx][0]);
 							if (cacheIdx < 0)
-								throw (`Item '${name}' key '${key}' referenced scenario '${value[valueIdx][0]}' not found`);
+								throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced scenario '${value[valueIdx][0]}' not found`);
 	
 							finalValueSet.push(playbookCache.scenario.item[cacheIdx]);
 	
@@ -252,7 +270,7 @@ try {
 							if (value[valueIdx].length === 2) {
 								cacheIdx = playbookCache.strategy.itemIndex.findIndex((_uuid: string) => _uuid === value[valueIdx][1]);
 								if (cacheIdx < 0)
-									throw (`Item '${name}' key '${key}' referenced strategy '${value[valueIdx][0]}' not found`);
+									throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced strategy '${value[valueIdx][0]}' not found`);
 	
 								finalValueSet.push(playbookCache.strategy.item[cacheIdx]);
 							}
@@ -260,8 +278,8 @@ try {
 							finalValue.push(finalValueSet);
 						}
 	
-						finalObject[key] = finalValue;
-						// console.log(finalObject[key]);
+						finalItemData[key] = finalValue;
+						// console.log(finalItemData[key]);
 					}
 	
 					// Handle subscription `action`
@@ -270,13 +288,13 @@ try {
 						&& key === 'action'
 					) {
 						console.log(`typeKey: ${typeKey}, key: ${key}`);
-						console.log(finalObject[key]);
+						console.log(finalItemData[key]);
 					}
 					
 					// Validate scenario and subscription `condition` sets
 					else if(key === 'condition') {
 						// console.log(`typeKey: ${typeKey}, key: ${key}`);
-						// console.log(finalObject[key]);
+						// console.log(finalItemData[key]);
 
 						// Handle scenario `condition`
 						if (typeKey === 'scenario') {
@@ -286,7 +304,7 @@ try {
 									// console.log(value[valueIdx][setIdx]);
 									// console.log(operator);
 									if (allowedConditionOperators.indexOf(operator) < 0)
-										throw (`Item '${name}' key '${key}' has invalid operator '${operator}'`);
+										throw (`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${operator}'`);
 								}
 							}
 						
@@ -297,7 +315,7 @@ try {
 								// console.log(value[valueIdx]);
 								// console.log(operator);
 								if (allowedConditionOperators.indexOf(operator) < 0)
-									throw (`Item '${name}' key '${key}' has invalid operator '${operator}'`);
+									throw (`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${operator}'`);
 							}
 						}
 					}
@@ -308,17 +326,20 @@ try {
 						for (let valueIdx in value) {
 							let cacheIdx = playbookCache.timeframe.itemIndex.findIndex((_uuid: string) => _uuid === value[valueIdx]);
 							if (cacheIdx < 0)
-								throw (`Item '${name}' key '${key}' referenced timeframe '${value[valueIdx]}' not found`);
+								throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced timeframe '${value[valueIdx]}' not found`);
 	
 							finalValue.push(playbookCache.timeframe.item[cacheIdx]);
 						}
 	
-						finalObject[key] = finalValue;
-						// console.log(finalObject[key]);
+						finalItemData[key] = finalValue;
+						// console.log(finalItemData[key]);
 					}
-	
+
 					// Parse short-hand notation strings, on `Time` suffixed properties
-					else if (key.slice(-4) === 'Time' && typeof value === 'string') {
+					else if (
+						key.slice(-4) === 'Time'
+						&& typeof value === 'string'
+					) {
 						const shno = value.slice(-1);
 						const integer = parseInt(value.slice(0, -1));
 						// console.log(`integer: ${integer}, shno: ${shno}`);
@@ -340,23 +361,23 @@ try {
 								value = integer * 604800000;
 								break;
 							default:
-								throw (`Item '${name}' key '${key}' has invalid SHNO value '${shno}'`);
+								throw (`Type '${typeKey}' item '${itemName}' key '${key}' has invalid SHNO value '${shno}'`);
 						}
-						finalObject[key] = value;
+						finalItemData[key] = value;
 					}
 				}
-	
-				// if (typeKey === 'subscription')
-				// 	console.log(finalObject);
-	
-				let item = typeObject.new(finalObject);
+
+				// Instantiate item
+				let item = await typeObject.new(finalItemData);
+				
+				// Store the items for referencing
 				playbookCache[typeKey].item.push(item);
-				playbookCache[typeKey].itemIndex.push(name);
-				// console.log(`item`);
-				// console.log(item);
-			});
+				playbookCache[typeKey].itemIndex.push(itemName);
+			}
 		}
-	});
+	}
+
+	console.log(playbookCache.asset);
 
 	// Attempt to execute all `Timeframe`
 	if (playbookCache.timeframe.item.length === 0)
@@ -367,11 +388,9 @@ try {
 
 		try {
 			Bot.log(`Execute timeframe '${timeframe.name}'`);
-			// timeframe.execute();
+			timeframe.execute();
 		} catch (err) {
 			Bot.log(err as string, Log.Err);
 		}
 	}
-} catch (err) {
-	Bot.log(err as string, Log.Err);
-}
+})();
