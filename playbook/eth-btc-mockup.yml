@@ -5,7 +5,7 @@ version: 1
 
 # Paper trading (default is `true`)
 # WARNING: Set to `false` for real transactions
-dryrun: true
+#dryrun: true
 
 # Analysis
 analysis:
@@ -19,23 +19,23 @@ analysis:
 # Assets
 asset:
   btc:
-    exchange: paper
-    symbol: btc
+    exchange: kraken
+    symbol: BTC
   eth:
-    exchange: paper
-    symbol: eth
+    exchange: kraken
+    symbol: ETH
 
 # Charts
 chart:
-  ethbtc4h:
-    exchange: paper
-    pair: ethbtc
+  ethBtc4h:
+    exchange: kraken
+    pair: ethBtc
     pollTime: 5m # 300000
     candleTime: 4h # 14400000
 
 # Exchanges
 exchange:
-  paper:
+  # paper:
   kraken:
     class: Kraken
 
@@ -43,30 +43,32 @@ exchange:
 order:
   orderEthbtcBuy:
     amount: 10%
-    exchange: paper
-    pair: ethbtc
-    position: ethbtc
+    #dryrun: true
+    exchange: kraken
+    pair: ethBtc
+    position: ethBtc
     side: buy
     type: market
     # type: limit:-5%
   orderEthbtcSell:
     amount: 10%
-    exchange: paper
-    pair: ethbtc
-    position: ethbtc
+    #dryrun: true
+    exchange: kraken
+    pair: ethBtc
+    position: ethBtc
     side: sell
     type: market
     # type: limit:+5%
 
 # Positions
 position:
-  ethbtc:
-    exchange: paper
-    pair: ethbtc
+  ethBtc:
+    exchange: kraken
+    pair: ethBtc
 
 # Pairs
 pair:
-  ethbtc:
+  ethBtc:
     a: eth
     b: btc
 
@@ -100,41 +102,41 @@ strategy:
       - [scenarioRsi14BearishOverbought]
     analysis:
       - analysisRsi14
-    chart: ethbtc4h
+    chart: ethBtc4h
   stratRsi14BullishOversold:
     action:
       - [scenarioRsi14BullishOversold]
     analysis:
       - analysisRsi14
-    chart: ethbtc4h
+    chart: ethBtc4h
 
 # Subscriptions
 subscription:
-  ethbtc4hBuy:
+  ethBtc4hBuy:
     action:
       - orderEthbtcBuy.execute(OrderAction.Create)
-    chart: ethbtc4h
+    chart: ethBtc4h
     condition:
       - [total, '>=', 1]
     timeframeAny:
       - timeframeRsi14BullishOversold
-  ethbtc4hSell:
-    action:
-      - orderEthbtcSell.execute(OrderAction.Create)
-    chart: ethbtc4h
-    condition:
-      - [total, '>=', 1]
-    timeframeAny:
-      - timeframeRsi14BearishOverbought
+  # ethBtc4hSell:
+  #   action:
+  #     - orderEthbtcSell.execute(OrderAction.Create)
+  #   chart: ethBtc4h
+  #   condition:
+  #     - [total, '>=', 1]
+  #   timeframeAny:
+  #     - timeframeRsi14BearishOverbought
 
 # Timeframes
 timeframe:
-  timeframeRsi14BearishOverbought:
-    intervalTime: 5s
-    keepalive: false # Runs once
-    strategy:
-      - stratRsi14BearishOverbought
-    windowTime: 50d # 86400000 * 50
+  # timeframeRsi14BearishOverbought:
+  #   intervalTime: 5s
+  #   keepalive: false # Runs once
+  #   strategy:
+  #     - stratRsi14BearishOverbought
+  #   windowTime: 50d # 86400000 * 50
   timeframeRsi14BullishOversold:
     intervalTime: 5s
     keepalive: false # Runs once
