@@ -70,6 +70,7 @@ export const Subscription: SubscriptionInterface = {
 		let uuid = Bot.setItem(item);
 
 		this.item.push(item);
+		this.itemIndex.push(uuid);
 
 		return Bot.getItem(uuid);
 	}
