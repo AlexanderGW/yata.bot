@@ -33,7 +33,7 @@ Without the YML file extension.
 npm run playbook <name>
 ```
 
-See `~/playbook/eth-btc-mockup.yml` for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions, on an ETH/BTC pair.
+See [`~/playbook/eth-btc-mockup.yml`](playbook/eth-btc-mockup.yml) for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions of ETH/BTC, on Kraken.
 
 ## Structure
 Here is a basic overview of how the bot is currently structured. Subject to change, as this project is still in development.
@@ -62,8 +62,6 @@ Subscription.new({
 
 ### `Timeframe`
 Run over `intervalTime`, checking one or more `Strategy`. Matches will `Bot.despatch()` to any `Timeframe` subscribers.
-
-Note: A `Timeframe` uses only milliseconds. Everything else is in seconds.
 
 ```
 let defaultTimeframe = Timeframe.new({
@@ -151,8 +149,8 @@ Collection of data points for a `Chart` with `Pair` of `Asset`, for a `candleTim
 let chartKrakenEthBtc4h = Chart.new({
   exchange: exchangeKraken,
   pair: pairEthBtc,
-  pollTime: 300, // 5m in seconds
-  candleTime: 14400 // 4h in seconds
+  pollTime: 300000, // 5 minutes in milliseconds
+  candleTime: 14400000 // 4 hours in milliseconds
 });
 ```
 
