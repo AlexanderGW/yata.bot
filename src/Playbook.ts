@@ -377,20 +377,19 @@ dotenv.config();
 		}
 	}
 
-	console.log(playbookCache.asset);
-
 	// Attempt to execute all `Timeframe`
 	if (playbookCache.timeframe.item.length === 0)
-		throw (`No timeframes to execute`);
-
-	for (let itemIdx in playbookCache.timeframe.item) {
-		let timeframe = playbookCache.timeframe.item[itemIdx];
-
-		try {
-			Bot.log(`Execute timeframe '${timeframe.name}'`);
-			timeframe.execute();
-		} catch (err) {
-			Bot.log(err as string, Log.Err);
+		Bot.log(`No timeframes to execute`, Log.Info);
+	else {
+		for (let itemIdx in playbookCache.timeframe.item) {
+			let timeframe = playbookCache.timeframe.item[itemIdx];
+	
+			try {
+				Bot.log(`Execute timeframe '${timeframe.name}'`);
+				timeframe.execute();
+			} catch (err) {
+				Bot.log(err as string, Log.Err);
+			}
 		}
 	}
 })();
