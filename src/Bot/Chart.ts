@@ -1,10 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Bot } from "./Bot";
-import { ExchangeItem } from "./Exchange";
 import { PairItem } from "./Pair";
 
 export type ChartData = {
-	exchange: ExchangeItem,
 	dataset?: ChartCandleData,
 	lastUpdateTime?: number, // Milliseconds
 	pair: PairItem,
@@ -24,12 +22,11 @@ export type ChartCandleData = {
 	openTime?: number[],
 	tradeCount?: number[],
 	volume?: string[],
-	weightedAvePrice?: string[],
+	weightedAvePrice?: string[], // TWAP
 };
 
 export class ChartItem implements ChartData {
 	dataset?: ChartCandleData;
-	exchange: ExchangeItem;
 	lastUpdateTime: number;
 	pair: PairItem;
 	pollTime: number;
@@ -40,7 +37,6 @@ export class ChartItem implements ChartData {
 		data: ChartData,
 	) {
 		this.dataset = data.dataset;
-		this.exchange = data.exchange;
 		if (data.lastUpdateTime)
 			this.lastUpdateTime = data.lastUpdateTime > 0 ? data.lastUpdateTime : 0;
 		else

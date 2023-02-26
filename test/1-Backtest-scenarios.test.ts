@@ -214,25 +214,23 @@ describe('Backtest dataset 1', () => {
 
         // Create ETH asset
         assetEth = Asset.new({
-            exchange: exchangeDefaultPaper,
             symbol: 'ETH'
         });
 
         // Create BTC asset
         assetBtc = Asset.new({
-            exchange: exchangeDefaultPaper,
             symbol: 'BTC'
         });
 
         // Create ETH BTC pair of assets
         pairEthBtc = Pair.new({
             a: assetEth,
-            b: assetBtc
+            b: assetBtc,
+            exchange: exchangeDefaultPaper,
         });
 
         // Create a ETHBTC pair chart, and 1 minute, for exchange data
         chartEthBtc4h = Chart.new({
-            exchange: exchangeDefaultPaper,
             pair: pairEthBtc,
             pollTime: 300, // 5m in seconds
             candleTime: 14400 // 4h in seconds

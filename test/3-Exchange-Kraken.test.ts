@@ -22,7 +22,7 @@ if (
         let exchangeKraken: ExchangeItem;
         let assetEth: AssetItem;
         let assetBtc: AssetItem;
-        let pairEthBtc: PairItem;
+        let pairEthBtcKraken: PairItem;
         let position1: PositionItem;
         let order1: OrderItem;
 
@@ -42,45 +42,40 @@ if (
     
             // Create ETH asset
             assetEth = Asset.new({
-                exchange: exchangeKraken,
                 symbol: 'ETH'
             });
     
             // Create BTC asset
             assetBtc = Asset.new({
-                exchange: exchangeKraken,
                 symbol: 'BTC'
             });
     
             // Create ETH BTC pair of assets
-            pairEthBtc = Pair.new({
+            pairEthBtcKraken = Pair.new({
                 a: assetEth,
-                b: assetBtc
+                b: assetBtc,
+                exchange: exchangeKraken,
             });
     
             // Create an existing position on exchange
             position1 = Position.new({
-                exchange: exchangeKraken,
-                pair: pairEthBtc,
+                pair: pairEthBtcKraken,
     
                 // 0.1 ETH
-                amount: '0.1'
+                quantity: '0.1'
             });
     
             order1 = Order.new({
     
                 // Percentages can only be used if a `position` is provided, otherwise e.g. 0.01
-                // For ETHBTC, this would be the amount of ETH
-                amount: '10%',
+                // For ETHBTC, this would be the quantity of ETH
+                quantity: '10%',
     
                 // NOTE: Ensure we are only testing orders, regardless of `BOT_DRYRUN`
                 dryrun: true,
     
-                // The exchange associated with this order
-                exchange: exchangeKraken,
-    
-                // The trading pair, i.e. ETHBTC
-                pair: pairEthBtc,
+                // The trading pair, i.e. ETH/BTC on Kraken
+                pair: pairEthBtcKraken,
     
                 // An optional `Position`
                 position: position1,

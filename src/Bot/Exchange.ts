@@ -60,7 +60,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		order: OrderItem,
 	) {
 		order.status = OrderStatus.Cancelled;
-		Bot.log(`Order '${order.uuid}' cancelled (paper) on exchange '${order.exchange.uuid}'`);
+		Bot.log(`Order '${order.uuid}' cancelled (paper) on exchange '${order.pair.exchange.uuid}'`);
 		return order;
 	}
 
@@ -68,7 +68,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		order: OrderItem,
 	) {
 		order.confirmed = true;
-		Bot.log(`Order '${order.uuid}' created (paper) on exchange '${order.exchange.uuid}'`);
+		Bot.log(`Order '${order.uuid}' created (paper) on exchange '${order.pair.exchange.uuid}'`);
 		return order;
 	}
 
@@ -77,14 +77,14 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	) {
 		let orderResult: OrderItem = order;
 		orderResult.status = OrderStatus.Cancelled;
-		Bot.log(`Order '${order.uuid}' edited (paper) on exchange '${order.exchange.uuid}'`);
+		Bot.log(`Order '${order.uuid}' edited (paper) on exchange '${order.pair.exchange.uuid}'`);
 		return orderResult;
 	}
 
 	compat (
 		chart: ChartItem,
 	) {
-		if (chart.exchange.uuid === this.uuid)
+		if (chart.pair.exchange.uuid === this.uuid)
 			return true;
 		return false;
 	}
@@ -107,7 +107,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		const now = new Date();
 
 		let pathParts = [
-			chart.exchange.name,
+			chart.pair.exchange.name,
 			chart.pair.a.symbol + chart.pair.b.symbol,
 			now.getUTCFullYear(),
 			pad(now.getUTCMonth() + 1),
@@ -119,7 +119,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		// return;
 
 		let filenameParts = [
-			chart.exchange.name,
+			chart.pair.exchange.name,
 			chart.pair.a.symbol + chart.pair.b.symbol,
 			now.getUTCFullYear(),
 			pad(now.getUTCMonth() + 1),
@@ -183,7 +183,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 export const Exchange = {
 	async new (
 		data: ExchangeData,
-	): Promise<any> {
+	): Promise<ExchangeItem> {
 		let item: any;
 
 		// Exchange class specified

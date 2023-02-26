@@ -1,27 +1,23 @@
 import { Bot } from "./Bot";
-import { ExchangeItem } from "./Exchange";
 import { PairItem } from "./Pair";
 import { v4 as uuidv4 } from 'uuid';
 
 export type PositionData = {
-	amount?: string,
-	exchange: ExchangeItem,
+	quantity?: string,
 	pair: PairItem,
 	uuid?: string,
 }
 
 export class PositionItem implements PositionData {
-	amount?: string = '0';
-	exchange: ExchangeItem;
+	quantity?: string = '0';
 	pair: PairItem;
 	uuid: string;
 
 	constructor (
 		data: PositionData,
 	) {
-		if (data.amount)
-			this.amount = data.amount;
-		this.exchange = data.exchange;
+		if (data.quantity)
+			this.quantity = data.quantity;
 		this.pair = data.pair;
 		this.uuid = data.uuid ?? uuidv4();
 	}

@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Bot, BotEvent, Log } from './Bot';
 import { ChartCandleData, ChartItem } from './Chart';
+import { OrderItem } from './Order';
 import { StrategyItem } from "./Strategy";
 import { TimeframeItem } from './Timeframe';
 
@@ -9,10 +10,11 @@ export type SubscriptionCallbackData = (
 ) => void;
 
 export type SubscriptionData = {
-	action: SubscriptionCallbackData,
+	action?: SubscriptionCallbackData,
 	condition: Array<[string, string, string]>,
 	chart: ChartItem,
 	name?: string,
+	order?: OrderItem,
 	timeframeAny?: TimeframeItem[],
 	timeframeTotal?: TimeframeItem[],
 	uuid?: string,
@@ -27,10 +29,11 @@ export type SubscriptionInterface = {
 };
 
 export class SubscriptionItem implements SubscriptionData {
-	action: SubscriptionCallbackData;
+	action?: SubscriptionCallbackData;
 	condition: Array<[string, string, string]>;
 	chart: ChartItem;
 	name?: string;
+	order?: OrderItem;
 	timeframeAny?: TimeframeItem[];
 	timeframeTotal?: TimeframeItem[];
 	uuid: string;
@@ -38,11 +41,14 @@ export class SubscriptionItem implements SubscriptionData {
 	constructor (
 		data: SubscriptionData,
 	) {
-		this.action = data.action;
+		if (data.action)
+			this.action = data.action;
 		this.condition = data.condition;
 		this.chart = data.chart;
 		if (data.name)
 			this.name = data.name;
+		if (data.order)
+			this.order = data.order;
 		if (data.timeframeAny)
 			this.timeframeAny = data.timeframeAny;
 		if (data.timeframeTotal)

@@ -1,9 +1,7 @@
 import { Bot } from "./Bot";
-import { ExchangeItem } from "./Exchange";
 import { v4 as uuidv4 } from 'uuid';
 
 export type AssetData = {
-	exchange: ExchangeItem,
 	name?: string,
 	price?: number,
 	symbol: string,
@@ -11,7 +9,6 @@ export type AssetData = {
 }
 
 export class AssetItem implements AssetData {
-	exchange: ExchangeItem;
 	name?: string;
 	price?: number;
 	symbol: string;
@@ -20,7 +17,6 @@ export class AssetItem implements AssetData {
 	constructor (
 		data: AssetData,
 	) {
-		this.exchange = data.exchange;
 		if (data.name)
 			this.name = data.name;
 		if (data.price)

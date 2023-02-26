@@ -85,7 +85,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					validate: order.dryrun,
 
 					// Order quantity in terms of the base asset
-					volume: order.amount,
+					volume: order.quantity,
 				}
 			);
 
@@ -209,7 +209,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					validate: order.dryrun,
 
 					// Order quantity in terms of the base asset
-					volume: order.amount,
+					volume: order.quantity,
 				}
 			);
 

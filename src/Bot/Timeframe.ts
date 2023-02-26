@@ -6,7 +6,8 @@ import { StrategyItem } from "./Strategy";
 export type TimeframeData = {
 	interval?: any,
 	intervalTime?: number, // Milliseconds
-	lastRunTime?: number, // Milliseconds
+	lastEndTime?: number, // Milliseconds
+	lastStartTime?: number, // Milliseconds
 	keepalive?: boolean,
 	name?: string,
 	pollTime?: number, // Milliseconds
@@ -19,7 +20,8 @@ export class TimeframeItem implements TimeframeData {
 	interval: any;
 	intervalTime: number;
 	keepalive: boolean;
-	lastRunTime: number;
+	lastEndTime: number = 0;
+	lastStartTime: number;
 	name?: string;
 	pollTime: number;
 	result: object[] = [];
@@ -31,10 +33,10 @@ export class TimeframeItem implements TimeframeData {
 	constructor (
 		data: TimeframeData,
 	) {
-		if (data.lastRunTime)
-			this.lastRunTime = data.lastRunTime > 0 ? data.lastRunTime : 0;
+		if (data.lastStartTime)
+			this.lastStartTime = data.lastStartTime > 0 ? data.lastStartTime : 0;
 		else
-			this.lastRunTime = 0;
+			this.lastStartTime = 0;
 		this.interval = 0;
 		if (data.intervalTime)
 			this.intervalTime = data.intervalTime > 0 ? data.intervalTime : 60000;
@@ -106,29 +108,32 @@ export class TimeframeItem implements TimeframeData {
 		if (!this.keepalive)
 			Bot.log(`Timeframe '${this.uuid}' executed manually.`);
 
-		const now = Date.now();
+		const startTime = Date.now();
 
-		if ((now - this.lastRunTime) >= this.intervalTime) {
+		if ((startTime - this.lastStartTime) >= this.intervalTime) {
 
 			// Clear result set for new execution
 			this.result = [];
 			this.resultIndex = [];
 
-			// Bot.log(`Last run: ${this.lastRunTime}`);
-			// Bot.log(`Since last run: ${now - this.lastRunTime}`);
+			// Bot.log(`Last run: ${this.lastStartTime}`);
+			// Bot.log(`Since last run: ${startTime - this.lastStartTime}`);
 			
 			// Process strategies
 			for (let i = 0; i < this.strategy.length; i++) {
 				let strategy = this.strategy[i];
 
 				// Request chart updates, for strategy
-				if ((now - strategy.chart.lastUpdateTime) >= strategy.chart.pollTime) {
+				if (
+					(startTime - strategy.chart.lastUpdateTime)
+					>= strategy.chart.pollTime
+				) {
 					let date = new Date(strategy.chart.lastUpdateTime);
 
 					Bot.log(`Strategy '${strategy.uuid}' chart '${strategy.chart.uuid}' to be synced from: ${date.toISOString()}`);
 
 					try {
-						await strategy.chart.exchange.syncChart(
+						await strategy.chart.pair.exchange.syncChart(
 							strategy.chart
 						);
 					} catch (err) {
@@ -162,7 +167,8 @@ export class TimeframeItem implements TimeframeData {
 				});
 			}
 
-			this.lastRunTime = now;
+			this.lastEndTime = Date.now();
+			this.lastStartTime = startTime;
 		}
 	}
 }

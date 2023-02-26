@@ -335,9 +335,11 @@ export const Bot: BotData = {
 							Bot.log(`Timeframe '${val.timeframeAny?.[index].uuid}' triggered subscription callback (signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}): ${val.name}`);
 							
 							// Callback action for subscriber, pass the `SubscriptionData` data
-							val.action(
-								val
-							);
+							if (val.action) {
+								val.action(
+									val
+								);
+							}
 						}
 					}
 				});

@@ -1,5 +1,4 @@
 import { Bot } from "./Bot";
-import { ExchangeItem } from "./Exchange";
 import { PairItem } from "./Pair";
 import { PositionItem } from "./Position";
 import { v4 as uuidv4 } from 'uuid';
@@ -18,7 +17,6 @@ export enum OrderSide {
 export enum OrderStatus {
 	Cancelled = 0,
 	Open = 1,
-	Filled = 2,
 };
 
 export enum OrderType {
@@ -29,10 +27,9 @@ export enum OrderType {
 };
 
 export type OrderData = {
-	amount?: string,
+	quantity?: string,
 	confirmed?: boolean,
 	dryrun?: boolean,
-	exchange: ExchangeItem,
 	filledAmount?: string,
 	pair: PairItem,
 	position?: PositionItem,
@@ -48,10 +45,9 @@ export type OrderData = {
 }
 
 export class OrderItem implements OrderData {
-	amount?: string = '0';
+	quantity?: string = '0';
 	confirmed?: boolean = false;
 	dryrun: boolean = true;
-	exchange: ExchangeItem;
 	filledAmount?: string = '0';
 	pair: PairItem;
 	position?: PositionItem;
@@ -68,15 +64,14 @@ export class OrderItem implements OrderData {
 	constructor (
 		data: OrderData,
 	) {
-		if (data.hasOwnProperty('amount'))
-			this.amount = data.amount;
+		if (data.hasOwnProperty('quantity'))
+			this.quantity = data.quantity;
 		if (data.hasOwnProperty('confirmed'))
 			this.confirmed = data.confirmed ? true : false;
 		if (data.hasOwnProperty('dryrun'))
 			this.dryrun = data.dryrun ? true : false;
 		else if (process.env.BOT_DRYRUN === '0')
 			this.dryrun = false;
-		this.exchange = data.exchange;
 		if (data.hasOwnProperty('filledAmount'))
 			this.filledAmount = data.filledAmount;
 		this.pair = data.pair;
@@ -97,16 +92,22 @@ export class OrderItem implements OrderData {
 		if (data.hasOwnProperty('type'))
 			this.type = data.type;
 		this.uuid = data.uuid ?? uuidv4();
+
+		// TODO: Sync exchange order, position etc
+	}
+
+	isFilled() {
+		return this.quantity === this.filledAmount;
 	}
 
 	async execute (
 		action: OrderAction,
 	) {
 		if (
-			!this.amount
-			|| this.amount === '0'
+			!this.quantity
+			|| this.quantity === '0'
 		)
-			throw (`Order '${this.uuid}' amount is empty`);
+			throw (`Order '${this.uuid}' quantity is empty`);
 
 		// Build log message
 		let logParts: string[] = [];
@@ -115,11 +116,11 @@ export class OrderItem implements OrderData {
 			logParts.push('Dry-run:');
 
 		logParts.push(`Order '${this.uuid}'`);
-		logParts.push(`${this.exchange.name}:${this.pair.a.symbol}X${this.pair.b.symbol};`);
+		logParts.push(`${this.pair.exchange.name}:${this.pair.a.symbol}X${this.pair.b.symbol};`);
 		logParts.push(`action: ${action};`);
 		logParts.push(`type: ${this.type};`);
 		logParts.push(`side: ${this.side};`);
-		logParts.push(`amount: ${this.amount};`);
+		logParts.push(`quantity: ${this.quantity};`);
 		logParts.push(`price: ${this.price}`);
 		// logParts.push(`stopPrice: ${this.stopPrice}`);
 
@@ -135,22 +136,22 @@ export class OrderItem implements OrderData {
 
 		switch (action) {
 			case OrderAction.Cancel : {
-				Bot.log(`${logMessage} Order '${this.uuid}' cancel on '${this.exchange.uuid}'`);
-				orderResponse = await this.exchange.cancelOrder(this);
+				Bot.log(`${logMessage} Order '${this.uuid}' cancel on '${this.pair.exchange.uuid}'`);
+				orderResponse = await this.pair.exchange.cancelOrder(this);
 
 				break;
 			}
 
 			case OrderAction.Create : {
-				Bot.log(`${logMessage} Order '${this.uuid}' create on '${this.exchange.uuid}'`);
-				orderResponse = await this.exchange.createOrder(this);
+				Bot.log(`${logMessage} Order '${this.uuid}' create on '${this.pair.exchange.uuid}'`);
+				orderResponse = await this.pair.exchange.createOrder(this);
 
 				break;
 			}
 
 			case OrderAction.Edit : {
-				Bot.log(`${logMessage} Order '${this.uuid}' edited on '${this.exchange.uuid}'`);
-				orderResponse = await this.exchange.editOrder(this);
+				Bot.log(`${logMessage} Order '${this.uuid}' edited on '${this.pair.exchange.uuid}'`);
+				orderResponse = await this.pair.exchange.editOrder(this);
 
 				break;
 			}
@@ -159,7 +160,7 @@ export class OrderItem implements OrderData {
 		// Order response indicates confirmation
 		if (orderResponse.confirmed === true) {
 			this.confirmed = true;
-			logMessage = `Order '${this.uuid}' confirmed on '${this.exchange.uuid}'`;
+			logMessage = `Order '${this.uuid}' confirmed on '${this.pair.exchange.uuid}'`;
 				
 			// Dry-run testing
 			if (this.dryrun) {
@@ -179,15 +180,15 @@ export const Order = {
 	): OrderItem {
 
 		// A percentage of a position
-		if (data.amount?.substring(data.amount.length - 1) === '%') {
+		if (data.quantity?.substring(data.quantity.length - 1) === '%') {
 			if (!data.hasOwnProperty('position'))
-				throw (`Order percentage amounts, require a position`);
+				throw (`Order percentage quantitys, require a position`);
 
-			const amountPercent = Number.parseFloat(data.amount.substring(0, data.amount.length - 1));
+			const quantityPercent = Number.parseFloat(data.quantity.substring(0, data.quantity.length - 1));
 			let positionAmount = '0';
-			if (data.position?.amount)
-				positionAmount = data.position.amount;
-			data.amount = ((parseFloat(positionAmount) / 100) * amountPercent).toString();
+			if (data.position?.quantity)
+				positionAmount = data.position.quantity;
+			data.quantity = ((parseFloat(positionAmount) / 100) * quantityPercent).toString();
 		}
 		
 		let item = new OrderItem(data);

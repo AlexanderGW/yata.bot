@@ -58,33 +58,30 @@ describe('Backtest dataset 1', () => {
 
         // Create ETH asset
         let assetEth = Asset.new({
-            exchange: exchangeDefaultPaper,
             symbol: 'ETH'
         });
 
         // Create BTC asset
         let assetBtc = Asset.new({
-            exchange: exchangeDefaultPaper,
             symbol: 'BTC'
         });
 
-        // Create ETH BTC pair of assets
-        let pairEthBtc = Pair.new({
+        // Create ETH BTC pair of assets, with Kraken
+        let pairEthBtcKraken = Pair.new({
             a: assetEth,
-            b: assetBtc
+            b: assetBtc,
+            exchange: exchangeDefaultPaper,
         });
 
         // Create an existing position on exchange
         let pos1 = Position.new({
-        	exchange: exchangeDefaultPaper,
-        	pair: pairEthBtc,
-        	amount: '10.123456789'
+        	pair: pairEthBtcKraken,
+        	quantity: '10.123456789'
         });
 
         // Create a ETHBTC pair chart, and 1 minute, for exchange data
         let chartEthBtc4h = Chart.new({
-            exchange: exchangeDefaultPaper,
-            pair: pairEthBtc,
+            pair: pairEthBtcKraken,
             pollTime: 300, // 5m in seconds
             candleTime: 14400 // 4h in seconds
         });
@@ -201,10 +198,9 @@ describe('Backtest dataset 1', () => {
                 // Create an order, ready to be executed on exchange
                 try {
                     let order1 = Order.new({
-                        amount: '10%', // of provided position,
+                        quantity: '10%', // of provided position,
                         side: OrderSide.Buy,
-                        exchange: exchangeDefaultPaper,
-                        pair: pairEthBtc,
+                        pair: pairEthBtcKraken,
                         position: pos1,
                         price: '0.05',
                         type: OrderType.Limit,
