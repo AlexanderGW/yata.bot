@@ -51,8 +51,11 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		this.class = data.class as string;
 		if (data.hasOwnProperty('name'))
 			this.name = data.name as string;
-		else
+		else if (data.hasOwnProperty('class'))
 			this.name = data.class as string;
+		else
+			this.name = 'Paper';
+		
 		this.uuid = data.uuid ?? uuidv4();
 	}
 
@@ -115,8 +118,6 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		];
 		let path = pathParts.join('/');
 		// Bot.log(path);
-
-		// return;
 
 		let filenameParts = [
 			chart.pair.exchange.name,

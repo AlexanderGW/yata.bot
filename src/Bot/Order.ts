@@ -116,7 +116,7 @@ export class OrderItem implements OrderData {
 			logParts.push('Dry-run:');
 
 		logParts.push(`Order '${this.uuid}'`);
-		logParts.push(`${this.pair.exchange.name}:${this.pair.a.symbol}X${this.pair.b.symbol};`);
+		logParts.push(`${this.pair.exchange.name}:${this.pair.a.symbol}-${this.pair.b.symbol};`);
 		logParts.push(`action: ${action};`);
 		logParts.push(`type: ${this.type};`);
 		logParts.push(`side: ${this.side};`);
