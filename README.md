@@ -3,6 +3,35 @@ Still in very early stages of development. Leveraging the `talib` library, via [
 
 Following a concept of timeframes with strategies, which look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
 
+## Environment
+See `.env.example` for bot configuration options, and exchange API keys
+ 
+## Playbooks (YAML templates)
+Bot instances can be configured using YAML templates, known as playbooks, stored in the `~/playbook/<name>/<name>.yml` directory. Replace `<name>` with actual template name.
+
+In this example; A `subscription` callback `action` function will be imported from `~/playbook/<name>/<name>.ts`
+
+### Running templates
+Without the YML file extension.
+
+```
+npm run playbook <name>
+```
+
+See [`~/playbook/eth-btc-mockup.yml`](playbook/eth-btc-mockup.yml) for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions of ETH/BTC, on Kraken.
+
+### Times and shorthand notation
+Notations `s,m,h,d,w` (i.e. `5m` for five minutes in milliseconds) are available for better readability on `Time` (i.e. `intervalTime`) suffixed fields, otherwise values are treated as milliseconds.
+
+### Item referencing
+All items are added with a name, which will be used as references within a playbook.
+
+## Todo
+- In-progress: JSON/YAML support for configurations
+- In-progress: Expand `Bot.setItem` and `Bot.getItem` storage interface (File, Memory, Redis, MongoDB, etc)
+- Scenario condition percentage values (changes from previous datapoints)
+- Cleanup `Helper` structure
+
 ## Testing
 Mocha, Chai unit test coverage. Currently tests a known dataset for strategy scenarios, against two timeframes.
 ```
@@ -13,27 +42,6 @@ npm test
 ```
 tsc --watch
 ```
-
-## Todo
-- In-progress: JSON/YAML support for configurations
-- In-progress: Expand `Bot.setItem` and `Bot.getItem` storage interface (File, Memory, Redis, MongoDB, etc)
-- Scenario condition percentage values (changes from previous datapoints)
-- Cleanup `Helper` structure
-
-## Environment
-See `.env.example` for bot configuration options, and exchange API keys
- 
-## Playbooks (YAML templates)
-Bot instances can be configured using YAML templates called playbooks, stored in the `~/playbook/<name>.yml` directory. Replace `<name>` with actual template name.
-
-### Running templates
-Without the YML file extension.
-
-```
-npm run playbook <name>
-```
-
-See [`~/playbook/eth-btc-mockup.yml`](playbook/eth-btc-mockup.yml) for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions of ETH/BTC, on Kraken.
 
 ## Structure
 Here is a basic overview of how the bot is currently structured. Subject to change, as this project is still in development.
