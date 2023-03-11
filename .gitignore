@@ -3,3 +3,5 @@ dist
 node_modules
 storage/log
 storage/dataset
+playbook/*
+!playbook/eth-btc-mockup
