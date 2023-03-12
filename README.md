@@ -22,13 +22,31 @@ npm run playbook <name>
 
 See [`~/playbook/eth-btc-mockup/eth-btc-mockup.yml`](playbook/eth-btc-mockup/eth-btc-mockup.yml) for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions of ETH/BTC, on Kraken.
 
+## Items
+The concept of items, refers to all core components of the bot.
+Items are listed in order of dependency.
+
+| Item | Description |
+| ---- | ----------- |
+| `Exchange` | Interface with external exchanges (i.e. `Kraken`, `Uniswap`, etc.) |
+| `Asset` | Identifies individual assets, tokens, across the ecosystem |
+| `Pair` | Two `Asset` items, tied to an `Exchange` |
+| `Position` | Information such as price, associated with a `Pair` |
+| `Order` | Provides actionable context on a `Pair` and `Position` |
+| `Chart` | Holds dataset information for a `Pair` |
+| `Analysis` | Provides contexts of configured technical analysis |
+| `Scenario` | A set of conditions, for `Chart` and/or `Analysis` |
+| `Strategy` | Collection of `Scenario` against a `Chart` |
+| `Timeframe` | Collection of `Strategy` within time constraints |
+| `Subscription` | Collection of `Timeframe`, awaiting a set of signal conditions, to do actions (callbacks) |
+
 ### Subscription actions (callbacks)
 See [`~/playbook/eth-btc-mockup/eth-btc-mockup.ts`](playbook/eth-btc-mockup/eth-btc-mockup.ts) for an example set of callbacks, reference in the `eth-btc-mockup` playbook above
 
 ### Times and shorthand notation
 Notations `s,m,h,d,w` (i.e. `5m` for five minutes in milliseconds) are available for better readability on `Time` (i.e. `intervalTime`) suffixed fields, otherwise values are treated as milliseconds.
 
-```
+```yaml
 chart:
   ethBtcKraken4h:
     pair: ethBtcKraken
@@ -37,10 +55,11 @@ chart:
 ```
 
 ### Item referencing
-All items are identified in playbooks with a `name`, which is then used to link items together.
+All items are identified in playbooks with a `name` (names are only unique to item type), which is then used to link items together.
 
-An example `Scenario` called `rsi14BearishOverbought`, referencing `Analysis` called `analysisRsi14`
-```
+An example `Scenario` called `rsi14BearishOverbought`, referencing `Analysis` called `rsi14`
+
+```yaml
 analysis:
   rsi14:
     ...
@@ -81,7 +100,7 @@ Available condition values
 - `low` for the timeframe with the least amount of signals
 - `total` for the sum of all timeframe signals
 
-```
+```js
 Subscription.new({
   action: (
     subscribe: SubscriptionData
@@ -100,7 +119,7 @@ Subscription.new({
 ### `Timeframe`
 Run over `intervalTime`, checking one or more `Strategy`. Matches will `Bot.despatch()` to any `Timeframe` subscribers.
 
-```
+```js
 let defaultTimeframe = Timeframe.new({
   intervalTime: 1000, // 1 second
   windowTime: 86400000 * 30, // last 30 days
@@ -117,7 +136,7 @@ setTimeout(function () {
 ### `Strategy` (belonging to a `Timeframe`)
 One or more `Analysis` result sets, for a given `Chart`, looking for one or more `Scenario` condition matches (which can trigger an optional chained `Strategy`).
 
-```
+```js
 let stratBullishSma20Cross = Strategy.new({
   action: [
     [scenarioSma20BullishCross],
@@ -133,7 +152,7 @@ let stratBullishSma20Cross = Strategy.new({
 ### `Scenario` (belonging to a `Strategy`)
 One or more sets of conditions against one or more sets of `Analysis` and/or `Chart` metrics.
 
-```
+```js
 const Sma20BullishCross = Scenario.new({
   analysis: [
     analysisSma20,
@@ -167,7 +186,7 @@ const Sma20BullishCross = Scenario.new({
 ### `Analysis` (belonging to a `Strategy` and/or `Scenario`)
 A light `talib` wrapper, with configuration.
 
-```
+```js
 const analysisSma20 = Analysis.new({
   name: 'SMA20',
   config: {
@@ -182,7 +201,7 @@ const analysisSma20 = Analysis.new({
 ### `Chart` (belonging to an `Exchange`)
 Collection of data points for a `Chart` with `Pair` of `Asset`, for a `candleTime`, updated every `pollTime`, sourced from storage.
 
-```
+```js
 let chartKrakenEthBtc4h = Chart.new({
   exchange: exchangeKraken,
   pair: pairEthBtc,
@@ -194,7 +213,7 @@ let chartKrakenEthBtc4h = Chart.new({
 ### `Asset` (belonging to a `Pair`)
 TBC
 
-```
+```js
 let assetEth = Asset.new({
   exchange: exchangeKraken,
   symbol: 'ETH'
@@ -216,7 +235,7 @@ A potential source of `Chart` data, or destination for `Exchange` actions. I.e. 
 
 Support for web3 RPC nodes, will be added.
 
-```
+```js
 const exchangeKraken = Exchange.new({
   class: 'Kraken', // Defaults to `Paper` class, `Kraken` in development
   key: process.env.KRAKEN_CLIENT_KEY,
