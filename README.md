@@ -28,8 +28,29 @@ See [`~/playbook/eth-btc-mockup/eth-btc-mockup.ts`](playbook/eth-btc-mockup/eth-
 ### Times and shorthand notation
 Notations `s,m,h,d,w` (i.e. `5m` for five minutes in milliseconds) are available for better readability on `Time` (i.e. `intervalTime`) suffixed fields, otherwise values are treated as milliseconds.
 
+```
+chart:
+  ethBtcKraken4h:
+    pair: ethBtcKraken
+    pollTime: 5m          # five minutes; 300000 milliseconds
+    candleTime: 4h        # four hours; 14400000 milliseconds
+```
+
 ### Item referencing
-All items are added with a name, which will be used as references within a playbook.
+All items are identified in playbooks with a `name`, which is then used to link items together.
+
+An example `Scenario` called `rsi14BearishOverbought`, referencing `Analysis` called `analysisRsi14`
+```
+analysis:
+  rsi14:
+    ...
+
+scenario:
+  rsi14BearishOverbought:
+    analysis:
+      - rsi14
+    ...
+```
 
 ## Environment
 See `.env.example` for bot configuration options, and exchange API keys
