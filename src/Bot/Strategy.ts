@@ -73,6 +73,9 @@ export class StrategyItem implements StrategyData {
 	execute (
 		data: StrategyExecuteData,
 	) {
+		if (!this.chart.dataset)
+			throw (`Chart '${this.chart.name}' dataset is empty`);
+			
 		let analysis: AnalysisItem;
 		let i: number;
 		let action: [ScenarioItem, StrategyItem?];
