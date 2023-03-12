@@ -134,7 +134,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 
 		let responseJson = JSON.stringify(data);
 
-		let storagePath = `./storage/${path}`;
+		let storagePath = `./storage/dataset/${path}`;
 		let storageFile = `${storagePath}/${filename}.json`;
 
 		try {
