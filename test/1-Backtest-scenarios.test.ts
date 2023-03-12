@@ -172,7 +172,7 @@ describe('Backtest dataset 1', () => {
             Subscription.new({
 
                 // The callback function if conditons are matched
-                action: botSubscriptionActionCallback,
+                actionCallback: botSubscriptionActionCallback,
 
                 // The dataset to be used to cross reference the timeframe signals
                 chart: chartEthBtc4h,

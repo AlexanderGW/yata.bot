@@ -5,16 +5,21 @@ import { OrderItem } from './Order';
 import { StrategyItem } from "./Strategy";
 import { TimeframeItem } from './Timeframe';
 
+export type SubscriptionActionCallbackModule = {
+	[index: string]: SubscriptionCallbackData
+};
+
 export type SubscriptionCallbackData = (
-	subscribe: SubscriptionData,
-) => void;
+	subscription: SubscriptionData,
+) => Promise<void>;
 
 export type SubscriptionData = {
-	action?: SubscriptionCallbackData,
+	action?: string,
+	actionCallback?: SubscriptionCallbackData,
 	condition: Array<[string, string, string]>,
 	chart: ChartItem,
 	name?: string,
-	order?: OrderItem,
+	playbook?: string,
 	timeframeAny?: TimeframeItem[],
 	timeframeTotal?: TimeframeItem[],
 	uuid?: string,
@@ -29,11 +34,12 @@ export type SubscriptionInterface = {
 };
 
 export class SubscriptionItem implements SubscriptionData {
-	action?: SubscriptionCallbackData;
+	action?: string;
+	actionCallback?: SubscriptionCallbackData;
 	condition: Array<[string, string, string]>;
 	chart: ChartItem;
 	name?: string;
-	order?: OrderItem;
+	playbook?: string;
 	timeframeAny?: TimeframeItem[];
 	timeframeTotal?: TimeframeItem[];
 	uuid: string;
@@ -43,12 +49,14 @@ export class SubscriptionItem implements SubscriptionData {
 	) {
 		if (data.action)
 			this.action = data.action;
+		if (data.actionCallback)
+			this.actionCallback = data.actionCallback;
 		this.condition = data.condition;
 		this.chart = data.chart;
 		if (data.name)
 			this.name = data.name;
-		if (data.order)
-			this.order = data.order;
+		if (data.playbook)
+			this.playbook = data.playbook;
 		if (data.timeframeAny)
 			this.timeframeAny = data.timeframeAny;
 		if (data.timeframeTotal)

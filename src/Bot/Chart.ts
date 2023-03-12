@@ -5,6 +5,7 @@ import { PairItem } from "./Pair";
 export type ChartData = {
 	dataset?: ChartCandleData,
 	lastUpdateTime?: number, // Milliseconds
+	name?: string,
 	pair: PairItem,
 	pollTime?: number, // Seconds
 	candleTime?: number, // Seconds
@@ -28,6 +29,7 @@ export type ChartCandleData = {
 export class ChartItem implements ChartData {
 	dataset?: ChartCandleData;
 	lastUpdateTime: number;
+	name?: string;
 	pair: PairItem;
 	pollTime: number;
 	candleTime: number;
@@ -41,6 +43,8 @@ export class ChartItem implements ChartData {
 			this.lastUpdateTime = data.lastUpdateTime > 0 ? data.lastUpdateTime : 0;
 		else
 			this.lastUpdateTime = 0;
+		if (data.name)
+			this.name = data.name;
 		this.pair = data.pair;
 		if (data.pollTime)
 			this.pollTime = data.pollTime > 0 ? data.pollTime : 60;

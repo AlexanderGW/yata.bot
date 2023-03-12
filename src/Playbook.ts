@@ -12,7 +12,7 @@ import { Position, PositionItem } from './Bot/Position';
 import { Order, OrderItem } from './Bot/Order';
 import { Analysis, AnalysisItem } from './Bot/Analysis';
 import { Storage } from './Bot/Storage';
-import { Subscription, SubscriptionItem } from './Bot/Subscription';
+import { Subscription, SubscriptionActionCallbackModule, SubscriptionItem } from './Bot/Subscription';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -21,15 +21,17 @@ dotenv.config();
 	const fs = require('fs');
 
 	const playbookName = process.argv[2];
-	const playbookPath = `./playbook/${playbookName}.yml`;
+	const playbookPath = `./playbook/${playbookName}`;
+	const playbookActions = `${playbookPath}/${playbookName}.ts`;
+	const playbookTemplate = `${playbookPath}/${playbookName}.yml`;
 	// console.log(`playbookPath: ${playbookPath}`);
 
-	if (!fs.existsSync(playbookPath))
-		throw (`Playbook '${playbookName}' not found '${playbookPath}'`);
+	if (!fs.existsSync(playbookTemplate))
+		throw (`Playbook '${playbookName}' not found '${playbookTemplate}'`);
 
 	// Attempt to read YAML file
 	let playbookFile: string = fs.readFileSync(
-		playbookPath,
+		playbookTemplate,
 		'utf8',
 	);
 	// console.log(`playbookFile: ${playbookFile}`);
@@ -63,51 +65,51 @@ dotenv.config();
 	let playbookCache: {
 		[index: string]: {
 			itemIndex: string[],
-			item: any[],
+			item: string[],
 		},
 		exchange: {
 			itemIndex: string[],
-			item: ExchangeItem[],
+			item: string[],
 		},
 		pair: {
 			itemIndex: string[],
-			item: PairItem[],
+			item: string[],
 		},
 		asset: {
 			itemIndex: string[],
-			item: AssetItem[],
+			item: string[],
 		},
 		position: {
 			itemIndex: string[],
-			item: PositionItem[],
+			item: string[],
 		},
 		order: {
 			itemIndex: string[],
-			item: OrderItem[],
+			item: string[],
 		},
 		chart: {
 			itemIndex: string[],
-			item: ChartItem[],
+			item: string[],
 		},
 		analysis: {
 			itemIndex: string[],
-			item: AnalysisItem[],
+			item: string[],
 		},
 		scenario: {
 			itemIndex: string[],
-			item: ScenarioItem[],
+			item: string[],
 		},
 		strategy: {
 			itemIndex: string[],
-			item: StrategyItem[],
+			item: string[],
 		},
 		timeframe: {
 			itemIndex: string[],
-			item: TimeframeItem[],
+			item: string[],
 		},
 		subscription: {
 			itemIndex: string[],
-			item: SubscriptionItem[],
+			item: string[],
 		},
 	} = {
 		exchange: {
@@ -157,9 +159,6 @@ dotenv.config();
 	};
 
 	let playbookObject: any = parse(playbookFile);
-	// console.log(`playbookObject`);
-	// console.log(playbookObject);
-	// TODO: Handle invalid content
 	
 	if (!playbookObject.hasOwnProperty('version'))
 		throw(`Missing required 'version' key`);
@@ -187,30 +186,33 @@ dotenv.config();
 			for (let itemName in playbookObject[typeKey]) {
 				// console.log(`itemName: ${itemName}`);
 				// console.log(object);
-	
+
 				let finalItemData: any = {
 					...playbookObject[typeKey][itemName] as object,
-					name: itemName
+
+					// Allow playbook to support items with the same name, as they are seperated by type scope
+					name: `${typeKey}.${itemName}`
 				};
-	
+
 				for (let key in finalItemData) {
 					// console.log(`finalKey: ${key}`);
 					let value = finalItemData[key];
-	
-					// Property matches a playbook item key, attempt to add existing reference
+
+					// Property matches a playbook item key, attempt to link existing reference
 					if (playbookTypeKeys.indexOf(key) >= 0) {
 
 						// Establish item reference
 						if (typeof value === 'string') {
-							let cacheIdx = playbookCache[key].itemIndex.findIndex((_uuid: string) => _uuid === value);
-							if (cacheIdx < 0)
+							let itemLookup: any = false;
+							let cacheIdx = playbookCache[key].itemIndex.findIndex((x: string) => x === value);
+							if (cacheIdx >= 0)
+								itemLookup = Bot.getItem(playbookCache[key].item[cacheIdx]);
+
+							if (cacheIdx < 0 || itemLookup === false)
 								throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value}' not found`);
-	
-							finalItemData[key] = playbookCache[key].item[cacheIdx];
+
+							finalItemData[key] = itemLookup;
 						} else {
-							// console.log(`key: ${key}`);
-							// console.log(typeof value);
-							// console.log(`${value}`);
 	
 							// Handle supported arrays of items
 							if (
@@ -219,11 +221,15 @@ dotenv.config();
 							) {
 								let finalValue: Array<AnalysisItem | StrategyItem> = [];
 								for (let valueIdx in value) {
-									let cacheIdx = playbookCache[key].itemIndex.findIndex((_uuid: string) => _uuid === value[valueIdx]);
-									if (cacheIdx < 0)
+									let itemLookup: any = false;
+									let cacheIdx = playbookCache[key].itemIndex.findIndex((x: string) => x === value[valueIdx]);
+									if (cacheIdx >= 0)
+										itemLookup = Bot.getItem(playbookCache[key].item[cacheIdx]);
+
+									if (cacheIdx < 0 || itemLookup === false)
 										throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value[valueIdx]}' not found`);
-	
-									finalValue.push(playbookCache[key].item[cacheIdx]);
+									
+									finalValue.push(itemLookup);
 								}
 	
 								finalItemData[key] = finalValue;
@@ -237,20 +243,23 @@ dotenv.config();
 					}
 
 					// Handle pair assets
-					else if(
+					else if (
 						typeKey === 'pair'
 						&& (key === 'a' || key === 'b')
 					) {
-						let cacheIdx = playbookCache.asset.itemIndex.findIndex((_uuid: string) => _uuid === value);
-						if (cacheIdx < 0)
-							throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced asset '${value}' not found`);
+						let itemLookup: any = false;
+						let cacheIdx = playbookCache.asset.itemIndex.findIndex((x: string) => x === value);
+						if (cacheIdx >= 0)
+							itemLookup = Bot.getItem(playbookCache.asset.item[cacheIdx]);
 
-						finalItemData[key] = playbookCache.asset.item[cacheIdx];
-						// console.log(finalItemData[key]);
+						if (cacheIdx < 0 || itemLookup === false)
+							throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced asset '${value}' not found`);
+						
+						finalItemData[key] = itemLookup;
 					}
 					
 					// Handle strategy `action`
-					else if(
+					else if (
 						typeKey === 'strategy'
 						&& key === 'action'
 					) {
@@ -260,19 +269,27 @@ dotenv.config();
 							finalValueSet = [];
 							
 							// `Scenario` lookup
-							let cacheIdx = playbookCache.scenario.itemIndex.findIndex((_uuid: string) => _uuid === value[valueIdx][0]);
-							if (cacheIdx < 0)
+							let itemLookup: any = false;
+							let cacheIdx = playbookCache.scenario.itemIndex.findIndex((x: string) => x === value[valueIdx][0]);
+							if (cacheIdx >= 0)
+								itemLookup = Bot.getItem(playbookCache.scenario.item[cacheIdx]);
+
+							if (cacheIdx < 0 || itemLookup === false)
 								throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced scenario '${value[valueIdx][0]}' not found`);
-	
-							finalValueSet.push(playbookCache.scenario.item[cacheIdx]);
+							
+							finalValueSet.push(itemLookup);
 	
 							// Optional `Strategy` lookup
 							if (value[valueIdx].length === 2) {
-								cacheIdx = playbookCache.strategy.itemIndex.findIndex((_uuid: string) => _uuid === value[valueIdx][1]);
-								if (cacheIdx < 0)
-									throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced strategy '${value[valueIdx][0]}' not found`);
-	
-								finalValueSet.push(playbookCache.strategy.item[cacheIdx]);
+								itemLookup = false;
+								cacheIdx = playbookCache.strategy.itemIndex.findIndex((x: string) => x === value[valueIdx][1]);
+								if (cacheIdx >= 0)
+									itemLookup = Bot.getItem(playbookCache.strategy.item[cacheIdx]);
+
+								if (cacheIdx < 0 || itemLookup === false)
+									throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced strategy '${value[valueIdx][1]}' not found`);
+								
+								finalValueSet.push(itemLookup);
 							}
 	
 							finalValue.push(finalValueSet);
@@ -283,16 +300,29 @@ dotenv.config();
 					}
 	
 					// Handle subscription `action`
-					else if(
+					else if (
 						typeKey === 'subscription'
 						&& key === 'action'
 					) {
-						console.log(`typeKey: ${typeKey}, key: ${key}`);
-						console.log(finalItemData[key]);
+
+						// Set name of `playbook` if doesn't exist, for callback module loading
+						if (!finalItemData.hasOwnProperty('playbook'))
+							finalItemData.playbook = playbookName;
+						
+						// console.log(`typeKey: ${typeKey}, key: ${key}`);
+						// console.log(finalItemData);
+
+						for (let i in finalItemData[key]) {	
+							// let line = finalItemData[key][i];
+
+							// Import exchange extension
+							if (!fs.existsSync(playbookActions))
+								throw (`Playbook subscription action file not found '${playbookActions}'`);
+						}
 					}
 					
 					// Validate scenario and subscription `condition` sets
-					else if(key === 'condition') {
+					else if (key === 'condition') {
 						// console.log(`typeKey: ${typeKey}, key: ${key}`);
 						// console.log(finalItemData[key]);
 
@@ -320,15 +350,19 @@ dotenv.config();
 						}
 					}
 	
-					// Handle subscriptrion `timeframeAny`
-					else if(key === 'timeframeAny') {
+					// Handle subscription `timeframeAny`
+					else if (key === 'timeframeAny') {
 						let finalValue: Array<TimeframeItem> = [];
 						for (let valueIdx in value) {
-							let cacheIdx = playbookCache.timeframe.itemIndex.findIndex((_uuid: string) => _uuid === value[valueIdx]);
-							if (cacheIdx < 0)
+							let itemLookup: any = false;
+							let cacheIdx = playbookCache.timeframe.itemIndex.findIndex((x: string) => x === value[valueIdx]);
+							if (cacheIdx >= 0)
+								itemLookup = Bot.getItem(playbookCache.timeframe.item[cacheIdx]);
+
+							if (cacheIdx < 0 || itemLookup === false)
 								throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced timeframe '${value[valueIdx]}' not found`);
-	
-							finalValue.push(playbookCache.timeframe.item[cacheIdx]);
+							
+							finalValue.push(itemLookup);
 						}
 	
 						finalItemData[key] = finalValue;
@@ -369,22 +403,33 @@ dotenv.config();
 
 				// Instantiate item
 				let item = await typeObject.new(finalItemData);
+				// console.log(typeKey);
+				// console.log(finalItemData);
+				// console.log(item);
 				
 				// Store the items for referencing
-				playbookCache[typeKey].item.push(item);
+				let uuid = Bot.setItem(item);
+
+				playbookCache[typeKey].item.push(uuid);
 				playbookCache[typeKey].itemIndex.push(itemName);
 			}
 		}
 	}
 
+	// console.log(`playbookCache`);
+	// console.log(playbookCache);
+	// console.log(Bot.itemNameIndex);
+
 	// Attempt to execute all `Timeframe`
 	if (playbookCache.timeframe.item.length === 0)
-		Bot.log(`No timeframes to execute`, Log.Info);
+		Bot.log(`No timeframes to execute`, Log.Warn);
 	else {
+
+		// Execute all timeframes, in order they were found in the playbook
 		for (let itemIdx in playbookCache.timeframe.item) {
-			let timeframe = playbookCache.timeframe.item[itemIdx];
-	
 			try {
+				let timeframeUuid = playbookCache.timeframe.item[itemIdx];
+				const timeframe = Bot.getItem(timeframeUuid);
 				Bot.log(`Execute timeframe '${timeframe.name}'`);
 				timeframe.execute();
 			} catch (err) {

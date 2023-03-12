@@ -27,13 +27,14 @@ export enum OrderType {
 };
 
 export type OrderData = {
-	quantity?: string,
 	confirmed?: boolean,
 	dryrun?: boolean,
-	filledAmount?: string,
+	name?: string,
 	pair: PairItem,
 	position?: PositionItem,
 	price?: string,
+	quantity?: string,
+	quantityFilled?: string,
 	referenceId?: number | string;
 	related?: OrderItem,
 	side?: OrderSide,
@@ -45,13 +46,14 @@ export type OrderData = {
 }
 
 export class OrderItem implements OrderData {
-	quantity?: string = '0';
 	confirmed?: boolean = false;
 	dryrun: boolean = true;
-	filledAmount?: string = '0';
+	name?: string;
 	pair: PairItem;
 	position?: PositionItem;
 	price?: string = '0';
+	quantity?: string = '0';
+	quantityFilled?: string = '0';
 	referenceId?: number = 0;
 	related?: OrderItem;
 	side?: OrderSide = OrderSide.Buy;
@@ -64,21 +66,23 @@ export class OrderItem implements OrderData {
 	constructor (
 		data: OrderData,
 	) {
-		if (data.hasOwnProperty('quantity'))
-			this.quantity = data.quantity;
 		if (data.hasOwnProperty('confirmed'))
 			this.confirmed = data.confirmed ? true : false;
 		if (data.hasOwnProperty('dryrun'))
 			this.dryrun = data.dryrun ? true : false;
 		else if (process.env.BOT_DRYRUN === '0')
 			this.dryrun = false;
-		if (data.hasOwnProperty('filledAmount'))
-			this.filledAmount = data.filledAmount;
+		if (data.name)
+			this.name = data.name;
 		this.pair = data.pair;
 		if (data.hasOwnProperty('position'))
 			this.position = data.position;
 		if (data.hasOwnProperty('price'))
 			this.price = data.price;
+		if (data.hasOwnProperty('quantity'))
+		this.quantity = data.quantity;
+		if (data.hasOwnProperty('quantityFilled'))
+			this.quantityFilled = data.quantityFilled;
 		if (data.hasOwnProperty('related'))
 			this.related = data.related;
 		if (data.hasOwnProperty('side'))
@@ -97,7 +101,7 @@ export class OrderItem implements OrderData {
 	}
 
 	isFilled() {
-		return this.quantity === this.filledAmount;
+		return this.quantity === this.quantityFilled;
 	}
 
 	async execute (

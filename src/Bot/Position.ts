@@ -3,22 +3,26 @@ import { PairItem } from "./Pair";
 import { v4 as uuidv4 } from 'uuid';
 
 export type PositionData = {
-	quantity?: string,
+	name?: string,
 	pair: PairItem,
+	quantity?: string,
 	uuid?: string,
 }
 
 export class PositionItem implements PositionData {
-	quantity?: string = '0';
+	name?: string;
 	pair: PairItem;
+	quantity?: string = '0';
 	uuid: string;
 
 	constructor (
 		data: PositionData,
 	) {
+		if (data.name)
+			this.name = data.name;
+		this.pair = data.pair;
 		if (data.quantity)
 			this.quantity = data.quantity;
-		this.pair = data.pair;
 		this.uuid = data.uuid ?? uuidv4();
 	}
 }

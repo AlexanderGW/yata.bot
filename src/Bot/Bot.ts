@@ -1,5 +1,5 @@
 import { ChartItem } from "./Chart";
-import { Subscription, SubscriptionData } from "./Subscription";
+import { Subscription, SubscriptionActionCallbackModule, SubscriptionCallbackData, SubscriptionData } from "./Subscription";
 import { TimeframeItem } from "./Timeframe";
 
 const fs = require('fs');
@@ -51,6 +51,7 @@ export type BotDespatchData = {
 export type BotData = {
 	 item: object[],
 	 itemIndex: string[],
+	 itemNameIndex: string[],
 	 log: (
 		string: string,
 		level?: Log,
@@ -77,6 +78,11 @@ export const Bot: BotData = {
 	 * Legacy item storage index
 	 */
 	itemIndex: [],
+
+	/**
+	 * Legacy item storage name
+	 */
+	itemNameIndex: [],
 
 	/**
 	 * Logging interface
@@ -142,16 +148,24 @@ export const Bot: BotData = {
 	/**
 	 * Lookup and return an item from general storage
 	 * 
-	 * @param {string} uuid 
+	 * @param {string} identifier 
 	 * @returns {object | false}
 	 */
 	getItem (
-		uuid: string,
+		identifier: string,
 	): any {
-		let index = this.itemIndex.findIndex((_uuid : string) => _uuid === uuid);
+		let index: number = 0;
 
+		// Lookup `uuid`
+		index = this.itemIndex.findIndex((x: string) => x === identifier);
 		if (index >= 0)
 			return this.item[index];
+
+		// Lookup `name`
+		index = this.itemNameIndex.findIndex((x: string) => x === identifier);
+		if (index >= 0)
+			return this.item[index];
+
 		return false;
 	},
 
@@ -165,7 +179,18 @@ export const Bot: BotData = {
 	setItem (
 		data: ItemBaseData,
 	): string {
-		let index = this.itemIndex.findIndex((_uuid: string) => _uuid === data.uuid);
+		let index: number = 0;
+
+		// Lookup existing item by `uuid`, for overwrite
+		index = this.itemIndex.findIndex((x: string) => x === data.uuid);
+		
+		// Item `name` based overwriting (if enabled)
+		if (
+			process.env.BOT_ITEM_NAME_OVERWRITE
+			&& process.env.BOT_ITEM_NAME_OVERWRITE === '1'
+			&& index < 0
+		)
+			index = this.itemNameIndex.findIndex((x: string) => x === data.name);
 
 		// Reset existing item
 		if (index >= 0)
@@ -174,8 +199,14 @@ export const Bot: BotData = {
 		// Store new item
 		else {
 			// let newIndex = this.item.length;
+			
+			// The `name` is optional, fallback to `uuid` if not set
+			if (!data.hasOwnProperty('name') || !data.name?.length)
+				data.name = data.uuid;
+
 			this.item.push(data);
 			this.itemIndex.push(data.uuid);
+			this.itemNameIndex.push(data.name);
 		}
 
 		return data.uuid;
@@ -199,20 +230,16 @@ export const Bot: BotData = {
 			 * A `Timeframe` has finished an iteration
 			 */
 			case BotEvent.TimeframeResult : {
-				Object.entries(Subscription.item).forEach(function([
-					key,
-					val
-				]: [
-					string,
-					SubscriptionData
-				]) {
-					let index = val.timeframeAny?.findIndex(timeframe => timeframe.uuid === data.uuid);
+				for (let i in Subscription.item) {
+					const item = Subscription.item[i];
+
+					let index = item.timeframeAny?.findIndex(timeframe => timeframe.uuid === data.uuid);
 					if (typeof index !== 'undefined' && index >= 0) {
 						let timeField: string = '';
 
-						if (val.chart.dataset?.hasOwnProperty('openTime'))
+						if (item.chart.dataset?.hasOwnProperty('openTime'))
 							timeField = 'openTime';
-						else if (val.chart.dataset?.hasOwnProperty('closeTime'))
+						else if (item.chart.dataset?.hasOwnProperty('closeTime'))
 							timeField = 'closeTime';
 
 						let signalResult: BotSignalData = {
@@ -226,11 +253,11 @@ export const Bot: BotData = {
 						/**
 						 * Aggregated results from any of the listed `Timeframe`
 						 */
-						if (val.timeframeAny?.length) {
+						if (item.timeframeAny?.length) {
 
 							// Process timeframes
-							for (let i = 0; i < val.timeframeAny.length; i++) {
-								let timeframe = val.timeframeAny[i];
+							for (let i = 0; i < item.timeframeAny.length; i++) {
+								let timeframe = item.timeframeAny[i];
 
 								for (let j = 0; j < timeframe.result.length; j++) {
 									let result: any = timeframe.result[j];
@@ -260,10 +287,10 @@ export const Bot: BotData = {
 						let valueB: string;
 						let valueBReal: number;
 
-						for (let i = 0; i < val.condition.length; i++) {
-							valueA = val.condition[i][0];
-							operator = val.condition[i][1];
-							valueB = val.condition[i][2];
+						for (let i = 0; i < item.condition.length; i++) {
+							valueA = item.condition[i][0];
+							operator = item.condition[i][1];
+							valueB = item.condition[i][2];
 
 							valueAReal = signalResult[valueA as keyof BotSignalData] ?? valueA;
 							valueBReal = signalResult[valueB as keyof BotSignalData] ?? valueB;
@@ -329,20 +356,42 @@ export const Bot: BotData = {
 
 						// All conditions within the set, match on timeframe(s)
 						if (
-							conditionMatch.length === val.condition.length
-							&& val.timeframeAny?.[index]
+							conditionMatch.length === item.condition.length
+							&& item.timeframeAny?.[index]
 						) {
-							Bot.log(`Timeframe '${val.timeframeAny?.[index].uuid}' triggered subscription callback (signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}): ${val.name}`);
+							Bot.log(`Timeframe '${item.timeframeAny?.[index].uuid}' triggered subscription callback (signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}): ${item.name}`);
 							
-							// Callback action for subscriber, pass the `SubscriptionData` data
-							if (val.action) {
-								val.action(
-									val
-								);
+							
+							if (item.playbook) {
+
+								// Playbook action module callback
+								if (item.action) {
+
+									// Import module
+									let importPath = `../../playbook/${item.playbook}/${item.playbook}.ts`;
+									import(importPath).then((module: SubscriptionActionCallbackModule) => {
+										if (!item.action || !module.hasOwnProperty(item.action))
+											throw (`Subscription action callback not found, or invalid.`);
+				
+										// Execute imported subscription callback on module
+										try {
+											module[item.action](
+												item
+											);
+										} catch (err) {
+											throw (`Failed to execute subscription action '${item.action}' callback.`);
+										}
+									}).catch(err => Bot.log(err.message, Log.Err));
+								}
+							}
+
+							// Executer callback
+							if (item.actionCallback) {
+								item.actionCallback(item);
 							}
 						}
 					}
-				});
+				}
 
 				break;
 			}

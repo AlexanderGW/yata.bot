@@ -106,70 +106,75 @@ export class TimeframeItem implements TimeframeData {
 
 	async execute () {
 		if (!this.keepalive)
-			Bot.log(`Timeframe '${this.uuid}' executed manually.`);
+			Bot.log(`Timeframe '${this.uuid}' executed (interval: ${this.intervalTime})`);
 
 		const startTime = Date.now();
 
-		if ((startTime - this.lastStartTime) >= this.intervalTime) {
+		if ((startTime - this.lastStartTime) < this.intervalTime)
+			throw (`Timeframe '${this.uuid}' too soon`);
 
-			// Clear result set for new execution
-			this.result = [];
-			this.resultIndex = [];
+		// Clear result set for new execution
+		this.result = [];
+		this.resultIndex = [];
 
-			// Bot.log(`Last run: ${this.lastStartTime}`);
-			// Bot.log(`Since last run: ${startTime - this.lastStartTime}`);
-			
-			// Process strategies
-			for (let i = 0; i < this.strategy.length; i++) {
-				let strategy = this.strategy[i];
+		Bot.log(`Last run: ${this.lastStartTime} (time since: ${startTime - this.lastStartTime})`, Log.Debug);
 
-				// Request chart updates, for strategy
-				if (
-					(startTime - strategy.chart.lastUpdateTime)
-					>= strategy.chart.pollTime
-				) {
-					let date = new Date(strategy.chart.lastUpdateTime);
+		// Callback testing
+		// Bot.despatch({
+		// 	event: BotEvent.TimeframeResult,
+		// 	uuid: this.uuid,
+		// });
+		
+		// Process strategies
+		for (let i = 0; i < this.strategy.length; i++) {
+			let strategy = this.strategy[i];
 
-					Bot.log(`Strategy '${strategy.uuid}' chart '${strategy.chart.uuid}' to be synced from: ${date.toISOString()}`);
+			// Request chart updates, for strategy
+			if (
+				(startTime - strategy.chart.lastUpdateTime)
+				>= strategy.chart.pollTime
+			) {
+				let date = new Date(strategy.chart.lastUpdateTime);
 
-					try {
-						await strategy.chart.pair.exchange.syncChart(
-							strategy.chart
-						);
-					} catch (err) {
-						Bot.log(err as string, Log.Err);
-					}
-				}
+				Bot.log(`Strategy '${strategy.uuid}' chart '${strategy.chart.uuid}' to be synced from: ${date.toISOString()}`);
 
-				// Try strategy
 				try {
-					let signal = strategy.execute({
-						windowTime: this.windowTime,
-						timeframe: this,
-					});
-
-					// Duplicate strategy result set within this timeframe
-					// if (this.getResult(strategy))
-					// 	throw (`Timeframe '${this.name}', strategy '${strategy.name}' result duplication.`);
-
-					this.result.push(signal);
-					this.resultIndex.push(strategy.uuid);
+					await strategy.chart.pair.exchange.syncChart(
+						strategy.chart
+					);
 				} catch (err) {
 					Bot.log(err as string, Log.Err);
 				}
 			}
 
-			// Send a despatch to indicate the timeframe has results.
-			if (this.result.length) {
-				Bot.despatch({
-					event: BotEvent.TimeframeResult,
-					uuid: this.uuid,
+			// Try strategy
+			try {
+				let signal = strategy.execute({
+					windowTime: this.windowTime,
+					timeframe: this,
 				});
-			}
 
-			this.lastEndTime = Date.now();
-			this.lastStartTime = startTime;
+				// Duplicate strategy result set within this timeframe
+				// if (this.getResult(strategy))
+				// 	throw (`Timeframe '${this.name}', strategy '${strategy.name}' result duplication.`);
+
+				this.result.push(signal);
+				this.resultIndex.push(strategy.uuid);
+			} catch (err) {
+				Bot.log(err as string, Log.Err);
+			}
 		}
+
+		// Send a despatch to indicate the timeframe has results.
+		if (this.result.length) {
+			Bot.despatch({
+				event: BotEvent.TimeframeResult,
+				uuid: this.uuid,
+			});
+		}
+
+		this.lastEndTime = Date.now();
+		this.lastStartTime = startTime;
 	}
 }
 

@@ -191,7 +191,7 @@ describe('Backtest dataset 1', () => {
         let subscriptionPromise = new Promise((resolve, reject) => {
 
             // Check pot, allow action of fixed val, or %
-            const actionEthBtcBuy = (
+            const actionEthBtcBuy = async (
                 subscribe: SubscriptionData
             ) => {
 
@@ -276,7 +276,7 @@ describe('Backtest dataset 1', () => {
 
             // Established subscriber on Timeframe `defaultTimeframe`
             Subscription.new({
-                action: actionEthBtcBuy,
+                actionCallback: actionEthBtcBuy,
                 chart: chartEthBtc4h,
                 condition: [
                     ['total', '==', '2'],

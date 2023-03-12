@@ -19,17 +19,16 @@ analysis:
 # Assets
 asset:
   btc:
-    exchange: kraken
+    # label: Bitcoin
     symbol: BTC
   eth:
-    exchange: kraken
+    # label: Ethereum
     symbol: ETH
 
 # Charts
 chart:
-  ethBtc4h:
-    exchange: kraken
-    pair: ethBtc
+  ethBtcKraken4h:
+    pair: ethBtcKraken
     pollTime: 5m # 300000
     candleTime: 4h # 14400000
 
@@ -41,40 +40,38 @@ exchange:
 
 # Orders
 order:
-  orderEthbtcBuy:
-    amount: 10%
+  ethBtcKrakenBuy:
     #dryrun: true
-    exchange: kraken
-    pair: ethBtc
-    position: ethBtc
+    pair: ethBtcKraken
+    position: ethBtcKraken
     side: buy
     type: market
     # type: limit:-5%
-  orderEthbtcSell:
-    amount: 10%
+    quantity: 10%
+  ethBtcKrakenSell:
     #dryrun: true
-    exchange: kraken
-    pair: ethBtc
-    position: ethBtc
+    pair: ethBtcKraken
+    position: ethBtcKraken
     side: sell
     type: market
     # type: limit:+5%
+    quantity: 10%
 
 # Positions
 position:
-  ethBtc:
-    exchange: kraken
-    pair: ethBtc
+  ethBtcKraken:
+    pair: ethBtcKraken
 
 # Pairs
 pair:
-  ethBtc:
+  ethBtcKraken:
     a: eth
     b: btc
+    exchange: kraken
 
 # Scenarios
 scenario:
-  scenarioRsi14BearishOverbought:
+  rsi14BearishOverbought:
     analysis:
       - analysisRsi14
     condition:
@@ -84,7 +81,7 @@ scenario:
 
         # Latest candle
         - [outReal, '<=', 70]
-  scenarioRsi14BullishOversold:
+  rsi14BullishOversold:
     analysis:
       - analysisRsi14
     condition:
@@ -97,49 +94,57 @@ scenario:
 
 # Strategies
 strategy:
-  stratRsi14BearishOverbought:
+  rsi14BearishOverbought:
     action:
-      - [scenarioRsi14BearishOverbought]
+      # Optional second parameter strategy
+      # Executed whenever the scenario matches
+      # i.e. [scenario, strategy]
+      - [rsi14BearishOverbought]
     analysis:
       - analysisRsi14
-    chart: ethBtc4h
-  stratRsi14BullishOversold:
+    chart: ethBtcKraken4h
+  rsi14BullishOversold:
     action:
-      - [scenarioRsi14BullishOversold]
+      # Optional second parameter strategy
+      # Executed whenever the scenario matches
+      # i.e. [scenario, strategy]
+      - [rsi14BullishOversold]
     analysis:
       - analysisRsi14
-    chart: ethBtc4h
+    chart: ethBtcKraken4h
 
 # Subscriptions
 subscription:
-  ethBtc4hBuy:
+  ethBtcKrakenSubscription:
+
+    # See `eth-btc-mockup.ts`
     action:
-      - orderEthbtcBuy.execute(OrderAction.Create)
-    chart: ethBtc4h
+      - actionEthBtcBuy
+    chart: ethBtcKraken4h
     condition:
       - [total, '>=', 1]
     timeframeAny:
-      - timeframeRsi14BullishOversold
-  # ethBtc4hSell:
+      - rsi14BullishOversold
+  # ethBtcKrakenSell:
   #   action:
-  #     - orderEthbtcSell.execute(OrderAction.Create)
-  #   chart: ethBtc4h
+  #     - actionEthBtcSell
+  #   chart: ethBtcKraken4h
   #   condition:
   #     - [total, '>=', 1]
   #   timeframeAny:
-  #     - timeframeRsi14BearishOverbought
+  #     - rsi14BearishOverbought
 
 # Timeframes
 timeframe:
-  # timeframeRsi14BearishOverbought:
+  # rsi14BearishOverbought:
   #   intervalTime: 5s
   #   keepalive: false # Runs once
   #   strategy:
-  #     - stratRsi14BearishOverbought
+  #     - rsi14BearishOverbought
   #   windowTime: 50d # 86400000 * 50
-  timeframeRsi14BullishOversold:
+  rsi14BullishOversold:
     intervalTime: 5s
     keepalive: false # Runs once
     strategy:
-      - stratRsi14BullishOversold
+      - rsi14BullishOversold
     windowTime: 50d # 86400000 * 50
