@@ -2,10 +2,12 @@
 Still in very early stages of development. Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.com/package/talib).
 
 Following a concept of timeframes with strategies, which look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
-
-## Environment
-See `.env.example` for bot configuration options, and exchange API keys
  
+## Update: March 2023
+- Planning a candidate release in the coming months.
+- YAML playbook templates to configure environments, and execute callbacks 
+- Spot trading only (could expand on this later)
+
 ## Playbooks (YAML templates)
 Bot instances can be configured using YAML templates, known as playbooks, stored in the `~/playbook/<name>/<name>.yml` directory. Replace `<name>` with actual template name.
 
@@ -25,6 +27,9 @@ Notations `s,m,h,d,w` (i.e. `5m` for five minutes in milliseconds) are available
 
 ### Item referencing
 All items are added with a name, which will be used as references within a playbook.
+
+## Environment
+See `.env.example` for bot configuration options, and exchange API keys
 
 ## Todo
 - In-progress: JSON/YAML support for configurations
