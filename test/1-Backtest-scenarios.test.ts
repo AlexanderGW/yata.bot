@@ -232,8 +232,8 @@ describe('Backtest dataset 1', () => {
         // Create a ETHBTC pair chart, and 1 minute, for exchange data
         chartEthBtc4h = Chart.new({
             pair: pairEthBtc,
-            pollTime: 300, // 5m in seconds
-            candleTime: 14400 // 4h in seconds
+            pollTime: 300000, // 5m in seconds
+            candleTime: 14400000 // 4h in seconds
         });
 
         // Push exchange data to chart (if exchange/chart are compatible)

@@ -57,10 +57,10 @@ export class ScenarioItem implements ScenarioData {
 
 	test (
 		data: ScenarioTestData,
-	): Array<Array<ScenarioConditionMatch>> {
+	): Array<Array<Array<ScenarioConditionMatch>>> {
 		
 		// Increments if all conditions are met, on a dataset
-		let scenarioMatch: Array<Array<ScenarioConditionMatch>> = [];
+		let scenarioMatch: Array<Array<Array<ScenarioConditionMatch>>> = [];
 
 		let conditionMatch: Array<ScenarioConditionMatch> = [];
 		let valueA: string;
@@ -198,12 +198,10 @@ export class ScenarioItem implements ScenarioData {
 		let startPoint: number = 0;
 
 		// Offset from the front of the dataset
-		if (data.strategyExecuteData.windowTime && data.chart.dataset?.open) {
-			// Bot.log(`data.strategyExecuteData.windowTime: ${data.strategyExecuteData.windowTime / 1000}`);
-			// Bot.log(`data.chart.candleTime: ${data.chart.candleTime}`);
+		if (data.strategyExecuteData.windowTime) {
 			startPoint = (
 				endPoint
-				- Math.ceil((data.strategyExecuteData.windowTime / 1000) / data.chart.candleTime)
+				- Math.ceil((data.strategyExecuteData.windowTime) / data.chart.candleTime)
 			);
 		}
 
@@ -211,13 +209,11 @@ export class ScenarioItem implements ScenarioData {
 		if (startPoint < 0)
 			startPoint = 0;
 
-		// Bot.log(`startPoint: ${startPoint}`);
-
 		let conditionDepth: number = (this.condition.length - 1);
 
 		// Walk the data points, from the required view point
 		// (number of conditions, minus 1)
-		Bot.log(`Scenario '${this.uuid}' datapoint range: ${startPoint}-${endPoint}`);
+		Bot.log(`Scenario '${this.name}'; Datapoints: ${startPoint}-${endPoint}`);
 		for (
 			let j: number = startPoint;
 			j < endPoint;
@@ -288,7 +284,7 @@ export class ScenarioItem implements ScenarioData {
 								if (
 
 									// Skip while the data point range is out-of-scope (not enough data points)
-									k < startIndex + conditionDepth
+									k < (startIndex + conditionDepth)
 
 									// Skip if we've exceeded the analysis result data points
 									|| (k - startIndex) > (dataset.nbElement - 1)
@@ -318,13 +314,12 @@ export class ScenarioItem implements ScenarioData {
 	
 										// Skip if we've exceeded the analysis result data points
 										|| (k - startIndex) > (dataset.nbElement - 1)
-										) {
-											analysisOffset = -1;
-											continue;
+									) {
+										analysisOffset = -1;
+										continue;
 									}
 
 									analysisOffset = (k - startIndex);
-
 									// console.log(`analysisOffset: ${analysisOffset}`);
 									
 									const datasetResultField = dataset.result[valueB as keyof AnalysisExecuteResultData];
@@ -485,19 +480,8 @@ export class ScenarioItem implements ScenarioData {
 				}
 
 				// All conditions within the set, match on this data frame
-				if (conditionMatch.length === condition.length) {
+				if (conditionMatch.length === condition.length)
 					conditionSetMatch.push(conditionMatch);
-
-					// if (conditionMatch && conditionMatch.valueB === 'outRealLowerBand')
-					// let len: number = conditionMatch.length - 1;
-					// let idx = conditionMatch[len].k as number;
-					// if (data?.chart.dataset?.openTime) {
-					// 	let date = new Date(data?.chart.dataset?.openTime[idx] * 1000);
-					// 	console.log(`openTime: ${date.toISOString()}`);
-					// }
-					// console.log(conditionMatch);
-							
-				}
 
 				conditionSetIdx++;
 			}
@@ -508,7 +492,7 @@ export class ScenarioItem implements ScenarioData {
 
 				// Execute chained strategy, if provided
 				if (data.strategy) {
-					Bot.log(`Scenario '${this.name}' triggered strategy '${data.strategy.name}'`);
+					Bot.log(`Scenario '${this.name}'; Triggered strategy '${data.strategy.name}'`);
 
 					// Try strategy
 					try {
@@ -523,6 +507,28 @@ export class ScenarioItem implements ScenarioData {
 					}
 				}
 			}
+		}
+
+		// Log leading (last in array) candle of matching scenario
+		if (scenarioMatch.length) {
+			if (data.chart?.dataset) {
+				let timeField: string = '';
+				if (data.chart.dataset?.hasOwnProperty('openTime'))
+					timeField = 'openTime';
+				else if (data.chart.dataset?.hasOwnProperty('closeTime'))
+					timeField = 'closeTime';
+
+				for (let x = 0; x < scenarioMatch.length; x++) {
+					let len: number = scenarioMatch[x].length - 1;
+					let idx = scenarioMatch[x][len][0].k as number;
+					
+					const milliseconds = data.chart.dataset[timeField][idx] * 1000;
+					let date = new Date(milliseconds);
+					Bot.log(`Scenario '${this.name}'; MATCH; ${timeField}: ${date.toISOString()}, ${milliseconds}`);
+					// console.log(conditionMatch);
+				}
+			}
+			
 		}
 
 		return scenarioMatch;

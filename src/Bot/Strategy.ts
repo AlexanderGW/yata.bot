@@ -80,7 +80,7 @@ export class StrategyItem implements StrategyData {
 		let i: number;
 		let action: [ScenarioItem, StrategyItem?];
 
-		let signal: Array<Array<ScenarioConditionMatch>> = [];
+		let signal: Array<Array<Array<ScenarioConditionMatch>>> = [];
 
 		// Process analysis
 		for (i = 0; i < this.analysis.length; i++) {

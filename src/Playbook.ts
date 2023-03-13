@@ -159,7 +159,7 @@ dotenv.config();
 				let finalItemData: any = {
 					...playbookObject[typeKey][itemName] as object,
 
-					// Allow playbook to support items with the same name, as they are seperated by type scope
+					// Allow custom `name` values, or default to type scope prefixed names
 					name: playbookObject[typeKey][itemName].name ?? `${typeKey}.${itemName}`
 				};
 
