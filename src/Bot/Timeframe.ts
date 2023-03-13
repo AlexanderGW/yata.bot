@@ -106,18 +106,18 @@ export class TimeframeItem implements TimeframeData {
 
 	async execute () {
 		if (!this.keepalive)
-			Bot.log(`Timeframe '${this.uuid}' executed (interval: ${this.intervalTime})`);
+			Bot.log(`Timeframe '${this.uuid}'; Executed (interval: ${this.intervalTime})`);
 
 		const startTime = Date.now();
 
 		if ((startTime - this.lastStartTime) < this.intervalTime)
-			throw (`Timeframe '${this.uuid}' too soon`);
+			throw (`Timeframe '${this.uuid}'; Interval time has not yet passed`);
 
 		// Clear result set for new execution
 		this.result = [];
 		this.resultIndex = [];
 
-		Bot.log(`Last run: ${this.lastStartTime} (time since: ${startTime - this.lastStartTime})`, Log.Debug);
+		Bot.log(`Timeframe '${this.uuid}'; Last run: ${this.lastStartTime} (time since: ${startTime - this.lastStartTime})`, Log.Debug);
 
 		// Callback testing
 		// Bot.despatch({
@@ -134,9 +134,22 @@ export class TimeframeItem implements TimeframeData {
 				(startTime - strategy.chart.lastUpdateTime)
 				>= strategy.chart.pollTime
 			) {
-				let date = new Date(strategy.chart.lastUpdateTime);
+				let fromTime: number = 0;
 
-				Bot.log(`Strategy '${strategy.uuid}' chart '${strategy.chart.uuid}' to be synced from: ${date.toISOString()}`);
+				// Sync from when the chart was last updated
+				if (strategy.chart.lastUpdateTime > 0)
+					fromTime = strategy.chart.lastUpdateTime;
+				
+				// Sync from start of the timeframe window
+				else if (this.windowTime > 0)
+					fromTime = Date.now() - this.windowTime;
+
+				// Default to the last 50 candles
+				else
+					fromTime = Date.now() - (strategy.chart.candleTime * 50);
+
+				let fromDate = new Date(fromTime);
+				Bot.log(`Strategy '${strategy.uuid}'; Chart '${strategy.chart.uuid}'; Sync from: ${fromDate.toISOString()}`);
 
 				try {
 					await strategy.chart.pair.exchange.syncChart(
