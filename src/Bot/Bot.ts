@@ -268,15 +268,15 @@ export const Bot: BotData = {
 								}
 							}
 
-							signalResult.high = Math.max(...signal);
-							signalResult.low = Math.min(...signal);
-							signalResult.total = signal.reduce(function (x, y) {
-								return x + y;
-							}, 0);
-							
-							// timeframeResult.push(result);
+							if (signal.length) {
+								signalResult.high = Math.max(...signal);
+								signalResult.low = Math.min(...signal);
+								signalResult.total = signal.reduce(function (x, y) {
+									return x + y;
+								}, 0);
+							}
 
-							Bot.log(`signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}`);
+							Bot.log(`Subscription '${item.name}'; signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}`, Log.Debug);
 						}
 
 						let conditionMatch: Array<BotSubscribeConditionData> = [];
@@ -359,8 +359,7 @@ export const Bot: BotData = {
 							conditionMatch.length === item.condition.length
 							&& item.timeframeAny?.[index]
 						) {
-							Bot.log(`Timeframe '${item.timeframeAny?.[index].uuid}' triggered subscription callback (signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}): ${item.name}`);
-							
+							Bot.log(`Timeframe '${item.timeframeAny?.[index].uuid}'; Triggered subscription '${item.name}'`);
 							
 							if (item.playbook) {
 

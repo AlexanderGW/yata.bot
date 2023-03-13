@@ -520,11 +520,12 @@ export class ScenarioItem implements ScenarioData {
 
 				for (let x = 0; x < scenarioMatch.length; x++) {
 					let len: number = scenarioMatch[x].length - 1;
-					let idx = scenarioMatch[x][len][0].k as number;
+					let candle = scenarioMatch[x][len][0];
+					let idx = candle.k as number;
 					
 					const milliseconds = data.chart.dataset[timeField][idx] * 1000;
 					let date = new Date(milliseconds);
-					Bot.log(`Scenario '${this.name}'; MATCH; ${timeField}: ${date.toISOString()}, ${milliseconds}`);
+					Bot.log(`Scenario '${this.name}'; MATCH; datapoint: ${candle.k}; ${timeField}: ${date.toISOString()}, ${milliseconds}`);
 					// console.log(conditionMatch);
 				}
 			}

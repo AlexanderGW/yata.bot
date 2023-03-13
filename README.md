@@ -13,6 +13,7 @@ Following a concept of timeframes with strategies, which look for scenarios (def
 - In-progress: Expand `Bot.setItem` and `Bot.getItem` storage interface (File, Memory, Redis, MongoDB, etc)
 - Support for web3 exchanges
 - Scenario condition percentage values (changes from previous datapoints)
+- Unify log formatting for better data ingestion
 - Cleanup `Helper` structure
 
 ## Playbooks (YAML templates)
