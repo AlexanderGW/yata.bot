@@ -111,7 +111,7 @@ export class OrderItem implements OrderData {
 			!this.quantity
 			|| this.quantity === '0'
 		)
-			throw (`Order '${this.uuid}' quantity is empty`);
+			throw (`Order '${this.name}' quantity is empty`);
 
 		// Build log message
 		let logParts: string[] = [];
@@ -119,7 +119,7 @@ export class OrderItem implements OrderData {
 		if (this.dryrun)
 			logParts.push('Dry-run:');
 
-		logParts.push(`Order '${this.uuid}'`);
+		logParts.push(`Order '${this.name}'`);
 		logParts.push(`${this.pair.exchange.name}:${this.pair.a.symbol}-${this.pair.b.symbol};`);
 		logParts.push(`action: ${action};`);
 		logParts.push(`type: ${this.type};`);
@@ -140,21 +140,21 @@ export class OrderItem implements OrderData {
 
 		switch (action) {
 			case OrderAction.Cancel : {
-				Bot.log(`${logMessage} Order '${this.uuid}' cancel on '${this.pair.exchange.uuid}'`);
+				Bot.log(`${logMessage} Order '${this.name}' cancel on '${this.pair.exchange.uuid}'`);
 				orderResponse = await this.pair.exchange.cancelOrder(this);
 
 				break;
 			}
 
 			case OrderAction.Create : {
-				Bot.log(`${logMessage} Order '${this.uuid}' create on '${this.pair.exchange.uuid}'`);
+				Bot.log(`${logMessage} Order '${this.name}' create on '${this.pair.exchange.uuid}'`);
 				orderResponse = await this.pair.exchange.createOrder(this);
 
 				break;
 			}
 
 			case OrderAction.Edit : {
-				Bot.log(`${logMessage} Order '${this.uuid}' edited on '${this.pair.exchange.uuid}'`);
+				Bot.log(`${logMessage} Order '${this.name}' edited on '${this.pair.exchange.uuid}'`);
 				orderResponse = await this.pair.exchange.editOrder(this);
 
 				break;
@@ -164,7 +164,7 @@ export class OrderItem implements OrderData {
 		// Order response indicates confirmation
 		if (orderResponse.confirmed === true) {
 			this.confirmed = true;
-			logMessage = `Order '${this.uuid}' confirmed on '${this.pair.exchange.uuid}'`;
+			logMessage = `Order '${this.name}' confirmed on '${this.pair.exchange.uuid}'`;
 				
 			// Dry-run testing
 			if (this.dryrun) {

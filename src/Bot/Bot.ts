@@ -358,7 +358,7 @@ export const Bot: BotData = {
 							conditionMatch.length === item.condition.length
 							&& item.timeframeAny?.[index]
 						) {
-							Bot.log(`Timeframe '${item.timeframeAny?.[index].uuid}'; Triggered subscription '${item.name}'`);
+							Bot.log(`Timeframe '${item.timeframeAny?.[index].name}'; Triggered subscription '${item.name}'`);
 							
 							if (item.playbook) {
 

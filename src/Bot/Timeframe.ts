@@ -106,18 +106,18 @@ export class TimeframeItem implements TimeframeData {
 
 	async execute () {
 		if (!this.keepalive)
-			Bot.log(`Timeframe '${this.uuid}'; Executed (interval: ${this.intervalTime}ms)`);
+			Bot.log(`Timeframe '${this.name}'; Executed (interval: ${this.intervalTime}ms)`);
 
 		const startTime = Date.now();
 
 		if ((startTime - this.lastStartTime) < this.intervalTime)
-			throw (`Timeframe '${this.uuid}'; Interval time has not yet passed`);
+			throw (`Timeframe '${this.name}'; Interval time has not yet passed`);
 
 		// Clear result set for new execution
 		this.result = [];
 		this.resultIndex = [];
 
-		Bot.log(`Timeframe '${this.uuid}'; Last run: ${this.lastStartTime} (time since: ${startTime - this.lastStartTime}ms)`, Log.Debug);
+		Bot.log(`Timeframe '${this.name}'; Last run: ${this.lastStartTime} (time since: ${startTime - this.lastStartTime}ms)`, Log.Debug);
 
 		// Callback testing
 		// Bot.despatch({

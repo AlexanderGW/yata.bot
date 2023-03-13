@@ -125,7 +125,7 @@ export class ChartItem implements ChartData {
 				lastDate.setTime(lastTime[0] * 1000);
 		}
 		
-		Bot.log(`Chart '${this.uuid}'; Refreshed '${lastUpdateDate.toISOString()}'; Begins (${timeField}) '${firstDate.toISOString()}'; Ends (${timeField}) '${lastDate.toISOString()}'`);
+		Bot.log(`Chart '${this.name}'; Refreshed '${lastUpdateDate.toISOString()}'; Begins (${timeField}) '${firstDate.toISOString()}'; Ends (${timeField}) '${lastDate.toISOString()}'`);
 	}
 }
 

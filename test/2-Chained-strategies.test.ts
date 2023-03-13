@@ -216,7 +216,7 @@ describe('Backtest dataset 1', () => {
 
                         // Index timeframe UUID for test comparison
                         actualResultIndex.push(timeframe.uuid);
-                        Bot.log(`TEST: Timeframe '${timeframe.uuid}'; timeframeResultCount: ${timeframe.result.length}`);
+                        Bot.log(`TEST: Timeframe '${timeframe.name}'; timeframeResultCount: ${timeframe.result.length}`);
                 
                         let timeField: string = '';
                         if (subscribe.chart.dataset?.openTime)

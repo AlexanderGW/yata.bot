@@ -97,7 +97,7 @@ export class AnalysisItem implements AnalysisData {
 		this.config = config;
 
 		this.uuid = data.uuid ?? uuidv4();
-		// Bot.log(`Added analysis: ${this.uuid}`);
+		// Bot.log(`Added analysis: ${this.name}`);
 	}
 }
 

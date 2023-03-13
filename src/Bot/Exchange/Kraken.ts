@@ -90,7 +90,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.uuid}' response; ` + JSON.stringify(responseJson), Log.Debug);
+			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Debug);
 
 			if (responseJson) {
 				if (responseJson.error) {
@@ -135,7 +135,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.uuid}' response; ` + JSON.stringify(responseJson), Log.Debug);
+			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Debug);
 
 			if (responseJson) {
 				if (responseJson.error) {
@@ -214,7 +214,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.uuid}' response; ` + JSON.stringify(responseJson), Log.Debug);
+			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Debug);
 
 			if (responseJson) {
 				if (responseJson.error) {
@@ -306,7 +306,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.uuid}' response; ` + JSON.stringify(responseJson), Log.Debug);
+			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Debug);
 
 			let etlData: ChartCandleData = {
 				close: [],
