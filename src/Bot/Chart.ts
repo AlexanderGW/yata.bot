@@ -13,6 +13,7 @@ export type ChartData = {
 };
 
 export type ChartCandleData = {
+	[index: string]: any,
 	change?: string[],
 	changePercent?: string[],
 	close?: string[],
