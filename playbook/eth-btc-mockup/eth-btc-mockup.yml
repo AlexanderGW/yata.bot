@@ -79,21 +79,17 @@ scenario:
     analysis:
       - rsi14
     condition:
-      -
-        # Previous candle
-        - [outReal, '>', 70]
-
-        # Latest candle
+      - # Previous candle
+        - [outReal, '>=', 70]
+      - # Latest candle
         - [outReal, '<=', 70]
   rsi14BullishOversold:
     analysis:
       - rsi14
     condition:
-      -
-        # Previous candle
-        - [outReal, '<', 30]
-
-        # Latest candle
+      - # Previous candle
+        - [outReal, '<=', 30]
+      - # Latest candle
         - [outReal, '>=', 30]
 
 # Strategies
