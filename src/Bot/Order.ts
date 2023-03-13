@@ -140,21 +140,21 @@ export class OrderItem implements OrderData {
 
 		switch (action) {
 			case OrderAction.Cancel : {
-				Bot.log(`${logMessage} Order '${this.name}' cancel on '${this.pair.exchange.uuid}'`);
+				Bot.log(`${logMessage} Order '${this.name}' cancel on '${this.pair.exchange.name}'`);
 				orderResponse = await this.pair.exchange.cancelOrder(this);
 
 				break;
 			}
 
 			case OrderAction.Create : {
-				Bot.log(`${logMessage} Order '${this.name}' create on '${this.pair.exchange.uuid}'`);
+				Bot.log(`${logMessage} Order '${this.name}' create on '${this.pair.exchange.name}'`);
 				orderResponse = await this.pair.exchange.createOrder(this);
 
 				break;
 			}
 
 			case OrderAction.Edit : {
-				Bot.log(`${logMessage} Order '${this.name}' edited on '${this.pair.exchange.uuid}'`);
+				Bot.log(`${logMessage} Order '${this.name}' edited on '${this.pair.exchange.name}'`);
 				orderResponse = await this.pair.exchange.editOrder(this);
 
 				break;
@@ -164,7 +164,7 @@ export class OrderItem implements OrderData {
 		// Order response indicates confirmation
 		if (orderResponse.confirmed === true) {
 			this.confirmed = true;
-			logMessage = `Order '${this.name}' confirmed on '${this.pair.exchange.uuid}'`;
+			logMessage = `Order '${this.name}' confirmed on '${this.pair.exchange.name}'`;
 				
 			// Dry-run testing
 			if (this.dryrun) {

@@ -123,15 +123,32 @@ export class TimeframeItem implements TimeframeData {
 		for (let i = 0; i < this.strategy.length; i++) {
 			let strategy = this.strategy[i];
 
-			// Request chart update, if over one second old, and past poll time
 			if (
-				(Date.now() - strategy.chart.lastUpdateTime) > 1000
+
+				// If timeframe chart syncing is not disabled
+				(!process.env.BOT_TIMEFRAME_CHART_SYNC || process.env.BOT_TIMEFRAME_CHART_SYNC === '1')
+
+				// Chart is overdue `pollTime`
 				&& (startTime - strategy.chart.lastUpdateTime) >= strategy.chart.pollTime
 			) {
 				let fromTime: number = 0;
+				let lastTime: number[];
+		
+				let timeField: string = '';
+				if (strategy.chart.dataset?.openTime)
+					timeField = 'openTime';
+				else if (strategy.chart.dataset?.closeTime)
+					timeField = 'closeTime';
+				
+				// Sync from last chart dataset candle time
+				if (strategy.chart.dataset?.hasOwnProperty(timeField)) {
+					lastTime = strategy.chart.dataset[timeField]?.slice(-1);
+					if (lastTime)
+						fromTime = lastTime[0] * 1000;
+				}
 
 				// Sync from when the chart was last updated
-				if (strategy.chart.lastUpdateTime > 0)
+				else if (strategy.chart.lastUpdateTime > 0)
 					fromTime = strategy.chart.lastUpdateTime;
 				
 				// Sync from start of the timeframe window
@@ -143,7 +160,7 @@ export class TimeframeItem implements TimeframeData {
 					fromTime = Date.now() - (strategy.chart.candleTime * 50);
 
 				let fromDate = new Date(fromTime);
-				Bot.log(`Strategy '${strategy.uuid}'; Chart '${strategy.chart.uuid}'; Sync from: ${fromDate.toISOString()}`);
+				Bot.log(`Strategy '${strategy.name}'; Chart '${strategy.chart.name}'; Sync from: ${fromDate.toISOString()}`);
 
 				try {
 					await strategy.chart.pair.exchange.syncChart(

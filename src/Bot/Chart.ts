@@ -105,7 +105,7 @@ export class ChartItem implements ChartData {
 		let lastUpdateDate = new Date(this.lastUpdateTime);
 
 		let firstTime;
-		let lastTime;
+		let lastTime: number[];
 		let firstDate = new Date();
 		let lastDate = new Date();
 

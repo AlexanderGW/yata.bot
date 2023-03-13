@@ -222,7 +222,7 @@ export const Bot: BotData = {
 	) {
 		// Bot.log(`Bot.despatch()`);
 		// Bot.log(`event: ${data.event}`);
-		// Bot.log(`uuid: ${data.uuid}`);
+		// Bot.log(`uuid: ${data.name}`);
 
 		switch (data.event) {
 

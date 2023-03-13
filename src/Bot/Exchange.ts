@@ -63,7 +63,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		order: OrderItem,
 	) {
 		order.status = OrderStatus.Cancelled;
-		Bot.log(`Order '${order.uuid}' cancelled (paper) on exchange '${order.pair.exchange.uuid}'`);
+		Bot.log(`Order '${order.name}' cancelled (paper) on exchange '${order.pair.exchange.name}'`);
 		return order;
 	}
 
@@ -71,7 +71,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		order: OrderItem,
 	) {
 		order.confirmed = true;
-		Bot.log(`Order '${order.uuid}' created (paper) on exchange '${order.pair.exchange.uuid}'`);
+		Bot.log(`Order '${order.name}' created (paper) on exchange '${order.pair.exchange.name}'`);
 		return order;
 	}
 
@@ -80,7 +80,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	) {
 		let orderResult: OrderItem = order;
 		orderResult.status = OrderStatus.Cancelled;
-		Bot.log(`Order '${order.uuid}' edited (paper) on exchange '${order.pair.exchange.uuid}'`);
+		Bot.log(`Order '${order.name}' edited (paper) on exchange '${order.pair.exchange.name}'`);
 		return orderResult;
 	}
 
@@ -177,7 +177,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	syncChart (
 		chart: ChartItem,
 	) {
-		Bot.log(`Chart '${chart.uuid}' sync`);
+		Bot.log(`Chart '${chart.name}' sync`);
 	}
 }
 
