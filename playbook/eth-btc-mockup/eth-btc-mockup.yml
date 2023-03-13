@@ -9,7 +9,7 @@ version: 1
 
 # Analysis
 analysis:
-  analysisRsi14:
+  rsi14:
     config:
       inRealField: close
       optInTimePeriod: 14
@@ -37,6 +37,10 @@ exchange:
   # paper:
   kraken:
     class: Kraken
+    # Optional override the item `name`
+    # Be careful to use unique values, 
+    # or you may run into strange problems
+    name: Kraken
 
 # Orders
 order:
@@ -73,7 +77,7 @@ pair:
 scenario:
   rsi14BearishOverbought:
     analysis:
-      - analysisRsi14
+      - rsi14
     condition:
       -
         # Previous candle
@@ -83,7 +87,7 @@ scenario:
         - [outReal, '<=', 70]
   rsi14BullishOversold:
     analysis:
-      - analysisRsi14
+      - rsi14
     condition:
       -
         # Previous candle
@@ -101,7 +105,7 @@ strategy:
       # i.e. [scenario, strategy]
       - [rsi14BearishOverbought]
     analysis:
-      - analysisRsi14
+      - rsi14
     chart: ethBtcKraken4h
   rsi14BullishOversold:
     action:
@@ -110,7 +114,7 @@ strategy:
       # i.e. [scenario, strategy]
       - [rsi14BullishOversold]
     analysis:
-      - analysisRsi14
+      - rsi14
     chart: ethBtcKraken4h
 
 # Subscriptions
