@@ -106,7 +106,7 @@ export class TimeframeItem implements TimeframeData {
 
 	async execute () {
 		if (!this.keepalive)
-			Bot.log(`Timeframe '${this.uuid}'; Executed (interval: ${this.intervalTime})`);
+			Bot.log(`Timeframe '${this.uuid}'; Executed (interval: ${this.intervalTime}ms)`);
 
 		const startTime = Date.now();
 
@@ -117,7 +117,7 @@ export class TimeframeItem implements TimeframeData {
 		this.result = [];
 		this.resultIndex = [];
 
-		Bot.log(`Timeframe '${this.uuid}'; Last run: ${this.lastStartTime} (time since: ${startTime - this.lastStartTime})`, Log.Debug);
+		Bot.log(`Timeframe '${this.uuid}'; Last run: ${this.lastStartTime} (time since: ${startTime - this.lastStartTime}ms)`, Log.Debug);
 
 		// Callback testing
 		// Bot.despatch({
@@ -151,13 +151,40 @@ export class TimeframeItem implements TimeframeData {
 				let fromDate = new Date(fromTime);
 				Bot.log(`Strategy '${strategy.uuid}'; Chart '${strategy.chart.uuid}'; Sync from: ${fromDate.toISOString()}`);
 
-				try {
-					await strategy.chart.pair.exchange.syncChart(
-						strategy.chart
-					);
-				} catch (err) {
-					Bot.log(err as string, Log.Err);
-				}
+				// try {
+				// 	await strategy.chart.pair.exchange.syncChart(
+				// 		strategy.chart
+				// 	);
+				// } catch (err) {
+				// 	Bot.log(err as string, Log.Err);
+				// }
+
+				// const fs = require('fs');
+
+				// if (!fs.existsSync(playbookTemplate))
+				// 	throw (`Playbook '${playbookName}' not found '${playbookTemplate}'`);
+
+				
+
+				// let response: any = fs.readFileSync(
+				// 	'./storage/dataset/Kraken/ETHBTC/2023/03/13/Kraken-ETHBTC-2023-03-13-19-15-24.json',
+				// 	'utf8',
+				// 	function (
+				// 		err: object,
+				// 		data: object
+				// 	) {
+				// 		if (err)
+				// 			console.error(err);
+				// 	}
+				// );
+	
+				// let responseJson = JSON.parse(response);
+				// if (responseJson) {
+				// 	strategy.chart.pair.exchange.refreshChart(
+				// 		strategy.chart,
+				// 		responseJson,
+				// 	);
+				// }
 			}
 
 			// Try strategy

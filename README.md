@@ -14,6 +14,7 @@ Following a concept of timeframes with strategies, which look for scenarios (def
 - Support for web3 exchanges
 - Scenario condition percentage values (changes from previous datapoints)
 - Unify log formatting for better data ingestion
+- D3 UI
 - Cleanup `Helper` structure
 
 ## Playbooks (YAML templates)

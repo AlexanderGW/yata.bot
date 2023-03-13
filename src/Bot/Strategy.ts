@@ -159,7 +159,6 @@ export class StrategyItem implements StrategyData {
 			}
 
 			let timeField: string = '';
-
 			if (this.chart.dataset?.openTime)
 				timeField = 'openTime';
 			else if (this.chart.dataset?.closeTime)

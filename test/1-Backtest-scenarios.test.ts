@@ -71,7 +71,6 @@ describe('Backtest dataset 1', () => {
                 Bot.log(`TEST: Timeframe '${timeframe.uuid}'; timeframeResultCount: ${timeframe.result.length}`, Log.Debug);
         
                 let timeField: string = '';
-        
                 if (subscribe.chart.dataset?.openTime)
                     timeField = 'openTime';
                 else if (subscribe.chart.dataset?.closeTime)

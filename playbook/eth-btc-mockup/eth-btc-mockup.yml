@@ -28,6 +28,7 @@ asset:
 # Charts
 chart:
   ethBtcKraken4h:
+    datasetFile: test/Kraken-ETHBTC-2023-01-02-13-04-20.json
     pair: ethBtcKraken
     pollTime: 5m # 300000
     candleTime: 4h # 14400000

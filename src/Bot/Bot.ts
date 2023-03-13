@@ -236,7 +236,6 @@ export const Bot: BotData = {
 					let index = item.timeframeAny?.findIndex(timeframe => timeframe.uuid === data.uuid);
 					if (typeof index !== 'undefined' && index >= 0) {
 						let timeField: string = '';
-
 						if (item.chart.dataset?.hasOwnProperty('openTime'))
 							timeField = 'openTime';
 						else if (item.chart.dataset?.hasOwnProperty('closeTime'))
