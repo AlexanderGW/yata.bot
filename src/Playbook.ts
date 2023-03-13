@@ -61,56 +61,25 @@ dotenv.config();
 	};
 	const playbookTypeKeys = Object.keys(playbookTypes);
 
+	type itemIndexType = {
+		itemIndex: string[],
+		item: string[],
+	};
+
 	// Cache table of all playbook item, to facilitate referencing
 	let playbookCache: {
-		[index: string]: {
-			itemIndex: string[],
-			item: string[],
-		},
-		exchange: {
-			itemIndex: string[],
-			item: string[],
-		},
-		pair: {
-			itemIndex: string[],
-			item: string[],
-		},
-		asset: {
-			itemIndex: string[],
-			item: string[],
-		},
-		position: {
-			itemIndex: string[],
-			item: string[],
-		},
-		order: {
-			itemIndex: string[],
-			item: string[],
-		},
-		chart: {
-			itemIndex: string[],
-			item: string[],
-		},
-		analysis: {
-			itemIndex: string[],
-			item: string[],
-		},
-		scenario: {
-			itemIndex: string[],
-			item: string[],
-		},
-		strategy: {
-			itemIndex: string[],
-			item: string[],
-		},
-		timeframe: {
-			itemIndex: string[],
-			item: string[],
-		},
-		subscription: {
-			itemIndex: string[],
-			item: string[],
-		},
+		[index: string]: itemIndexType,
+		exchange: itemIndexType,
+		pair: itemIndexType,
+		asset: itemIndexType,
+		position: itemIndexType,
+		order: itemIndexType,
+		chart: itemIndexType,
+		analysis: itemIndexType,
+		scenario: itemIndexType,
+		strategy: itemIndexType,
+		timeframe: itemIndexType,
+		subscription: itemIndexType,
 	} = {
 		exchange: {
 			itemIndex: [],
