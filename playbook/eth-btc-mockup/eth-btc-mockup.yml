@@ -125,26 +125,26 @@ subscription:
       - [total, '>=', 1]
     timeframeAny:
       - rsi14BullishOversold
-  # ethBtcKrakenSell:
-  #   action:
-  #     - actionEthBtcSell
-  #   chart: ethBtcKraken4h
-  #   condition:
-  #     - [total, '>=', 1]
-  #   timeframeAny:
-  #     - rsi14BearishOverbought
+  ethBtcKrakenSell:
+    action:
+      - actionEthBtcSell
+    chart: ethBtcKraken4h
+    condition:
+      - [total, '>=', 1]
+    timeframeAny:
+      - rsi14BearishOverbought
 
 # Timeframes
 timeframe:
-  # rsi14BearishOverbought:
-  #   intervalTime: 5s
-  #   keepalive: false # Runs once
-  #   strategy:
-  #     - rsi14BearishOverbought
-  #   windowTime: 50d # 86400000 * 50
+  rsi14BearishOverbought:
+    intervalTime: 5s
+    keepalive: false # Runs once
+    strategy:
+      - rsi14BearishOverbought
+    windowTime: 10d # 86400000 * 50
   rsi14BullishOversold:
     intervalTime: 5s
     keepalive: false # Runs once
     strategy:
       - rsi14BullishOversold
-    windowTime: 50d # 86400000 * 50
+    windowTime: 20d

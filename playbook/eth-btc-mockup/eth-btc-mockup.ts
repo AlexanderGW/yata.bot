@@ -24,8 +24,8 @@ export const actionEthBtcBuy = (
 
 	// For item `name` based overwriting, use `BOT_ITEM_NAME_OVERWRITE=1` on `.env`
 
-	let ethBtcKrakenSell = Bot.getItem('order.ethBtcKrakenSell');
-	console.log(ethBtcKrakenSell);
+	// let ethBtcKrakenSell = Bot.getItem('order.ethBtcKrakenSell');
+	// console.log(ethBtcKrakenSell);
 
 	// ethBtcKrakenSell.execute(OrderAction.Create);
 };
