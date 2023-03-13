@@ -8,6 +8,13 @@ Following a concept of timeframes with strategies, which look for scenarios (def
 - YAML playbook templates to configure environments, and execute callbacks 
 - Spot trading only (could expand on this later)
 
+## Todo
+- In-progress: JSON/YAML support for configurations
+- In-progress: Expand `Bot.setItem` and `Bot.getItem` storage interface (File, Memory, Redis, MongoDB, etc)
+- Support for web3 exchanges
+- Scenario condition percentage values (changes from previous datapoints)
+- Cleanup `Helper` structure
+
 ## Playbooks (YAML templates)
 Bot instances can be configured using YAML templates, known as playbooks, stored in the `~/playbook/<name>/<name>.yml` directory. Replace `<name>` with actual template name.
 
@@ -73,12 +80,6 @@ scenario:
 
 ## Environment
 See `.env.example` for bot configuration options, and exchange API keys
-
-## Todo
-- In-progress: JSON/YAML support for configurations
-- In-progress: Expand `Bot.setItem` and `Bot.getItem` storage interface (File, Memory, Redis, MongoDB, etc)
-- Scenario condition percentage values (changes from previous datapoints)
-- Cleanup `Helper` structure
 
 ## Testing
 Mocha, Chai unit test coverage. Currently tests a known dataset for strategy scenarios, against two timeframes.
