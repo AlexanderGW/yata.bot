@@ -62,11 +62,9 @@ export class ChartItem implements ChartData {
 		data: ChartCandleData,
 	) {
 		this.dataset = data;
-		this.lastUpdateTime = data.openTime?.length
-			? (data.openTime[data.openTime.length - 1] * 1000)
-			: Date.now();
-		let now = new Date(this.lastUpdateTime);
-		Bot.log(`Chart '${this.uuid}' refreshed`);
+		this.lastUpdateTime = Date.now();
+		let lastUpdateDate = new Date(this.lastUpdateTime);
+		Bot.log(`Chart '${this.uuid}'; Refreshed (${lastUpdateDate.toISOString()})`);
 	}
 }
 

@@ -129,10 +129,10 @@ export class TimeframeItem implements TimeframeData {
 		for (let i = 0; i < this.strategy.length; i++) {
 			let strategy = this.strategy[i];
 
-			// Request chart updates, for strategy
+			// Request chart update, if over one second old, and past poll time
 			if (
-				(startTime - strategy.chart.lastUpdateTime)
-				>= strategy.chart.pollTime
+				(Date.now() - strategy.chart.lastUpdateTime) > 1000
+				&& (startTime - strategy.chart.lastUpdateTime) >= strategy.chart.pollTime
 			) {
 				let fromTime: number = 0;
 
