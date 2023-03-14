@@ -30,8 +30,8 @@ chart:
   ethBtcKraken4h:
     datasetFile: test/Kraken-ETHBTC-2023-01-02-13-04-20.json
     pair: ethBtcKraken
-    pollTime: 5m # 300000
-    candleTime: 4h # 14400000
+    # pollTime: 5m # Five minutes
+    candleTime: 4h # Four hours
 
 # Exchanges
 exchange:
@@ -142,10 +142,10 @@ timeframe:
     keepalive: false # Runs once
     strategy:
       - rsi14BearishOverbought
-    windowTime: 10d # 86400000 * 50
+    windowTime: 10d # Ten days
   rsi14BullishOversold:
     intervalTime: 5s
     keepalive: false # Runs once
     strategy:
       - rsi14BullishOversold
-    windowTime: 20d
+    windowTime: 20d # Twenty days

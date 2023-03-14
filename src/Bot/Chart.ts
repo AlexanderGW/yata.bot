@@ -45,16 +45,16 @@ export class ChartItem implements ChartData {
 		if (data.datasetFile)
 			this.datasetFile = data.datasetFile;
 		if (data.lastUpdateTime)
-			this.lastUpdateTime = data.lastUpdateTime > 0 ? data.lastUpdateTime : 0;
+			this.lastUpdateTime = data.lastUpdateTime;
 		else
 			this.lastUpdateTime = 0;
 		if (data.name)
 			this.name = data.name;
 		this.pair = data.pair;
 		if (data.pollTime)
-			this.pollTime = data.pollTime > 0 ? data.pollTime : 60;
+			this.pollTime = data.pollTime;
 		else
-			this.pollTime = 60;
+			this.pollTime = 0;
 		if (data.candleTime)
 			this.candleTime = data.candleTime > 0 ? data.candleTime : 3600;
 		else
@@ -63,7 +63,6 @@ export class ChartItem implements ChartData {
 
 		if (this.datasetFile) {
 			const fs = require('fs');
-			console.log(fs.existsSync(this.datasetFile));
 			if (!fs.existsSync(this.datasetFile)) {
 				if (process.env.BOT_CHART_DATAFILE_FAIL_EXIT === '1')
 					throw (`Chart '${this.name}'; Dataset not found '${this.datasetFile}'`);
@@ -90,6 +89,9 @@ export class ChartItem implements ChartData {
 						this,
 						responseJson,
 					);
+
+					// Allow `syncChart` to run on first call
+					this.lastUpdateTime = 0;
 				}
 			} catch (err) {
 				Bot.log(err as string, Log.Err);
@@ -102,7 +104,7 @@ export class ChartItem implements ChartData {
 	) {
 		this.dataset = data;
 		this.lastUpdateTime = Date.now();
-		let lastUpdateDate = new Date(this.lastUpdateTime);
+		const lastUpdateDate = new Date(this.lastUpdateTime);
 
 		let firstTime;
 		let lastTime: number[];

@@ -16,7 +16,7 @@ export type ExchangeData = {
 export interface ExchangeInterface {
 	syncChart: (
 		chart: ChartItem,
-	) => void;
+	) => Promise<void>;
 
 	cancelOrder: (
 		order: OrderItem,
@@ -174,7 +174,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		}
 	}
 
-	syncChart (
+	async syncChart (
 		chart: ChartItem,
 	) {
 		Bot.log(`Chart '${chart.name}' sync`);

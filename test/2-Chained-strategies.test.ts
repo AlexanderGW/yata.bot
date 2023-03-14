@@ -233,7 +233,7 @@ describe('Backtest dataset 1', () => {
                                 // Get strategy from storage, by UUID
                                 let strategy: StrategyItem = Bot.getItem(uuid);
                 
-                                //'${strategy.action[j][0].uuid}'
+                                //'${strategy.action[j][0].name}'
                                 Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
                                 Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`);
                 
