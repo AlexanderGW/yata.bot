@@ -96,7 +96,8 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		chart: ChartItem,
 		data: ChartCandleData
 	) {
-		chart.refresh(data);
+		chart.updateDataset(data);
+		chart.refreshDataset();
 
 		// Check if datasets need to be stored
 		if (!process.env.BOT_EXCHANGE_STORE_DATASET || process.env.BOT_EXCHANGE_STORE_DATASET !== '1')

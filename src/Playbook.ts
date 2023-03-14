@@ -400,7 +400,7 @@ dotenv.config();
 				let timeframeUuid = playbookCache.timeframe.item[itemIdx];
 				const timeframe = Bot.getItem(timeframeUuid);
 				Bot.log(`Execute timeframe '${timeframe.name}'`);
-				timeframe.execute();
+				await timeframe.execute();
 			} catch (err) {
 				Bot.log(err as string, Log.Err);
 			}

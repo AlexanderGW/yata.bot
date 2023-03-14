@@ -5,8 +5,12 @@ import { PairItem } from "./Pair";
 export type ChartData = {
 	dataset?: ChartCandleData,
 	datasetFile?: string,
-	lastUpdateTime?: number, // Milliseconds
+	datasetEndTime?: number, // Milliseconds
+	datasetStartTime?: number, // Milliseconds
+	datasetTimeField?: string,
+	datasetUpdateTime?: number, // Milliseconds
 	name?: string,
+	datasetNextTime?: number, // Milliseconds
 	pair: PairItem,
 	pollTime?: number, // Seconds
 	candleTime?: number, // Seconds
@@ -31,11 +35,15 @@ export type ChartCandleData = {
 export class ChartItem implements ChartData {
 	dataset?: ChartCandleData;
 	datasetFile?: string;
-	lastUpdateTime: number;
+	datasetEndTime: number = 0;
+	datasetStartTime: number = 0;
+	datasetTimeField: string = '';
+	datasetUpdateTime: number = 0;
 	name?: string;
+	datasetNextTime: number = 0;
 	pair: PairItem;
-	pollTime: number;
-	candleTime: number;
+	pollTime: number = 0;
+	candleTime: number = 3600000; // One hour
 	uuid: string;
 
 	constructor (
@@ -44,25 +52,28 @@ export class ChartItem implements ChartData {
 		this.dataset = data.dataset;
 		if (data.datasetFile)
 			this.datasetFile = data.datasetFile;
-		if (data.lastUpdateTime)
-			this.lastUpdateTime = data.lastUpdateTime;
-		else
-			this.lastUpdateTime = 0;
+		if (data.datasetEndTime)
+			this.datasetEndTime = data.datasetEndTime;
+		if (data.datasetStartTime)
+			this.datasetStartTime = data.datasetStartTime;
+		if (data.datasetTimeField)
+			this.datasetTimeField = data.datasetTimeField;
+		if (data.datasetUpdateTime)
+			this.datasetUpdateTime = data.datasetUpdateTime;
 		if (data.name)
 			this.name = data.name;
+		if (data.datasetNextTime)
+			this.datasetNextTime = data.datasetNextTime;
 		this.pair = data.pair;
 		if (data.pollTime)
 			this.pollTime = data.pollTime;
-		else
-			this.pollTime = 0;
 		if (data.candleTime)
-			this.candleTime = data.candleTime > 0 ? data.candleTime : 3600;
-		else
-			this.candleTime = 3600;
+			this.candleTime = data.candleTime;
 		this.uuid = data.uuid ?? uuidv4();
 
 		if (this.datasetFile) {
 			const fs = require('fs');
+			
 			if (!fs.existsSync(this.datasetFile)) {
 				if (process.env.BOT_CHART_DATAFILE_FAIL_EXIT === '1')
 					throw (`Chart '${this.name}'; Dataset not found '${this.datasetFile}'`);
@@ -83,51 +94,105 @@ export class ChartItem implements ChartData {
 					}
 				);
 	
-				let responseJson = JSON.parse(response);
-				if (responseJson) {
-					this.pair.exchange.refreshChart(
-						this,
-						responseJson,
-					);
-
-					// Allow `syncChart` to run on first call
-					this.lastUpdateTime = 0;
-				}
+				let responseJson: ChartCandleData = JSON.parse(response);
+				if (responseJson)
+					this.dataset = responseJson;
 			} catch (err) {
 				Bot.log(err as string, Log.Err);
 			}
 		}
+
+		this.refreshDataset();
 	}
 
-	refresh (
+	refreshDataset () {
+		let startTime: number[];
+		let endTime: number[];
+		let nextTime: number = 0;
+		
+		if (!this.datasetNextTime) {
+
+			// Sync from when the chart was last updated
+			if (this.datasetUpdateTime > 0)
+				nextTime = this.datasetUpdateTime;
+			
+			// Get a default number of candles
+			else {
+				let totalCandles: number = 50;
+				if (process.env.BOT_CHART_DEFAULT_CANDLE_COUNT)
+					totalCandles = parseInt(process.env.BOT_CHART_DEFAULT_CANDLE_COUNT);
+
+				nextTime = Date.now() - (this.candleTime * totalCandles)
+			}
+				
+		}
+		
+		// Set dataset time field
+		if (!this.datasetTimeField.length) {
+			let timeField: string = '';
+			if (this.dataset?.openTime)
+				timeField = 'openTime';
+			else if (this.dataset?.closeTime)
+				timeField = 'closeTime';
+			
+			this.datasetTimeField = timeField;
+		}
+
+		// Get first and last chart dataset candle times
+		if (
+			this.dataset?.hasOwnProperty(this.datasetTimeField)
+			&& this.dataset[this.datasetTimeField].length
+		) {
+			startTime = this.dataset[this.datasetTimeField]?.slice(0, 1);
+			if (startTime) {
+				const value = startTime[0] * 1000;
+				this.datasetStartTime = value;
+			}
+			
+			endTime = this.dataset[this.datasetTimeField]?.slice(-1);
+			if (endTime) {
+				const value = endTime[0] * 1000;
+				this.datasetEndTime = value;
+				nextTime = value;
+			}
+		}
+
+		if (nextTime)
+			this.datasetNextTime = nextTime
+
+		let logLine = `Chart '${this.name}'; Refreshed dataset'`;
+
+		if (this.datasetTimeField)
+			logLine = `${logLine}; Field '${this.datasetTimeField}'`;
+
+		if (this.datasetStartTime) {
+			let startDate = new Date(this.datasetStartTime);
+			logLine = `${logLine}; Start '${startDate.toISOString()}'`;
+		}
+
+		if (this.datasetEndTime) {
+			let endDate = new Date(this.datasetEndTime);
+			logLine = `${logLine}; End '${endDate.toISOString()}'`;
+		}
+
+		if (this.datasetUpdateTime) {
+			let updateDate = new Date(this.datasetUpdateTime);
+			logLine = `${logLine}; Update '${updateDate.toISOString()}'`;
+		}
+
+		if (this.datasetNextTime) {
+			let nextDate = new Date(this.datasetNextTime);
+			logLine = `${logLine}; Next '${nextDate.toISOString()}'`;
+		}
+
+		Bot.log(logLine);
+	}
+
+	updateDataset (
 		data: ChartCandleData,
 	) {
 		this.dataset = data;
-		this.lastUpdateTime = Date.now();
-		const lastUpdateDate = new Date(this.lastUpdateTime);
-
-		let firstTime;
-		let lastTime: number[];
-		let firstDate = new Date();
-		let lastDate = new Date();
-
-		let timeField: string = '';
-		if (this.dataset?.openTime)
-			timeField = 'openTime';
-		else if (this.dataset?.closeTime)
-			timeField = 'closeTime';
-		
-		if (this.dataset[timeField]) {
-			firstTime = this.dataset[timeField]?.slice(0, 1);
-			if (firstTime)
-				firstDate.setTime(firstTime[0] * 1000);
-			
-			lastTime = this.dataset[timeField]?.slice(-1);
-			if (lastTime)
-				lastDate.setTime(lastTime[0] * 1000);
-		}
-		
-		Bot.log(`Chart '${this.name}'; Refreshed '${lastUpdateDate.toISOString()}'; Begins (${timeField}) '${firstDate.toISOString()}'; Ends (${timeField}) '${lastDate.toISOString()}'`);
+		this.datasetUpdateTime = Date.now();
 	}
 }
 

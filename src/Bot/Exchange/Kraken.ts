@@ -7,10 +7,10 @@ const fs = require('fs');
 
 export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 	handle?: {
-		api: (type: string, options: object) => {
+		api: (type: string, options: object) => Promise<{
 			result: any,
 			error?: string[],
-		},
+		}>,
 	};
 
 	// Omitting 4th char prefix of `X`, added on `pair` assignment
@@ -262,35 +262,8 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			// All response assets are prefixed with an `X`. Add one to ease lookups
 			let pair: string = `X${assetASymbol}X${assetBSymbol}`;
 
-			// Kraken intervals are in minutes
-			let interval = chart.candleTime / 60000;
-
-			// TODO: Check exisiting data points, and adjust to continue from last on storage
-			let maxCandles = Math.ceil(
-				((Date.now() - chart.lastUpdateTime))
-				/ chart.candleTime
-			);
-
-			if (maxCandles > 720)
-				maxCandles = 720;
-
-			// Default to the last `maxCandles` data points (candles), round down to nearest day start
-			let date = new Date();
-
-			date.setTime(
-
-				// Offset timezone
-				(date.getTime() - (date.getTimezoneOffset() * 60000))
-
-				// Offset candles
-				- (chart.candleTime * maxCandles)
-			);
-			date.setUTCHours(0);
-			date.setUTCMinutes(0);
-			date.setUTCSeconds(0);
-			date.setUTCMilliseconds(0);
-
-			let since = date.getTime() / 1000;
+			let nextDate = new Date(chart.datasetNextTime);
+			Bot.log(`Chart '${chart.name}'; Sync from: ${nextDate.toISOString()}`);
 
 			let responseJson = await this.handle?.api(
 
@@ -298,10 +271,11 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				'OHLC',
 
 				// Options
+				// Kraken times are in minutes
 				{
-					interval: interval,
+					interval: chart.candleTime / 60000,
 					pair: pair,
-					since: since,
+					since: chart.datasetNextTime / 1000,
 				}
 			);
 
