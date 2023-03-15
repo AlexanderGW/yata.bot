@@ -141,7 +141,7 @@ export class ChartItem implements ChartData {
 		}
 		
 		// Set dataset time field
-		if (!this.datasetTimeField.length) {
+		if (!this.datasetTimeField?.length) {
 			let timeField: string = '';
 			if (this.dataset?.openTime)
 				timeField = 'openTime';
@@ -204,6 +204,7 @@ export class ChartItem implements ChartData {
 	updateDataset (
 		data: ChartCandleData,
 	) {
+		let replaceDataset: boolean = false;
 		let finalData: any = this.dataset;
 
 		let dataLength: number = 0;
@@ -237,8 +238,14 @@ export class ChartItem implements ChartData {
 					}
 					datasetOffset++;
 				}
-			}
-		}
+			} else
+				replaceDataset = true;
+		} else
+			replaceDataset = true;
+
+		// Replace dataset with new data
+		if (replaceDataset)
+			finalData = data;
 
 		this.dataset = finalData;
 		this.datasetUpdateTime = Date.now();
