@@ -133,8 +133,8 @@ export class ChartItem implements ChartData {
 			// Get a default number of candles
 			else {
 				let totalCandles: number = 50;
-				if (process.env.BOT_CHART_DEFAULT_CANDLE_COUNT)
-					totalCandles = parseInt(process.env.BOT_CHART_DEFAULT_CANDLE_COUNT);
+				if (process.env.BOT_CHART_DEFAULT_TOTAL_CANDLE)
+					totalCandles = parseInt(process.env.BOT_CHART_DEFAULT_TOTAL_CANDLE);
 
 				nextTime = Date.now() - (this.candleTime * totalCandles)
 			}
