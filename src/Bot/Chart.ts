@@ -2,6 +2,20 @@ import { v4 as uuidv4 } from 'uuid';
 import { Bot, Log } from "./Bot";
 import { PairItem } from "./Pair";
 
+export const chartCandleFields = [
+	'change',
+	'changePercent',
+	'close',
+	'closeTime',
+	'high',
+	'low',
+	'open',
+	'openTime',
+	'tradeCount',
+	'volume',
+	'weightedAvePrice',
+];
+
 export type ChartData = {
 	dataset?: ChartCandleData,
 	datasetFile?: string,
@@ -73,7 +87,7 @@ export class ChartItem implements ChartData {
 
 		if (this.datasetFile) {
 			const fs = require('fs');
-			
+
 			if (!fs.existsSync(this.datasetFile)) {
 				if (process.env.BOT_CHART_DATAFILE_FAIL_EXIT === '1')
 					throw (`Chart '${this.name}'; Dataset not found '${this.datasetFile}'`);
@@ -124,7 +138,6 @@ export class ChartItem implements ChartData {
 
 				nextTime = Date.now() - (this.candleTime * totalCandles)
 			}
-				
 		}
 		
 		// Set dataset time field
@@ -191,7 +204,43 @@ export class ChartItem implements ChartData {
 	updateDataset (
 		data: ChartCandleData,
 	) {
-		this.dataset = data;
+		let finalData: any = this.dataset;
+
+		let dataLength: number = 0;
+		if (data?.hasOwnProperty(this.datasetTimeField))
+			dataLength = data[this.datasetTimeField].length;
+
+		if (this.dataset) {
+			if (this.datasetEndTime) {
+				let datasetEndTimeIndex: number = 0;
+				if (this.dataset?.hasOwnProperty(this.datasetTimeField)) {
+					datasetEndTimeIndex = this.dataset[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
+					if (datasetEndTimeIndex < 0)
+						datasetEndTimeIndex = this.dataset[this.datasetTimeField].length;
+				}
+				// console.log(`datasetEndTimeIndex: ${datasetEndTimeIndex}`);
+				
+				let dataEndTimeIndex: number = data[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
+				// console.log(`dataEndTimeIndex: ${dataEndTimeIndex}`);
+
+				let datasetOffset = datasetEndTimeIndex;
+				// console.log(`datasetOffset: ${datasetOffset}`);
+
+				for (let i = dataEndTimeIndex; i < data[this.datasetTimeField].length; i++) {
+					for (let j in chartCandleFields) {
+						let field = chartCandleFields[j];
+						if (data.hasOwnProperty(field) && data[field][i] && finalData[field]) {
+							// console.log(`finalData[${field}][${datasetOffset}] = data[${field}][${i}]`);
+							finalData[field][datasetOffset] = data[field][i];
+						}
+						
+					}
+					datasetOffset++;
+				}
+			}
+		}
+
+		this.dataset = finalData;
 		this.datasetUpdateTime = Date.now();
 	}
 }
