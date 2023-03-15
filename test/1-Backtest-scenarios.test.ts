@@ -192,7 +192,6 @@ describe('Backtest dataset 1', () => {
                 ],
             });
 
-            // The timeframe `keepalive` is `false`, so it must be executed manually
             timeframe.execute();
         })
 
@@ -297,12 +296,8 @@ describe('Backtest dataset 1', () => {
         // Define timeframe, which runs once
         let defaultTimeframe = Timeframe.new({
 
-            // Prevent timeframe from running every `intervalTime`,
-            // and instead execute manually later.
-            keepalive: false,
-            
-            // 1 second
-            intervalTime: 1000,
+            // Default execute once. Specify a time to run every interval.
+            intervalTime: 0,
 
             // last 100 days of the dataset
             windowTime: 86400000 * 50,
@@ -333,12 +328,8 @@ describe('Backtest dataset 1', () => {
         // Define timeframe, which runs once
         let defaultTimeframe = Timeframe.new({
 
-            // Prevent timeframe from running every `intervalTime`,
-            // and instead execute manually later.
-            keepalive: false,
-            
-            // 1 second
-            intervalTime: 1000,
+            // Default execute once. Specify a time to run every interval.
+            intervalTime: 0,
 
             // last 100 days of the dataset
             windowTime: 86400000 * 50,
@@ -378,12 +369,8 @@ describe('Backtest dataset 1', () => {
         // Define timeframe, which runs once
         let defaultTimeframe = Timeframe.new({
 
-            // Prevent timeframe from running every `intervalTime`,
-            // and instead execute manually later.
-            keepalive: false,
-            
-            // 1 second
-            intervalTime: 1000,
+            // Default execute once. Specify a time to run every interval.
+            intervalTime: 0,
 
             // last 100 days of the dataset
             windowTime: 86400000 * 50,

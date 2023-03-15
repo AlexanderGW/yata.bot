@@ -82,8 +82,8 @@ describe('Backtest dataset 1', () => {
         // Create a ETHBTC pair chart, and 1 minute, for exchange data
         let chartEthBtc4h = Chart.new({
             pair: pairEthBtcKraken,
-            pollTime: 300, // 5m in seconds
-            candleTime: 14400 // 4h in seconds
+            pollTime: 300000, // 5m in seconds
+            candleTime: 14400000 // 4h in seconds
         });
 
         // Push exchange data to chart (if exchange/chart are compatible)
@@ -155,8 +155,7 @@ describe('Backtest dataset 1', () => {
 
         // Timeframes will trigger by default
         let defaultTimeframe = Timeframe.new({
-            keepalive: false, // Run once, do not intiate a `setInterval()`
-            intervalTime: 1000, // 1 second
+            intervalTime: 0, // Default, run once
             windowTime: 86400000 * 100,//chartEthBtc4h.candleTime * 4000, // last four 4h candles (just enough for the four scenario datapoints) - rename: `windowTime`
             strategy: [
                 // stratMacd12_26_9BullishCross,
@@ -296,8 +295,7 @@ describe('Backtest dataset 1', () => {
             console.error(err);
         });
 
-        // Execute the timeframes once each (both are defined `active` of `false`,
-        // so that they don't run every `intervalTime`)
+        // Execute the timeframe
         defaultTimeframe.execute();
     });
 });

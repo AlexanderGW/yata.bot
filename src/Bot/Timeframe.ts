@@ -8,7 +8,6 @@ export type TimeframeData = {
 	intervalTime?: number, // Milliseconds
 	lastEndTime?: number, // Milliseconds
 	lastStartTime?: number, // Milliseconds
-	keepalive?: boolean,
 	name?: string,
 	pollTime?: number, // Milliseconds
 	strategy: Array<StrategyItem>,
@@ -18,8 +17,7 @@ export type TimeframeData = {
 
 export class TimeframeItem implements TimeframeData {
 	interval: any = 0;
-	intervalTime: number = 60000; // Sixty seconds
-	keepalive: boolean = true;
+	intervalTime: number = 0; // Run once
 	lastEndTime: number = 0;
 	lastStartTime: number;
 	name?: string;
@@ -39,8 +37,6 @@ export class TimeframeItem implements TimeframeData {
 			this.lastStartTime = 0;
 		if (data.intervalTime && data.intervalTime >= 1000)
 			this.intervalTime = data.intervalTime;
-		if (data.hasOwnProperty('keepalive'))
-			this.keepalive = data.keepalive ? true : false;
 		if (data.name)
 			this.name = data.name;
 		if (data.pollTime && data.pollTime >= 1000)
@@ -52,7 +48,11 @@ export class TimeframeItem implements TimeframeData {
 	}
 
 	activate () {
-		this.keepalive = true;
+
+		// Default to 1000ms
+		if (!this.intervalTime)
+			this.intervalTime = 1000;
+
 		this.interval = setInterval(
 			async function (timeframe) {
 				await timeframe.execute();
@@ -63,7 +63,6 @@ export class TimeframeItem implements TimeframeData {
 	}
 
 	deactivate () {
-		this.keepalive = false;
 		clearInterval(this.interval);
 	}
 

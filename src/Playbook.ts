@@ -399,8 +399,8 @@ dotenv.config();
 			try {
 				const timeframe = Bot.getItem(playbookCache.timeframe.item[itemIdx]);
 
-				// Ensure timeframe keeps running, if required
-				if (timeframe.keepalive)
+				// Establish interval
+				if (timeframe.intervalTime)
 					timeframe.activate();
 
 				await timeframe.execute();
