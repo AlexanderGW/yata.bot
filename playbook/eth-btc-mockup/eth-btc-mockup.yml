@@ -146,4 +146,4 @@ timeframe:
     intervalTime: 0 # Default, run once
     strategy:
       - rsi14BullishOversold
-    windowTime: 20d # Twenty days
+    windowTime: 10d # Ten days

@@ -105,6 +105,10 @@ export class TimeframeItem implements TimeframeData {
 		for (let i = 0; i < this.strategy.length; i++) {
 			let strategy = this.strategy[i];
 
+			// Use `windowTime` if chart doesn't have `datasetNextTime`
+			if (!strategy.chart.datasetNextTime)
+				strategy.chart.datasetNextTime - this.windowTime;
+
 			if (
 
 				// If timeframe chart syncing is not disabled
