@@ -100,13 +100,13 @@ export const Bot: BotData = {
 			let consoleString = `${now.toISOString()}: ${string}`;
 
 			if (level === Log.Err)
-				console.error(consoleString);
+				console.error(`\x1b[31m ${consoleString}\x1b[0m`);
 			else if (level === Log.Warn)
-				console.warn(consoleString);
+				console.warn(`\x1b[33m ${consoleString}\x1b[0m`);
 			else if (level === Log.Debug)
-				console.debug(consoleString);
+				console.debug(`\x1b[36m ${consoleString}\x1b[0m`);
 			else
-				console.log(consoleString);
+				console.info(`\x1b[32m ${consoleString}\x1b[0m`);
 		}
 
 		if (process.env.BOT_LOG_FILE && process.env.BOT_LOG_FILE === '1') {

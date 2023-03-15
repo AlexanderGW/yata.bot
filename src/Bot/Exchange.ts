@@ -149,7 +149,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 						if (err)
 							throw err;
 
-						Bot.log(`Directory created: ${storagePath}`);
+						Bot.log(`Directory created: ${storagePath}`, Log.Debug);
 					}
 				)
 			}
@@ -167,7 +167,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 					if (err)
 						throw err;
 					
-					Bot.log(`Stored: ${storageFile}`);
+					Bot.log(`Stored: ${storageFile}`, Log.Debug);
 				}
 			);
 		} catch (err: any) {
