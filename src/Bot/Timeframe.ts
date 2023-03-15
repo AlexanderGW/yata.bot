@@ -17,18 +17,18 @@ export type TimeframeData = {
 }
 
 export class TimeframeItem implements TimeframeData {
-	interval: any;
-	intervalTime: number;
-	keepalive: boolean;
+	interval: any = 0;
+	intervalTime: number = 60000; // Sixty seconds
+	keepalive: boolean = true;
 	lastEndTime: number = 0;
 	lastStartTime: number;
 	name?: string;
-	pollTime: number;
+	pollTime: number = 60000; // Sixty seconds
 	result: object[] = [];
 	resultIndex: string[] = [];
 	strategy: Array<StrategyItem>;
 	uuid: string;
-	windowTime: number;
+	windowTime: number = 900000; // Fifteen minutes
 
 	constructor (
 		data: TimeframeData,
@@ -37,46 +37,25 @@ export class TimeframeItem implements TimeframeData {
 			this.lastStartTime = data.lastStartTime > 0 ? data.lastStartTime : 0;
 		else
 			this.lastStartTime = 0;
-		this.interval = 0;
-		if (data.intervalTime)
-			this.intervalTime = data.intervalTime > 0 ? data.intervalTime : 60000;
-		else
-			this.intervalTime = 60000;
+		if (data.intervalTime && data.intervalTime >= 1000)
+			this.intervalTime = data.intervalTime;
 		if (data.hasOwnProperty('keepalive'))
 			this.keepalive = data.keepalive ? true : false;
-		else
-			this.keepalive = true;
 		if (data.name)
 			this.name = data.name;
-		if (data.pollTime)
-			this.pollTime = data.pollTime > 0 ? data.pollTime : 60000;
-		else
-			this.pollTime = 60000;
+		if (data.pollTime && data.pollTime >= 1000)
+			this.pollTime = data.pollTime;
 		this.strategy = data.strategy;
 		this.uuid = data.uuid ?? uuidv4();
-		if (data.windowTime)
-			this.windowTime = data.windowTime > 0 ? data.windowTime : 900000;
-		else
-			this.windowTime = 900000;
-
-		// Start the interval, if timeframe is marked as active
-		if (this.keepalive === true) {
-			setTimeout(
-				function (timeframe) {
-					timeframe.execute();
-				},
-				10,
-				this
-			);
-			this.activate();
-		}
+		if (data.windowTime && data.windowTime >= 1000)
+			this.windowTime = data.windowTime;
 	}
 
 	activate () {
 		this.keepalive = true;
 		this.interval = setInterval(
-			function (timeframe) {
-				timeframe.execute();
+			async function (timeframe) {
+				await timeframe.execute();
 			},
 			this.intervalTime,
 			this
@@ -105,19 +84,23 @@ export class TimeframeItem implements TimeframeData {
 	}
 
 	async execute () {
-		if (!this.keepalive)
-			Bot.log(`Timeframe '${this.name}'; Executed (interval: ${this.intervalTime}ms)`);
-
 		const startTime = Date.now();
 
-		if ((startTime - this.lastStartTime) < this.intervalTime)
-			throw (`Timeframe '${this.name}'; Interval time has not yet passed`);
+		let logLine = `Timeframe '${this.name}'; Executed; Interval '${this.intervalTime}ms'`;
+
+		if (this.lastStartTime) {
+			logLine = `${logLine}; Last run '${this.lastStartTime}'`;
+			logLine = `${logLine}; Time since '${startTime - this.lastStartTime}ms''`;
+		}
+
+		Bot.log(logLine);
+
+		// if ((startTime - this.lastStartTime) < this.intervalTime)
+		// 	throw (`Timeframe '${this.name}'; Interval time has not yet passed`);
 
 		// Clear result set for new execution
 		this.result = [];
 		this.resultIndex = [];
-
-		Bot.log(`Timeframe '${this.name}'; Last run: ${this.lastStartTime} (time since: ${startTime - this.lastStartTime}ms)`, Log.Debug);
 		
 		// Process strategies
 		for (let i = 0; i < this.strategy.length; i++) {
@@ -167,6 +150,7 @@ export class TimeframeItem implements TimeframeData {
 		}
 
 		this.lastEndTime = Date.now();
+		Bot.log(`Timeframe '${this.name}'; Finished; Run time '${this.lastEndTime - startTime}ms'`);
 		this.lastStartTime = startTime;
 	}
 }

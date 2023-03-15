@@ -397,9 +397,12 @@ dotenv.config();
 		// Execute all timeframes, in order they were found in the playbook
 		for (let itemIdx in playbookCache.timeframe.item) {
 			try {
-				let timeframeUuid = playbookCache.timeframe.item[itemIdx];
-				const timeframe = Bot.getItem(timeframeUuid);
-				Bot.log(`Execute timeframe '${timeframe.name}'`);
+				const timeframe = Bot.getItem(playbookCache.timeframe.item[itemIdx]);
+
+				// Ensure timeframe keeps running, if required
+				if (timeframe.keepalive)
+					timeframe.activate();
+
 				await timeframe.execute();
 			} catch (err) {
 				Bot.log(err as string, Log.Err);
