@@ -119,11 +119,8 @@ describe('Backtest dataset 1', () => {
                     responseJson[i] = responseJson[i].slice(26,74);
                     // console.log(responseJson[i][responseJson[i].length - 1]);
                 }
-
-                exchangeDefaultPaper.refreshChart(
-                    chartEthBtc4h,
-                    responseJson,
-                );
+                
+                chartEthBtc4h.dataset = responseJson;
             }
         } catch (err) {
             Bot.log(err as string, Log.Err);

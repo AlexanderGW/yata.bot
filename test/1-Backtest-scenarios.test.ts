@@ -230,41 +230,11 @@ describe('Backtest dataset 1', () => {
 
         // Create a ETHBTC pair chart, and 1 minute, for exchange data
         chartEthBtc4h = Chart.new({
+            datasetFile: 'test/Kraken-ETHBTC-2023-01-02-13-04-20.json',
             pair: pairEthBtc,
             pollTime: 300000, // 5m in seconds
             candleTime: 14400000 // 4h in seconds
         });
-
-        // Push exchange data to chart (if exchange/chart are compatible)
-        try {
-            // Request from exchange (Binance, Kraken, etc.)
-            // exchangeDefaultPaper.syncChart(
-            // 	chartEthBtc4h
-            // );
-
-            // Load from storage
-            let response: any = fs.readFileSync(
-                './test/Kraken-ETHBTC-2023-01-02-13-04-20.json',
-                'utf8',
-                function (
-                    err: object,
-                    data: object
-                ) {
-                    if (err)
-                        console.error(err);
-                }
-            );
-
-            let responseJson = JSON.parse(response);
-            if (responseJson) {
-                exchangeDefaultPaper.refreshChart(
-                    chartEthBtc4h,
-                    responseJson,
-                );
-            }
-        } catch (err) {
-            console.error(err);
-        }
 
         // RSI crossing upward into 30 range
         stratRsi14BullishOversold = Strategy.new({
