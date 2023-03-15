@@ -96,7 +96,7 @@ export const Bot: BotData = {
 	) {
 		let now = new Date();
 
-		if (process.env.BOT_LOG_STDOUT && process.env.BOT_LOG_STDOUT === '1') {
+		if (!process.env.BOT_LOG_STDOUT && process.env.BOT_LOG_STDOUT !== '1') {
 			let consoleString = `${now.toISOString()}: ${string}`;
 
 			if (level === Log.Err)
