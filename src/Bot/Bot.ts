@@ -170,7 +170,7 @@ export const Bot: BotData = {
 	},
 
 	/**
-	 * Add or replace an exisiting item in general storage
+	 * Add or replace an existing item in general storage
 	 * @todo Allow for different storage interfaces
 	 * 
 	 * @param {object} data - Base item strcuture for storage

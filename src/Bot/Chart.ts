@@ -204,47 +204,54 @@ export class ChartItem implements ChartData {
 	updateDataset (
 		data: ChartCandleData,
 	) {
-		let replaceDataset: boolean = false;
-		let finalData: any = this.dataset;
+		let finalData: ChartCandleData | undefined = this.dataset;
 
-		let dataLength: number = 0;
-		if (data?.hasOwnProperty(this.datasetTimeField))
-			dataLength = data[this.datasetTimeField].length;
+		// Update existing dataset
+		if (
+			finalData
+			&& this.datasetEndTime
+		) {
 
-		if (this.dataset) {
-			if (this.datasetEndTime) {
-				let datasetEndTimeIndex: number = 0;
-				if (this.dataset?.hasOwnProperty(this.datasetTimeField)) {
-					datasetEndTimeIndex = this.dataset[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
-					if (datasetEndTimeIndex < 0)
-						datasetEndTimeIndex = this.dataset[this.datasetTimeField].length;
-				}
-				// console.log(`datasetEndTimeIndex: ${datasetEndTimeIndex}`);
-				
-				let dataEndTimeIndex: number = data[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
-				// console.log(`dataEndTimeIndex: ${dataEndTimeIndex}`);
+			// Get the index of `datasetEndTime` in current dataset
+			let datasetEndTimeIndex: number = 0;
+			if (this.dataset?.hasOwnProperty(this.datasetTimeField)) {
+				datasetEndTimeIndex = this.dataset[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
+				if (datasetEndTimeIndex < 0)
+					datasetEndTimeIndex = this.dataset[this.datasetTimeField].length;
+			}
+			Bot.log(
+				`Chart '${this.name}'; updateDataset; datasetEndTimeIndex: ${datasetEndTimeIndex}`,
+				Log.Debug
+			);
+			
+			// Get the index of `datasetEndTime` in new dataset
+			let dataEndTimeIndex: number = data[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
+			Bot.log(
+				`Chart '${this.name}'; updateDataset; dataEndTimeIndex: ${dataEndTimeIndex}`,
+				Log.Debug
+			);
 
-				let datasetOffset = datasetEndTimeIndex;
-				// console.log(`datasetOffset: ${datasetOffset}`);
+			let datasetOffset = datasetEndTimeIndex;
 
-				for (let i = dataEndTimeIndex; i < data[this.datasetTimeField].length; i++) {
-					for (let j in chartCandleFields) {
-						let field = chartCandleFields[j];
-						if (data.hasOwnProperty(field) && data[field][i] && finalData[field]) {
-							// console.log(`finalData[${field}][${datasetOffset}] = data[${field}][${i}]`);
-							finalData[field][datasetOffset] = data[field][i];
-						}
-						
+			// Merge new dataset, into exisiting, using the offsets of `datasetEndTime`
+			for (let i = dataEndTimeIndex; i < data[this.datasetTimeField].length; i++) {
+				for (let j in chartCandleFields) {
+					let field = chartCandleFields[j];
+					if (data.hasOwnProperty(field) && data[field][i] && finalData[field]) {
+						Bot.log(
+							`Chart '${this.name}'; updateDataset; Mapping 'current[${field}][${datasetOffset}] = new[${field}][${i}]'; From '${finalData[field][datasetOffset]}'; To: ${data[field][i]}`,
+							Log.Debug
+						);
+						finalData[field][datasetOffset] = data[field][i];
 					}
-					datasetOffset++;
+					
 				}
-			} else
-				replaceDataset = true;
-		} else
-			replaceDataset = true;
-
+				datasetOffset++;
+			}
+		}
+		
 		// Replace dataset with new data
-		if (replaceDataset)
+		else
 			finalData = data;
 
 		this.dataset = finalData;

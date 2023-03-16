@@ -32,7 +32,7 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 	}
 
 	/**
-	 * Add or replace an exisiting item in general storage
+	 * Add or replace an existing item in general storage
 	 * 
 	 * @param {object} data - Base item structure for storage
 	 * @returns {string} The items UUID
