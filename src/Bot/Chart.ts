@@ -216,36 +216,75 @@ export class ChartItem implements ChartData {
 			let datasetEndTimeIndex: number = 0;
 			if (this.dataset?.hasOwnProperty(this.datasetTimeField)) {
 				datasetEndTimeIndex = this.dataset[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
+
+				// Index not found, default to end of dataset
 				if (datasetEndTimeIndex < 0)
-					datasetEndTimeIndex = this.dataset[this.datasetTimeField].length;
+					datasetEndTimeIndex = this.dataset[this.datasetTimeField].length - 1;
 			}
+
 			Bot.log(
 				`Chart '${this.name}'; updateDataset; datasetEndTimeIndex: ${datasetEndTimeIndex}`,
-				Log.Debug
-			);
-			
-			// Get the index of `datasetEndTime` in new dataset
-			let dataEndTimeIndex: number = data[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
-			Bot.log(
-				`Chart '${this.name}'; updateDataset; dataEndTimeIndex: ${dataEndTimeIndex}`,
-				Log.Debug
+				Log.Verbose
 			);
 
 			let datasetOffset = datasetEndTimeIndex;
 
+
+			// Get the index of `datasetEndTime` in new dataset
+			let dataEndTimeIndex: number = data[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
+
+			// Index not found, default to start of dataset
+			if (dataEndTimeIndex < 0) {
+				dataEndTimeIndex = 0;
+				datasetOffset++;
+
+				Bot.log(
+					`Chart '${this.name}'; updateDataset; Possible missing data. Appending received dataset, as it does not include last exisiting dataset candle.`,
+					Log.Warn
+				);
+			}
+
+			Bot.log(
+				`Chart '${this.name}'; updateDataset; dataEndTimeIndex: ${dataEndTimeIndex}`,
+				Log.Verbose
+			);
+
 			// Merge new dataset, into exisiting, using the offsets of `datasetEndTime`
-			for (let i = dataEndTimeIndex; i < data[this.datasetTimeField].length; i++) {
+			for (
+				let i = dataEndTimeIndex;
+				i < data[this.datasetTimeField].length;
+				i++
+			) {
+				
+				// Make sure the initial candles have matching time values
+				// Otherwise skip until we are aligned
+				Bot.log(
+					`${data[this.datasetTimeField][i]} to ${finalData[this.datasetTimeField][dataEndTimeIndex]}`
+					, Log.Verbose
+				);
+
+				// if (
+				// 	data[this.datasetTimeField][i]
+				// 	=== finalData[this.datasetTimeField][dataEndTimeIndex]
+				// ) {
+				// }
+
 				for (let j in chartCandleFields) {
 					let field = chartCandleFields[j];
-					if (data.hasOwnProperty(field) && data[field][i] && finalData[field]) {
-						Bot.log(
-							`Chart '${this.name}'; updateDataset; Mapping 'current[${field}][${datasetOffset}] = new[${field}][${i}]'; From '${finalData[field][datasetOffset]}'; To: ${data[field][i]}`,
-							Log.Debug
-						);
+					if (
+						data.hasOwnProperty(field)
+						&& data[field][i]
+						&& finalData[field]
+					) {
 						finalData[field][datasetOffset] = data[field][i];
+
+						Bot.log(
+							`Chart '${this.name}'; updateDataset; Mapping 'finalData[${field}][${datasetOffset}] = new[${field}][${i}]'; From '${finalData[field][datasetOffset]}'; To: ${data[field][i]}`,
+							Log.Verbose
+						);
 					}
-					
 				}
+
 				datasetOffset++;
 			}
 		}

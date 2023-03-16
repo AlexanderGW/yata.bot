@@ -155,10 +155,10 @@ export const Bot: BotData = {
 			fs.appendFile(
 				logPath,
 				`${consoleString}\n`,
-				// () => {
-				// 	if (process.env.BOT_VERBOSE === '1')
-				// 		console.debug(`\x1b[36m APPEND LOG FILE: ${logPath}\x1b[0m`)
-				// }
+				() => {
+					// if (process.env.BOT_VERBOSE === '1')
+					// 	console.debug(`\x1b[36m APPEND LOG FILE: ${logPath}\x1b[0m`)
+				}
 			);
 		}
 	},

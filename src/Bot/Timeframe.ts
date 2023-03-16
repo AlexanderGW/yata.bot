@@ -155,6 +155,8 @@ export class TimeframeItem implements TimeframeData {
 		this.lastEndTime = Date.now();
 		Bot.log(`Timeframe '${this.name}'; Finished; Run time '${this.lastEndTime - startTime}ms'`);
 		this.lastStartTime = startTime;
+
+		// TODO: Persist dataset for the next run?
 	}
 }
 
