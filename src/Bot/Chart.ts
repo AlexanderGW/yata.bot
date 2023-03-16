@@ -233,13 +233,14 @@ export class ChartItem implements ChartData {
 			// Get the index of `datasetEndTime` in new dataset
 			let dataEndTimeIndex: number = data[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
 
-			// Index not found, default to start of dataset
+			// Index not found, default to start of new dataset
 			if (dataEndTimeIndex < 0) {
 				dataEndTimeIndex = 0;
 				datasetOffset++;
 
+				const datasetEndDate = new Date(this.datasetEndTime);
 				Bot.log(
-					`Chart '${this.name}'; updateDataset; Possible missing data. Appending received dataset, as it does not include last exisiting dataset candle.`,
+					`Chart '${this.name}'; updateDataset; Possible missing delta. Appending received dataset, as it does not include the last known dataset candle '${datasetEndDate.toISOString()}'`,
 					Log.Warn
 				);
 			}
