@@ -68,7 +68,7 @@ describe('Backtest dataset 1', () => {
 
                 // Index timeframe UUID for test comparison
                 actualResultIndex.push(timeframe.uuid);
-                Bot.log(`TEST: Timeframe '${timeframe.name}'; timeframeResultCount: ${timeframe.result.length}`, Log.Debug);
+                Bot.log(`TEST: Timeframe '${timeframe.name}'; timeframeResultCount: ${timeframe.result.length}`, Log.Verbose);
         
                 let timeField: string = '';
                 if (subscribe.chart.dataset?.openTime)
@@ -85,8 +85,8 @@ describe('Backtest dataset 1', () => {
                         // Get strategy from storage, by UUID
                         let strategy: StrategyItem = Bot.getItem(uuid);
         
-                        Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`, Log.Debug);
-                        Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`, Log.Debug);
+                        Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`, Log.Verbose);
+                        Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`, Log.Verbose);
         
                         let actualTimeframeResult: number[] = [];
 
@@ -104,11 +104,11 @@ describe('Backtest dataset 1', () => {
                                     actualTimeframeResult.push(date.getTime());
                                     
                                     // resultTimes.push(date.toISOString());
-                                    Bot.log(`TEST: Match: (${date.getTime().toString()}) ${date.toISOString()}`, Log.Debug);
+                                    Bot.log(`TEST: Match: (${date.getTime().toString()}) ${date.toISOString()}`, Log.Verbose);
                                     
                                     // Output details on all matching scenario conditions
                                     for (let l = 0; l < result[k].length; l++) {
-                                        Bot.log(JSON.stringify(result[k][l]), Log.Debug);
+                                        Bot.log(JSON.stringify(result[k][l]), Log.Verbose);
                                     }
                                 }
                             }

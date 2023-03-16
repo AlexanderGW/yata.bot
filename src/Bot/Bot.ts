@@ -8,7 +8,7 @@ const fs = require('fs');
  * Logging levels
  */
 export enum Log {
-	Debug = 0,
+	Verbose = 0,
 	Info = 1,
 	Warn = 2,
 	Err = 4,
@@ -49,22 +49,22 @@ export type BotDespatchData = {
 }
 
 export type BotData = {
-	 item: object[],
-	 itemIndex: string[],
-	 itemNameIndex: string[],
-	 log: (
+	item: object[],
+	itemIndex: string[],
+	itemNameIndex: string[],
+	log: (
 		string: string,
 		level?: Log,
-	 ) => void,
-	 getItem: (
+	) => void,
+	getItem: (
 		uuid: string,
-	 ) => any,
-	 setItem: (
+	) => any,
+	setItem: (
 		data: ItemBaseData,
-	 ) => string,
-	 despatch: (
+	) => string,
+	despatch: (
 		data: BotDespatchData,
-	 ) => void,
+	) => void,
 };
 
 export const Bot: BotData = {
@@ -96,26 +96,42 @@ export const Bot: BotData = {
 	) {
 		let now = new Date();
 
-		if (!process.env.BOT_LOG_STDOUT && process.env.BOT_LOG_STDOUT !== '1') {
+		// Skip verbose messages if not required
+		if (
+			level === Log.Verbose
+			&& !process.env.BOT_VERBOSE
+			&& process.env.BOT_VERBOSE !== '1'
+		)
+			return true;
+
+		// Handle console logging
+		if (
+			!process.env.BOT_LOG_STDOUT
+			&& process.env.BOT_LOG_STDOUT !== '1'
+		) {
 			let consoleString = `${now.toISOString()}: ${string}`;
 
 			if (level === Log.Err)
 				console.error(`\x1b[31m ${consoleString}\x1b[0m`);
 			else if (level === Log.Warn)
 				console.warn(`\x1b[33m ${consoleString}\x1b[0m`);
-			else if (level === Log.Debug)
+			else if (level === Log.Verbose)
 				console.debug(`\x1b[36m ${consoleString}\x1b[0m`);
 			else
 				console.info(`\x1b[32m ${consoleString}\x1b[0m`);
 		}
 
-		if (process.env.BOT_LOG_FILE && process.env.BOT_LOG_FILE === '1') {
+		// Handle file logging
+		if (
+			process.env.BOT_LOG_FILE
+			&& process.env.BOT_LOG_FILE === '1'
+		) {
 			let levelValue;
 			if (level === Log.Err)
 				levelValue = 'E';
 			else if (level === Log.Warn)
 				levelValue = 'W';
-			else if (level === Log.Debug)
+			else if (level === Log.Verbose)
 				levelValue = 'D';
 			else
 				levelValue = 'I';
@@ -135,12 +151,14 @@ export const Bot: BotData = {
 
 			let filename = filenameParts.join('-');
 			
+			const logPath = `./storage/log/${filename}.log`;
 			fs.appendFile(
-				`./storage/log/${filename}.log`,
+				logPath,
 				`${consoleString}\n`,
-				() => {
-					// console.info(`APPEND: ./storage/log/${filename}.log`)
-				}
+				// () => {
+				// 	if (process.env.BOT_VERBOSE === '1')
+				// 		console.debug(`\x1b[36m APPEND LOG FILE: ${logPath}\x1b[0m`)
+				// }
 			);
 		}
 	},
@@ -275,7 +293,7 @@ export const Bot: BotData = {
 								}, 0);
 							}
 
-							Bot.log(`Subscription '${item.name}'; signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}`, Log.Debug);
+							Bot.log(`Subscription '${item.name}'; signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}`, Log.Verbose);
 						}
 
 						let conditionMatch: Array<BotSubscribeConditionData> = [];
