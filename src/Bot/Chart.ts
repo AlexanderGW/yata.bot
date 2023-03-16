@@ -255,20 +255,6 @@ export class ChartItem implements ChartData {
 				i < data[this.datasetTimeField].length;
 				i++
 			) {
-				
-				// Make sure the initial candles have matching time values
-				// Otherwise skip until we are aligned
-				Bot.log(
-					`${data[this.datasetTimeField][i]} to ${finalData[this.datasetTimeField][dataEndTimeIndex]}`
-					, Log.Verbose
-				);
-
-				// if (
-				// 	data[this.datasetTimeField][i]
-				// 	=== finalData[this.datasetTimeField][dataEndTimeIndex]
-				// ) {
-				// }
-
 				for (let j in chartCandleFields) {
 					let field = chartCandleFields[j];
 					if (
@@ -276,12 +262,12 @@ export class ChartItem implements ChartData {
 						&& data[field][i]
 						&& finalData[field]
 					) {
-						finalData[field][datasetOffset] = data[field][i];
-
 						Bot.log(
-							`Chart '${this.name}'; updateDataset; Mapping 'finalData[${field}][${datasetOffset}] = new[${field}][${i}]'; From '${finalData[field][datasetOffset]}'; To: ${data[field][i]}`,
+							`Chart '${this.name}'; updateDataset; Mapping 'finalData[${field}][${datasetOffset}] = new[${field}][${i}]'; From '${finalData[field][datasetOffset]}'; To '${data[field][i]}'`,
 							Log.Verbose
 						);
+
+						finalData[field][datasetOffset] = data[field][i];
 					}
 				}
 
