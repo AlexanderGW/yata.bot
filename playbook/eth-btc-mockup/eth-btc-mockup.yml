@@ -13,7 +13,6 @@ analysis:
     config:
       inRealField: close
       optInTimePeriod: 14
-      startIndex: 14
     type: RSI
 
 # Assets
