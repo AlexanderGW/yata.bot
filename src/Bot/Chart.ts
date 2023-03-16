@@ -170,8 +170,10 @@ export class ChartItem implements ChartData {
 			}
 		}
 
+		// Deduct one candle, to ensure we receive overlapping data 
+		// and avoid missing delta
 		if (nextTime)
-			this.datasetNextTime = nextTime
+			this.datasetNextTime = nextTime - this.candleTime;
 
 		let logLine = `Chart '${this.name}'; Refreshed dataset'`;
 
