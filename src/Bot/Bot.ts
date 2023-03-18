@@ -293,7 +293,10 @@ export const Bot: BotData = {
 								}, 0);
 							}
 
-							Bot.log(`Subscription '${item.name}'; signalHigh: ${signalResult.high}, signalLow: ${signalResult.low}, signalTotal: ${signalResult.total}`, Log.Verbose);
+							Bot.log(
+								`Subscription '${item.name}'; signalHigh '${signalResult.high}', signalLow '${signalResult.low}', signalTotal '${signalResult.total}'`,
+								Log.Verbose
+							);
 						}
 
 						let conditionMatch: Array<BotSubscribeConditionData> = [];

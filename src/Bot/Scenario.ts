@@ -213,7 +213,11 @@ export class ScenarioItem implements ScenarioData {
 
 		// Walk the data points, from the required view point
 		// (number of conditions, minus 1)
-		Bot.log(`Scenario '${this.name}'; Datapoints: ${startPoint}-${endPoint}`, Log.Verbose);
+		Bot.log(
+			`Scenario '${this.name}'; Datapoints '${startPoint}-${endPoint}'`,
+			Log.Verbose
+		);
+		
 		for (
 			let j: number = startPoint;
 			j < endPoint;
@@ -525,7 +529,7 @@ export class ScenarioItem implements ScenarioData {
 					
 					const milliseconds = data.chart.dataset[timeField][idx] * 1000;
 					let date = new Date(milliseconds);
-					Bot.log(`Scenario '${this.name}'; MATCH; datapoint: ${candle.k}; ${timeField}: ${date.toISOString()}, ${milliseconds}`);
+					Bot.log(`Scenario '${this.name}'; Match '${date.toISOString()}'; Datapoint '${candle.k}'`);
 					// console.log(conditionMatch);
 				}
 			}
