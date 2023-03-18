@@ -107,7 +107,7 @@ export class TimeframeItem implements TimeframeData {
 
 			// Use `windowTime` if chart doesn't have `datasetNextTime`
 			if (!strategy.chart.datasetNextTime)
-				strategy.chart.datasetNextTime = this.windowTime;
+				strategy.chart.datasetNextTime = Date.now() - this.windowTime;
 
 			if (
 
@@ -153,7 +153,7 @@ export class TimeframeItem implements TimeframeData {
 		}
 
 		this.lastEndTime = Date.now();
-		Bot.log(`Timeframe '${this.name}'; Finished; Run time '${this.lastEndTime - startTime}ms'`);
+		Bot.log(`Timeframe '${this.name}'; Finished; Runtime '${this.lastEndTime - startTime}ms'`);
 		this.lastStartTime = startTime;
 
 		// TODO: Persist dataset for the next run?
