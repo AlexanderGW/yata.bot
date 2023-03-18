@@ -253,12 +253,6 @@ export const Bot: BotData = {
 
 					let index = item.timeframeAny?.findIndex(timeframe => timeframe.uuid === data.uuid);
 					if (typeof index !== 'undefined' && index >= 0) {
-						let timeField: string = '';
-						if (item.chart.dataset?.hasOwnProperty('openTime'))
-							timeField = 'openTime';
-						else if (item.chart.dataset?.hasOwnProperty('closeTime'))
-							timeField = 'closeTime';
-
 						let signalResult: BotSignalData = {
 							high: 0,
 							low: 0,
@@ -284,6 +278,8 @@ export const Bot: BotData = {
 									}
 								}
 							}
+
+							// TODO: Track `new` and `total` signal values, for subscriptions to define
 
 							if (signal.length) {
 								signalResult.high = Math.max(...signal);
@@ -388,6 +384,7 @@ export const Bot: BotData = {
 
 									// Import module
 									let importPath = `../../playbook/${item.playbook}/${item.playbook}.ts`;
+
 									import(importPath).then((module: SubscriptionActionCallbackModule) => {
 										if (!item.action || !module.hasOwnProperty(item.action))
 											throw (`Subscription action callback not found, or invalid.`);
@@ -404,7 +401,7 @@ export const Bot: BotData = {
 								}
 							}
 
-							// Executer callback
+							// Execute callback
 							if (item.actionCallback) {
 								item.actionCallback(item);
 							}

@@ -121,12 +121,9 @@ export class StrategyItem implements StrategyData {
 				throw (`Analysis '${analysis.name}' dataset input '${inReal}' is empty.`);
 
 			// Prepare talib options
-			let talibArgs = {
+			let executeOptions = {
 				name: analysis.type,
 				startIdx: 0,
-			};
-			let executeOptions = {
-				...talibArgs,
 				...analysis.config,
 				endIdx: inReal.length - 1,
 				inReal: inReal,
