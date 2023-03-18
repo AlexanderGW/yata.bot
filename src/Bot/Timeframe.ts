@@ -107,7 +107,7 @@ export class TimeframeItem implements TimeframeData {
 
 			// Use `windowTime` if chart doesn't have `datasetNextTime`
 			if (!strategy.chart.datasetNextTime)
-				strategy.chart.datasetNextTime - this.windowTime;
+				strategy.chart.datasetNextTime = this.windowTime;
 
 			if (
 
