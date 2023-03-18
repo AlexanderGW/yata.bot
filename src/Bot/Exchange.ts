@@ -110,33 +110,51 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 
 		const now = new Date();
 
-		let pathParts = [
+		const candleTimeMinutes = chart.candleTime / 60000;
+
+		const pathParts = [
 			chart.pair.exchange.name,
 			chart.pair.a.symbol + chart.pair.b.symbol,
 			now.getUTCFullYear(),
 			pad(now.getUTCMonth() + 1),
 			pad(now.getUTCDate()),
+			candleTimeMinutes,
 		];
-		let path = pathParts.join('/');
+		const path = pathParts.join('/');
 		// Bot.log(path);
 
-		let filenameParts = [
+		const filenameParts = [
+
+			// Exchange
 			chart.pair.exchange.name,
-			chart.pair.a.symbol + chart.pair.b.symbol,
-			now.getUTCFullYear(),
-			pad(now.getUTCMonth() + 1),
-			pad(now.getUTCDate()),
-			pad(now.getUTCHours()),
-			pad(now.getUTCMinutes()),
-			pad(now.getUTCSeconds()),
+
+			// Pair
+			[
+				chart.pair.a.symbol,
+				chart.pair.b.symbol,
+			].join(''),
+
+			// Candle size in minutes to save space
+			candleTimeMinutes,
+
+			// Timestamp
+			[
+				now.getUTCFullYear(),
+				pad(now.getUTCMonth() + 1),
+				pad(now.getUTCDate()),
+				pad(now.getUTCHours()),
+				pad(now.getUTCMinutes()),
+				pad(now.getUTCSeconds()),
+			].join('')
 		];
-		let filename = filenameParts.join('-');
+
+		const filename = filenameParts.join('-');
 		// Bot.log(filename);
 
-		let responseJson = JSON.stringify(data);
+		const responseJson = JSON.stringify(data);
 
-		let storagePath = `./storage/dataset/${path}`;
-		let storageFile = `${storagePath}/${filename}.json`;
+		const storagePath = `./storage/dataset/${path}`;
+		const storageFile = `${storagePath}/${filename}.json`;
 
 		try {
 			if (!fs.existsSync(storagePath)) {
