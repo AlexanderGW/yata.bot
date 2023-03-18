@@ -52,7 +52,13 @@ Items are listed in order of dependency.
 ### Subscription actions (callbacks)
 See [`~/playbook/eth-btc-mockup/eth-btc-mockup.ts`](playbook/eth-btc-mockup/eth-btc-mockup.ts) for an example set of callbacks, reference in the `eth-btc-mockup` playbook above
 
-### Times and shorthand notation
+### Timings
+All time values are in milliseconds, with the following exceptions;
+
+- `ChartData.closeTime` and `ChartData.openTime` are stored in seconds.
+- Minutes are used when storing datasets. i.e. `240` for four hours; `storage/dataset/Kraken/ETHBTC/2023/03/18/240/`
+
+#### Shorthand notation in playbooks
 Notations `s,m,h,d,w` (i.e. `5m` for five minutes in milliseconds) are available for better readability on `Time` (i.e. `intervalTime`) suffixed fields, otherwise values are treated as milliseconds.
 
 ```yaml
@@ -62,6 +68,17 @@ chart:
     pollTime: 5m          # five minutes; 300000 milliseconds
     candleTime: 4h        # four hours; 14400000 milliseconds
 ```
+
+### `Chart.datasetNextTime`
+Is defined in order of what information is available.
+
+- Can be set directly `Chart.datasetNextTime`
+- When a dataset is added; moves to `Chart.endTime`
+- Now, minus `Timeframe.windowTime`
+- If available; `Chart.datasetUpdateTime`
+- Otherwise; now, minus `Chart.candleTime` multiplied by `BOT_CHART_DEFAULT_TOTAL_CANDLE` (default 50)
+
+Finally, `Chart.candleTime` is deducted, to ensure integrity of latest candle delta.
 
 ### Item referencing
 All items are identified in playbooks with a `name` (names are only unique to item type), which is then used to link items together.
