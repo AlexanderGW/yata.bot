@@ -49,9 +49,9 @@ export class TimeframeItem implements TimeframeData {
 
 	activate () {
 
-		// Default to 1000ms
+		// Default to 10000ms
 		if (!this.intervalTime)
-			this.intervalTime = 1000;
+			this.intervalTime = 10000;
 
 		this.interval = setInterval(
 			async function (timeframe) {
