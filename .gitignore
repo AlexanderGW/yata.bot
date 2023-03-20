@@ -1,7 +1,8 @@
 .env
 dist
 node_modules
-storage/log
-storage/dataset
+storage/log/**/*.log
+storage/dataset/**/*.json
+storage/json/**/*.json
 playbook/*
 !playbook/eth-btc-mockup
