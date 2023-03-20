@@ -167,12 +167,12 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 						if (err)
 							throw err;
 
-						Bot.log(`Directory created: ${storagePath}`, Log.Verbose);
+						Bot.log(`Exchange.refreshChart; Path created: ${storagePath}`, Log.Verbose);
 					}
 				)
 			}
 		} catch (err: any) {
-			return Bot.log(err.message as string, Log.Err);
+			return Bot.log(`Exchange.refreshChart; mkdirSync; ${JSON.stringify(err)}`, Log.Err);
 		}
 
         try {
@@ -185,11 +185,11 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 					if (err)
 						throw err;
 					
-					Bot.log(`Stored: ${storageFile}`, Log.Verbose);
+					Bot.log(`Exchange.refreshChart; Dataset written: ${storageFile}`, Log.Verbose);
 				}
 			);
 		} catch (err: any) {
-			return Bot.log(err.message as string, Log.Err);
+			return Bot.log(`Exchange.refreshChart; writeFile; ${JSON.stringify(err)}`, Log.Err);
 		}
 	}
 
