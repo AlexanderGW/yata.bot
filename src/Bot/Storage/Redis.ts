@@ -44,21 +44,19 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 	async getItem (
 		name: string,
 	): Promise<any> {
+		let returnValue: any = false;
 		try {
-			let value = {};
 			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === name);
 			if (index >= 0)
 				return this.item[index];
 
 			const valueRaw = await this.client.get(name);
-			value = JSON.parse(valueRaw as string);
-
-			return value;
+			returnValue = JSON.parse(valueRaw as string);
 		} catch (err) {
 			Bot.log(err as string, Log.Err);
-
-			return {};
 		}
+
+		return returnValue;
 	}
 
 	/**

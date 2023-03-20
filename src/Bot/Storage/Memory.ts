@@ -24,18 +24,16 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 	async getItem (
 		name: string,
 	): Promise<any> {
+		let returnValue: any = false;
 		try {
-			let value = {};
 			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === name);
 			if (index >= 0)
-				value = this.item[index];
-
-			return value;
+				returnValue = this.item[index];
 		} catch (error) {
 			Bot.log(error as string, Log.Err);
-
-			return {};
 		}
+
+		return returnValue;
 	}
 
 	/**

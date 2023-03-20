@@ -26,6 +26,7 @@ export class FileStorageItem extends StorageBase implements StorageInterface {
 	async getItem (
 		name: string,
 	): Promise<any> {
+		let returnValue: any = false;
 		try {
 			const storagePath = `./storage/json`;
 			const storageFile = `${storagePath}/${name}.json`;
@@ -37,12 +38,12 @@ export class FileStorageItem extends StorageBase implements StorageInterface {
 				storageFile,
 				'utf8',
 			);
-			const contentObject = JSON.parse(fileContent);
-
-			return contentObject;
+			returnValue = JSON.parse(fileContent);
 		} catch (err) {
 			Bot.log(`FileStorage.getItem; ${JSON.stringify(err)}`, Log.Err);
 		}
+
+		return returnValue;
 	}
 
 	/**
