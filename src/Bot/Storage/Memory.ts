@@ -7,6 +7,13 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 	) {
 		super(data);
 	}
+
+	/**
+	 * 
+	 */
+	async close() {
+		return true;
+	}
 	
 	/**
 	 * Lookup and return an item from general storage
@@ -15,11 +22,11 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 	 * @returns {object}
 	 */
 	async getItem (
-		uuid: string,
+		name: string,
 	): Promise<any> {
 		try {
 			let value = {};
-			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === uuid);
+			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === name);
 			if (index >= 0)
 				value = this.item[index];
 
@@ -38,6 +45,7 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 	 * @returns {string} The items UUID
 	 */
 	async setItem (
+		name: string,
 		data: ItemBaseData,
 	): Promise<string> {
 		try {

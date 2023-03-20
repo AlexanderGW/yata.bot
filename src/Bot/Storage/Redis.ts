@@ -16,7 +16,7 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 			url: 'redis://127.0.0.1:6379'
 		});
 
-		this.client.on('error', (err: string) => Bot.log(err, Log.Err));
+		this.client.on('error', (err: string) => Bot.log(`RedisStorageItem '${this.name}'; ${JSON.stringify(err)}`, Log.Err));
 
 		this.connect();
 	}
@@ -27,6 +27,13 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 	async connect() {
 		await this.client.connect();
 	}
+
+	/**
+	 * 
+	 */
+	async close() {
+		await this.client.disconnect();
+	}
 	
 	/**
 	 * Lookup and return an item from general storage
@@ -35,15 +42,15 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 	 * @returns {object}
 	 */
 	async getItem (
-		uuid: string,
+		name: string,
 	): Promise<any> {
 		try {
 			let value = {};
-			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === uuid);
+			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === name);
 			if (index >= 0)
 				return this.item[index];
 
-			const valueRaw = await this.client.get(uuid);
+			const valueRaw = await this.client.get(name);
 			value = JSON.parse(valueRaw as string);
 
 			return value;
@@ -61,11 +68,12 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 	 * @returns {string} The items UUID
 	 */
 	async setItem (
+		name: string,
 		data: ItemBaseData,
 	): Promise<string> {
 		try {
 			// Reset existing item
-			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === data.uuid);
+			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === name);
 			if (index >= 0) {
 				this.item[index] = data;
 				
@@ -76,12 +84,12 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 			else {
 				// let newIndex = this.item.length;
 				this.item.push(data);
-				this.itemIndex.push(data.uuid);	
+				this.itemIndex.push(name);	
 
 				const value = JSON.stringify(data);
-				await this.client.set(data.uuid, value);
+				await this.client.set(name, value);
 
-				return data.uuid;
+				return name;
 			}
 		} catch (err) {
 			Bot.log(err as string, Log.Err);
