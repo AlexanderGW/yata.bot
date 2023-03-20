@@ -198,10 +198,10 @@ export class ScenarioItem implements ScenarioData {
 		let startPoint: number = 0;
 
 		// Offset from the front of the dataset
-		if (data.strategyExecuteData.windowTime) {
+		if (data.strategyExecuteData.timeframe.windowTime) {
 			startPoint = (
 				endPoint
-				- Math.ceil((data.strategyExecuteData.windowTime) / data.chart.candleTime)
+				- Math.ceil((data.strategyExecuteData.timeframe.windowTime) / data.chart.candleTime)
 			);
 		}
 

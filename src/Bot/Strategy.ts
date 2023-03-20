@@ -16,7 +16,6 @@ export type StrategyData = {
 }
 
 export type StrategyExecuteData = {
-	windowTime: number,
 	timeframe: TimeframeItem,
 }
 

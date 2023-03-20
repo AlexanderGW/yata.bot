@@ -26,7 +26,7 @@ export class TimeframeItem implements TimeframeData {
 	resultIndex: string[] = [];
 	strategy: Array<StrategyItem>;
 	uuid: string;
-	windowTime: number = 900000; // Fifteen minutes
+	windowTime: number = 0;
 
 	constructor (
 		data: TimeframeData,
@@ -129,16 +129,15 @@ export class TimeframeItem implements TimeframeData {
 			// Try strategy
 			try {
 				let signal = strategy.execute({
-					windowTime: this.windowTime,
 					timeframe: this,
-				});
+				});	
 
 				// Duplicate strategy result set within this timeframe
 				// if (this.getResult(strategy))
 				// 	throw (`Timeframe '${this.name}', strategy '${strategy.name}' result duplication.`);
 
 				this.result.push(signal);
-				this.resultIndex.push(strategy.uuid);
+				this.resultIndex.push(strategy.name ?? strategy.uuid);
 			} catch (err) {
 				Bot.log(err as string, Log.Err);
 			}
@@ -155,8 +154,6 @@ export class TimeframeItem implements TimeframeData {
 		this.lastEndTime = Date.now();
 		Bot.log(`Timeframe '${this.name}'; Finished; Runtime '${this.lastEndTime - startTime}ms'`);
 		this.lastStartTime = startTime;
-
-		// TODO: Persist dataset for the next run?
 	}
 }
 
