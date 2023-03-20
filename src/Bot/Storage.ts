@@ -8,9 +8,10 @@ export type StorageInterface = {
 	itemIndex?: string[],
 	uuid?: string,
 	getItem: (
-		uuid: string,
+		name: string,
 	) => Promise<any>,
 	setItem: (
+		name: string,
 		data: ItemBaseData,
 	) => Promise<string>,
 }
