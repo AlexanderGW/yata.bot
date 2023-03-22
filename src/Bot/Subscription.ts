@@ -22,14 +22,9 @@ export type SubscriptionConditionData = {
 
 export type SubscriptionSignalData = {
 	[index: string]: number,
-	eventHigh: number,
-	eventLow: number,
-	eventTotal: number,
-	newHigh: number,
-	newLow: number,
-	newTotal: number,
-	totalHigh: number,
-	totalLow: number,
+	high: number,
+	low: number,
+	new: number,
 	total: number,
 };
 
@@ -139,18 +134,13 @@ export const Subscription: SubscriptionInterface = {
 						continue;
 
 					let signalResult: SubscriptionSignalData = {
-						eventHigh: 0,
-						eventLow: 0,
-						eventTotal: 0,
-						newHigh: 0,
-						newLow: 0,
-						newTotal: 0,
-						totalHigh: 0,
-						totalLow: 0,
+						high: 0,
+						low: 0,
+						new: 0,
 						total: 0,
 					};
 
-					let newSignal: number[] = [];
+					let newSignal: number = 0;
 					let eventSignal: number[] = [];
 					let totalSignal: number[] = [];
 
@@ -195,50 +185,26 @@ export const Subscription: SubscriptionInterface = {
 							&& data.lastState
 						) {
 							let index = data.lastState.resultIndex.findIndex(_name => _name === timeframe.name);
-							// console.log(`index: ${index}`);
 							if (index >= 0) {
-								// console.log(`data.lastState.result[index]`);
-								// console.log(data.lastState.result[index]);
-
-								// console.log(`timeframeSignal`);
-								// console.log(timeframeSignal);
 
 								// Count number of current state results, not in last state
-								let count = 0;
 								for (let k = 0; k < timeframeSignal.length; k++) {
 									if (data.lastState.result[index].indexOf(timeframeSignal[k]) < 0)
-										count++;
+										newSignal++;
 								}
-
-								if (count)
-									newSignal.push(count);
 							}
 						}
 					}
 
-					if (eventSignal.length) {
-						signalResult.eventHigh = Math.max(...eventSignal);
-						signalResult.eventLow = Math.min(...eventSignal);
-						signalResult.eventTotal = eventSignal.reduce(function (x, y) {
-							return x + y;
-						}, 0);
-					}
-
 					// This subscription only wants `new` signals
-					if (!newSignal.length && item.match === 'new')
+					if (newSignal === 0 && item.match === 'new')
 						return;
 
-					if (newSignal.length) {
-						signalResult.newHigh = Math.max(...newSignal);
-						signalResult.newLow = Math.min(...newSignal);
-						signalResult.newTotal = newSignal.reduce(function (x, y) {
-							return x + y;
-						}, 0);
-					}
+					signalResult.new = newSignal;
 
 					if (totalSignal.length) {
-						signalResult.totalHigh = Math.max(...totalSignal);
-						signalResult.totalLow = Math.min(...totalSignal);
+						signalResult.high = Math.max(...totalSignal);
+						signalResult.low = Math.min(...totalSignal);
 						signalResult.total = totalSignal.reduce(function (x, y) {
 							return x + y;
 						}, 0);
