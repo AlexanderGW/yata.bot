@@ -137,7 +137,7 @@ Subscription.new({
 ```
 
 ### `Timeframe`
-Run over `intervalTime`, checking one or more `Strategy`. Matches will `Bot.despatch()` to any `Timeframe` subscribers.
+Run over `intervalTime`, checking one or more `Strategy`. Matches will `Subscription.despatch()` to any `Timeframe` subscribers.
 
 ```js
 let defaultTimeframe = Timeframe.new({

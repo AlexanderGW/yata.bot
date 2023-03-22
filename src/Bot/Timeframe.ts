@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Bot, BotEvent, Log } from './Bot';
+import { Bot, Log } from './Bot';
 import { ChartCandleData } from './Chart';
 import { StrategyItem } from "./Strategy";
 
@@ -19,10 +19,10 @@ export class TimeframeItem implements TimeframeData {
 	interval: any = 0;
 	intervalTime: number = 0; // Run once
 	lastEndTime: number = 0;
-	lastStartTime: number;
+	lastStartTime: number = 0;
 	name?: string;
 	pollTime: number = 60000; // Sixty seconds
-	result: object[] = [];
+	result: Array<Array<ChartCandleData>> = [];
 	resultIndex: string[] = [];
 	strategy: Array<StrategyItem>;
 	uuid: string;
@@ -32,9 +32,7 @@ export class TimeframeItem implements TimeframeData {
 		data: TimeframeData,
 	) {
 		if (data.lastStartTime)
-			this.lastStartTime = data.lastStartTime > 0 ? data.lastStartTime : 0;
-		else
-			this.lastStartTime = 0;
+			this.lastStartTime = data.lastStartTime;
 		if (data.intervalTime && data.intervalTime >= 1000)
 			this.intervalTime = data.intervalTime;
 		if (data.name)
@@ -144,12 +142,12 @@ export class TimeframeItem implements TimeframeData {
 		}
 
 		// Send a despatch to indicate the timeframe has results.
-		if (this.result.length) {
-			Bot.despatch({
-				event: BotEvent.TimeframeResult,
-				uuid: this.uuid,
-			});
-		}
+		// if (this.result.length) {
+		// 	Subscription.despatch({
+		// 		event: SubscriptionEvent.TimeframeResult,
+		// 		uuid: this.uuid,
+		// 	});
+		// }
 
 		this.lastEndTime = Date.now();
 		Bot.log(`Timeframe '${this.name}'; Finished; Runtime '${this.lastEndTime - startTime}ms'`);

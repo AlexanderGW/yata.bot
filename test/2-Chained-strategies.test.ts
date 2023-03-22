@@ -242,7 +242,7 @@ describe('Backtest dataset 1', () => {
                                     if (subscribe.chart.dataset?.hasOwnProperty(timeField)) {
                                         let datasetValue = subscribe.chart.dataset[timeField as keyof ChartCandleData];
                                         if (datasetValue) {
-                                            let date = new Date(parseInt(datasetValue[matchFirstCond.k] as string) * 1000);
+                                            let date = new Date(parseInt(datasetValue[matchFirstCond.datapoint] as string) * 1000);
                                             
                                             // Add time for test comparison
                                             actualTimeframeResult.push(date.getTime());
@@ -276,7 +276,7 @@ describe('Backtest dataset 1', () => {
                 condition: [
                     ['total', '==', '2'],
                 ],
-                // event: BotEvent.TimeframeResult,
+                // event: SubscriptionEvent.TimeframeResult,
                 name: 'buyEthBtc',
                 timeframeAny: [
                     defaultTimeframe,

@@ -1,18 +1,18 @@
 import { parse, stringify } from 'yaml'
 
-import { Bot, Log } from './Bot/Bot';
+import { Bot, BotStateType, Log } from './Bot/Bot';
 import { Strategy, StrategyItem } from './Bot/Strategy';
 import { Asset, AssetItem } from './Bot/Asset';
 import { Pair, PairItem } from './Bot/Pair';
 import { Scenario, ScenarioItem } from './Bot/Scenario';
 import { Exchange, ExchangeItem } from './Bot/Exchange';
-import { Chart, ChartItem } from './Bot/Chart';
+import { Chart, ChartCandleData, ChartItem } from './Bot/Chart';
 import { Timeframe, TimeframeItem } from './Bot/Timeframe';
 import { Position, PositionItem } from './Bot/Position';
 import { Order, OrderItem } from './Bot/Order';
 import { Analysis, AnalysisItem } from './Bot/Analysis';
 import { Storage } from './Bot/Storage';
-import { Subscription, SubscriptionActionCallbackModule, SubscriptionItem } from './Bot/Subscription';
+import { Subscription, SubscriptionActionCallbackModule, SubscriptionEvent, SubscriptionItem } from './Bot/Subscription';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -23,6 +23,7 @@ dotenv.config();
 	const playbookName = process.argv[2];
 	const playbookPath = `./playbook/${playbookName}`;
 	const playbookActions = `${playbookPath}/${playbookName}.ts`;
+	const playbookStateName = `playbookState.${playbookName}`;
 	const playbookTemplate = `${playbookPath}/${playbookName}.yml`;
 	// console.log(`playbookPath: ${playbookPath}`);
 
@@ -47,6 +48,7 @@ dotenv.config();
 	const playbookTypes: {
 		[index: string]: any,
 	} = {
+		storage: Storage,
 		exchange: Exchange,
 		asset: Asset,
 		pair: Pair,
@@ -61,26 +63,31 @@ dotenv.config();
 	};
 	const playbookTypeKeys = Object.keys(playbookTypes);
 
-	type itemIndexType = {
+	type ItemIndexType = {
 		itemIndex: string[],
 		item: string[],
 	};
 
 	// Cache table of all playbook item, to facilitate referencing
 	let playbookCache: {
-		[index: string]: itemIndexType,
-		exchange: itemIndexType,
-		pair: itemIndexType,
-		asset: itemIndexType,
-		position: itemIndexType,
-		order: itemIndexType,
-		chart: itemIndexType,
-		analysis: itemIndexType,
-		scenario: itemIndexType,
-		strategy: itemIndexType,
-		timeframe: itemIndexType,
-		subscription: itemIndexType,
+		[index: string]: ItemIndexType,
+		storage: ItemIndexType,
+		exchange: ItemIndexType,
+		pair: ItemIndexType,
+		asset: ItemIndexType,
+		position: ItemIndexType,
+		order: ItemIndexType,
+		chart: ItemIndexType,
+		analysis: ItemIndexType,
+		scenario: ItemIndexType,
+		strategy: ItemIndexType,
+		timeframe: ItemIndexType,
+		subscription: ItemIndexType,
 	} = {
+		storage: {
+			itemIndex: [],
+			item: [],
+		},
 		exchange: {
 			itemIndex: [],
 			item: [],
@@ -141,6 +148,18 @@ dotenv.config();
 		dryrun = playbookObject.dryrun;
 	else if (process.env.BOT_DRYRUN === '0')
 		dryrun = false;
+
+	// Default to `Memory` storage interface, if none are defined
+	if (
+		!playbookObject.hasOwnProperty('storage')
+		|| playbookObject.storage === null
+	) {
+		playbookObject.storage = {
+			memory: {
+				class: 'Memory'
+			}
+		};
+	}
 
 	// Process YAML components
 	for (let typeKey in playbookTypes) {
@@ -389,24 +408,107 @@ dotenv.config();
 	// console.log(playbookCache);
 	// console.log(Bot.itemNameIndex);
 
+	// TEMP: Use first defined storage
+	const playbookStore = Bot.getItem(playbookCache.storage.item[0]);
+	// console.log(playbookStore);
+
+	// Load the playbook state
+	let lastPlaybookState: BotStateType = await playbookStore.getItem(playbookStateName);
+	// console.log(playbookState);
+	if (!lastPlaybookState)
+		lastPlaybookState = {
+			timeframe: {
+				result: [],
+				resultIndex: [],
+			},
+			updateTime: 0
+		};
+
+	console.log(lastPlaybookState);
+
+	let nextPlaybookState: BotStateType = {
+		timeframe: {
+			result: [],
+			resultIndex: [],
+		},
+		updateTime: 0
+	};
+
+	// console.log(playbookCache.timeframe);
+
 	// Attempt to execute all `Timeframe`
 	if (playbookCache.timeframe.item.length === 0)
 		Bot.log(`No timeframes to execute`, Log.Warn);
 	else {
 
 		// Execute all timeframes, in order they were found in the playbook
-		for (let itemIdx in playbookCache.timeframe.item) {
+		for (let timeframeName in playbookCache.timeframe.item) {
 			try {
-				const timeframe = Bot.getItem(playbookCache.timeframe.item[itemIdx]);
+				const timeframe: TimeframeItem = Bot.getItem(playbookCache.timeframe.item[timeframeName]);
 
 				// Establish interval
 				if (timeframe.intervalTime)
 					timeframe.activate();
 
+				// Execute the timeframe
 				await timeframe.execute();
+
+				// Send a despatch to indicate the timeframe has results.
+				if (timeframe.result.length) {
+
+
+
+					let timeframeSignal: any = [];
+					let i = 0;
+
+					// Walk through timeframe strategy results
+					for (let strategyName in playbookCache.strategy.item) {
+						if (!timeframe.result[i])
+							continue;
+
+						// console.log(timeframe.resultIndex[i]);
+						// let strategyName: string = timeframe.resultIndex[i];
+						// console.log(strategyName);
+						const strategy: StrategyItem = Bot.getItem(playbookCache.strategy.item[strategyName]);
+
+						// Log the last candle datapoint time field, of each matching scenario
+						for (let j = 0; j <= timeframe.result[i].length; j++) {
+							if (!timeframe.result[i][j])
+								continue;
+
+							const latestCandle = timeframe.result[i][j].length - 1;
+							const datapoint = timeframe.result[i][j][latestCandle][0].datapoint;
+							const timeField = strategy.chart.datasetTimeField;
+							if (strategy.chart.dataset?.[timeField].hasOwnProperty(datapoint)) {
+								// console.log(strategy.chart.dataset?[timeField][datapoint]);
+								timeframeSignal.push(strategy.chart.dataset?.[timeField][datapoint]);
+							}
+						}
+
+						i++;
+					}
+
+					nextPlaybookState.timeframe.result.push(timeframeSignal);
+					nextPlaybookState.timeframe.resultIndex.push(timeframe.name ?? timeframe.uuid);
+
+					Subscription.despatch({
+						event: SubscriptionEvent.TimeframeResult,
+						lastState: lastPlaybookState.timeframe,
+						timeframe: timeframe,
+					});
+				}
+
+				// TODO: Persist dataset for the next run?
 			} catch (err) {
 				Bot.log(err as string, Log.Err);
 			}
 		}
+
+		console.log(nextPlaybookState);
 	}
+
+	// Persist playbook state for next iteration
+	nextPlaybookState.updateTime = Date.now();
+	await playbookStore.setItem(playbookStateName, nextPlaybookState);
+	await playbookStore.close();
 })();

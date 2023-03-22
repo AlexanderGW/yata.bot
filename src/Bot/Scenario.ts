@@ -14,13 +14,13 @@ export type ScenarioData = {
 }
 
 export type ScenarioSignalData = {
-	k: number,
+	analysisOffset: number,
+	datapoint: number,
+	operator: string,
 	valueA: string,
 	valueAReal: string,
-	operator: string,
 	valueB: string | number,
 	valueBReal: string | number,
-	analysisOffset: number,
 };
 
 export type ScenarioTestData = {
@@ -31,13 +31,13 @@ export type ScenarioTestData = {
 }
 
 export type ScenarioConditionMatch = {
-	k?: number,
+	analysisOffset?: number,
+	datapoint?: number,
+	operator?: string,
 	valueA?: string,
 	valueAReal?: string,
-	operator?: string,
 	valueB?: string | number,
 	valueBReal?: string | number,
-	analysisOffset?: number,
 }
 
 export class ScenarioItem implements ScenarioData {
@@ -255,7 +255,7 @@ export class ScenarioItem implements ScenarioData {
 					conditionIdx < condition.length;
 					conditionIdx++
 				) {
-					let analysisOffset;
+					let analysisOffset = 0;
 
 					valueA = condition[conditionIdx][0];
 					operator = condition[conditionIdx][1];
@@ -388,13 +388,13 @@ export class ScenarioItem implements ScenarioData {
 							case '<': {
 								if (valueAReal < valueBReal) {
 									conditionMatch.push({
-										k: k,
+										analysisOffset: analysisOffset,
+										datapoint: k,
+										operator: operator,
 										valueA: valueA,
 										valueAReal: valueAReal,
-										operator: operator,
 										valueB: valueB,
 										valueBReal: valueBReal,
-										analysisOffset: analysisOffset,
 									});
 								}
 								break;
@@ -402,13 +402,13 @@ export class ScenarioItem implements ScenarioData {
 							case '<=': {
 								if (valueAReal <= valueBReal) {
 									conditionMatch.push({
-										k: k,
+										analysisOffset: analysisOffset,
+										datapoint: k,
+										operator: operator,
 										valueA: valueA,
 										valueAReal: valueAReal,
-										operator: operator,
 										valueB: valueB,
 										valueBReal: valueBReal,
-										analysisOffset: analysisOffset,
 									});
 								}
 								break;
@@ -417,13 +417,13 @@ export class ScenarioItem implements ScenarioData {
 							case '>': {
 								if (valueAReal > valueBReal) {
 									conditionMatch.push({
-										k: k,
+										analysisOffset: analysisOffset,
+										datapoint: k,
+										operator: operator,
 										valueA: valueA,
 										valueAReal: valueAReal,
-										operator: operator,
 										valueB: valueB,
 										valueBReal: valueBReal,
-										analysisOffset: analysisOffset,
 									});
 								}
 								break;
@@ -432,13 +432,13 @@ export class ScenarioItem implements ScenarioData {
 							case '>=': {
 								if (valueAReal >= valueBReal) {
 									conditionMatch.push({
-										k: k,
+										analysisOffset: analysisOffset,
+										datapoint: k,
+										operator: operator,
 										valueA: valueA,
 										valueAReal: valueAReal,
-										operator: operator,
 										valueB: valueB,
 										valueBReal: valueBReal,
-										analysisOffset: analysisOffset,
 									});
 								}
 								break;
@@ -447,13 +447,13 @@ export class ScenarioItem implements ScenarioData {
 							case '==': {
 								if (valueAReal == valueBReal) {
 									conditionMatch.push({
-										k: k,
+										analysisOffset: analysisOffset,
+										datapoint: k,
+										operator: operator,
 										valueA: valueA,
 										valueAReal: valueAReal,
-										operator: operator,
 										valueB: valueB,
 										valueBReal: valueBReal,
-										analysisOffset: analysisOffset,
 									});
 								}
 								break;
@@ -462,13 +462,13 @@ export class ScenarioItem implements ScenarioData {
 							case '!=': {
 								if (valueAReal != valueBReal) {
 									conditionMatch.push({
-										k: k,
+										analysisOffset: analysisOffset,
+										datapoint: k,
+										operator: operator,
 										valueA: valueA,
 										valueAReal: valueAReal,
-										operator: operator,
 										valueB: valueB,
 										valueBReal: valueBReal,
-										analysisOffset: analysisOffset,
 									});
 								}
 								break;
@@ -525,11 +525,11 @@ export class ScenarioItem implements ScenarioData {
 				for (let x = 0; x < scenarioMatch.length; x++) {
 					let len: number = scenarioMatch[x].length - 1;
 					let candle = scenarioMatch[x][len][0];
-					let idx = candle.k as number;
+					let idx = candle.datapoint as number;
 					
 					const milliseconds = data.chart.dataset[timeField][idx] * 1000;
 					let date = new Date(milliseconds);
-					Bot.log(`Scenario '${this.name}'; Match '${date.toISOString()}'; Datapoint '${candle.k}'`);
+					Bot.log(`Scenario '${this.name}'; Match '${date.toISOString()}'; Datapoint '${candle.datapoint}'`);
 					// console.log(conditionMatch);
 				}
 			}

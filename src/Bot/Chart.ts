@@ -175,7 +175,7 @@ export class ChartItem implements ChartData {
 		if (nextTime)
 			this.datasetNextTime = nextTime - this.candleTime;
 
-		let logLine = `Chart '${this.name}'; Refreshed dataset'`;
+		let logLine = `Chart '${this.name}'; Refreshed dataset`;
 
 		if (this.datasetTimeField)
 			logLine = `${logLine}; Field '${this.datasetTimeField}'`;

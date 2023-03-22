@@ -1,4 +1,4 @@
-import { ChartItem } from "./Chart";
+import { ChartCandleData, ChartItem } from "./Chart";
 import { Subscription, SubscriptionActionCallbackModule, SubscriptionCallbackData, SubscriptionData } from "./Subscription";
 import { TimeframeItem } from "./Timeframe";
 
@@ -8,36 +8,20 @@ const fs = require('fs');
  * Logging levels
  */
 export enum Log {
-	Verbose = 0,
+	Err = 4,
 	Info = 1,
 	Warn = 2,
-	Err = 4,
+	Verbose = 0,
 }
 
-/**
- * Event types
- */
-export enum BotEvent {
-	TimeframeResult = 100,
-}
-
-export type BotSubscribeConditionData = {
-	valueA: string,
-	valueAReal: number,
-	operator: string,
-	valueB: string | number,
-	valueBReal: number,
+export type BotStateTimeframeType = {
+	result: any,
+	resultIndex: Array<string>,
 };
 
-export type BotSignalData = {
-	high: number,
-	low: number,
-	total: number,
-};
-
-export type BotDespatchData = {
-	event: BotEvent,
-	uuid: string,
+export type BotStateType = {
+	timeframe: BotStateTimeframeType,
+	updateTime: number,
 };
 
 /**
@@ -61,10 +45,7 @@ export type BotData = {
 	) => any,
 	setItem: (
 		data: ItemBaseData,
-	) => string,
-	despatch: (
-		data: BotDespatchData,
-	) => void,
+	) => string
 };
 
 export const Bot: BotData = {
@@ -229,188 +210,4 @@ export const Bot: BotData = {
 
 		return data.uuid;
 	},
-
-	/**
-	 * Despatcher for event subscribers
-	 * 
-	 * @param data 
-	 */
-	despatch (
-		data: BotDespatchData,
-	) {
-		// Bot.log(`Bot.despatch()`);
-		// Bot.log(`event: ${data.event}`);
-		// Bot.log(`uuid: ${data.name}`);
-
-		switch (data.event) {
-
-			/**
-			 * A `Timeframe` has finished an iteration
-			 */
-			case BotEvent.TimeframeResult : {
-				for (let i in Subscription.item) {
-					const item = Subscription.item[i];
-
-					let index = item.timeframeAny?.findIndex(timeframe => timeframe.uuid === data.uuid);
-					if (typeof index !== 'undefined' && index >= 0) {
-						let signalResult: BotSignalData = {
-							high: 0,
-							low: 0,
-							total: 0,
-						};
-
-						let signal: number[] = [];
-
-						/**
-						 * Aggregated results from any of the listed `Timeframe`
-						 */
-						if (item.timeframeAny?.length) {
-
-							// Process timeframes
-							for (let i = 0; i < item.timeframeAny.length; i++) {
-								let timeframe = item.timeframeAny[i];
-
-								for (let j = 0; j < timeframe.result.length; j++) {
-									let result: any = timeframe.result[j];
-
-									if (result?.length) {
-										signal.push(result.length);
-									}
-								}
-							}
-
-							// TODO: Track `new` and `total` signal values, for subscriptions to define
-
-							if (signal.length) {
-								signalResult.high = Math.max(...signal);
-								signalResult.low = Math.min(...signal);
-								signalResult.total = signal.reduce(function (x, y) {
-									return x + y;
-								}, 0);
-							}
-
-							Bot.log(
-								`Subscription '${item.name}'; signalHigh '${signalResult.high}', signalLow '${signalResult.low}', signalTotal '${signalResult.total}'`,
-								Log.Verbose
-							);
-						}
-
-						let conditionMatch: Array<BotSubscribeConditionData> = [];
-
-						let valueA: string;
-						let valueAReal: number;
-						let operator: string;
-						let valueB: string;
-						let valueBReal: number;
-
-						for (let i = 0; i < item.condition.length; i++) {
-							valueA = item.condition[i][0];
-							operator = item.condition[i][1];
-							valueB = item.condition[i][2];
-
-							valueAReal = signalResult[valueA as keyof BotSignalData] ?? valueA;
-							valueBReal = signalResult[valueB as keyof BotSignalData] ?? valueB;
-
-							if (valueAReal) {
-								let match = false;
-								switch (operator) {
-									case '<': {
-										if (valueAReal < valueBReal)
-											match = true;
-										break;
-									}
-									case '<=': {
-										if (valueAReal <= valueBReal)
-											match = true;
-										break;
-									}
-		
-									case '>': {
-										if (valueAReal > valueBReal)
-											match = true;
-										break;
-									}
-		
-									case '>=': {
-										if (valueAReal >= valueBReal)
-											match = true;
-										break;
-									}
-		
-									case '==': {
-										if (valueAReal == valueBReal)
-											match = true;
-										break;
-									}
-		
-									case '!=': {
-										if (valueAReal != valueBReal)
-											match = true;
-										break;
-									}
-								}
-
-								if (match) {
-									// Bot.log({
-									// 	valueA: valueA,
-									// 	valueAReal: valueAReal,
-									// 	operator: operator,
-									// 	valueB: valueB,
-									// 	valueBReal: valueBReal,
-									// });
-
-									conditionMatch.push({
-										valueA: valueA,
-										valueAReal: valueAReal,
-										operator: operator,
-										valueB: valueB,
-										valueBReal: valueBReal,
-									});
-								}
-							}
-						}
-
-						// All conditions within the set, match on timeframe(s)
-						if (
-							conditionMatch.length === item.condition.length
-							&& item.timeframeAny?.[index]
-						) {
-							Bot.log(`Timeframe '${item.timeframeAny?.[index].name}'; Triggered subscription '${item.name}'`);
-							
-							if (item.playbook) {
-
-								// Playbook action module callback
-								if (item.action) {
-
-									// Import module
-									let importPath = `../../playbook/${item.playbook}/${item.playbook}.ts`;
-
-									import(importPath).then((module: SubscriptionActionCallbackModule) => {
-										if (!item.action || !module.hasOwnProperty(item.action))
-											throw (`Subscription action callback not found, or invalid.`);
-				
-										// Execute imported subscription callback on module
-										try {
-											module[item.action](
-												item
-											);
-										} catch (err) {
-											throw (`Failed to execute subscription action '${item.action}' callback.`);
-										}
-									}).catch(err => Bot.log(err.message, Log.Err));
-								}
-							}
-
-							// Execute callback
-							if (item.actionCallback) {
-								item.actionCallback(item);
-							}
-						}
-					}
-				}
-
-				break;
-			}
-		}
-	}
 };
