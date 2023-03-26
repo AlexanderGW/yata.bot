@@ -78,7 +78,7 @@ Is defined in order of what information is available.
 - If available; `Chart.datasetUpdateTime`
 - Otherwise; now, minus `Chart.candleTime` multiplied by `BOT_CHART_DEFAULT_TOTAL_CANDLE` (default 50)
 
-Finally, `Chart.candleTime` is deducted, to ensure integrity of latest candle delta.
+Finally, `Chart.candleTime` is deducted from the time to ensure integrity of any existing candle delta on dataset.
 
 ### Item referencing
 All items are identified in playbooks with a `name` (names are only unique to item type), which is then used to link items together.
@@ -114,10 +114,11 @@ tsc --watch
 ## Structure
 Here is a basic overview of how the bot is currently structured. Subject to change, as this project is still in development.
 
-### Subscribing to `Timeframe` changes
-Available condition values
+### How a `Subscription` applies to `Timeframe` changes
+Available `condition` values
 - `high` for the timeframe with the most amount of signals
 - `low` for the timeframe with the least amount of signals
+- `new` for any previously unseen signals (depends on state data passed with a `Subscription.despatch`)
 - `total` for the sum of all timeframe signals
 
 ```js
@@ -129,6 +130,7 @@ Subscription.new({
   condition: [
     ['total', '>=', '3'],
   ],
+  match: 'new', // Or `all`
   name: 'buyEthBtcKraken',
   timeframeAny: [
     defaultTimeframe,

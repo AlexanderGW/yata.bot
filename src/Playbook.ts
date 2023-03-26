@@ -454,9 +454,6 @@ dotenv.config();
 
 				// Send a despatch to indicate the timeframe has results.
 				if (timeframe.result.length) {
-
-
-
 					let timeframeSignal: any = [];
 					let i = 0;
 
@@ -487,13 +484,18 @@ dotenv.config();
 						i++;
 					}
 
-					// TODO: Latest exchange dataset, didn't include previous datapoints??
+					// Add results to playbook state
 					nextPlaybookState.timeframe.result.push(timeframeSignal);
 					nextPlaybookState.timeframe.resultIndex.push(timeframe.name ?? timeframe.uuid);
 
+					// Despatch to any subscribers
 					Subscription.despatch({
 						event: SubscriptionEvent.TimeframeResult,
+
+						// Pass last playbook state timeframe results, for `new` comparison
 						lastState: lastPlaybookState.timeframe,
+
+						// The timeframe context
 						timeframe: timeframe,
 					});
 				}
