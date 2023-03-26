@@ -145,7 +145,10 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 				pad(now.getUTCHours()),
 				pad(now.getUTCMinutes()),
 				pad(now.getUTCSeconds()),
-			].join('')
+			].join(''),
+
+			// Number of candles
+			data.open?.length,
 		];
 
 		const filename = filenameParts.join('-');
