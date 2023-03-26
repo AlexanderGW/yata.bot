@@ -27,7 +27,7 @@ asset:
 # Charts
 chart:
   ethBtcKraken4h:
-    # datasetFile: test/Kraken-ETHBTC-2023-01-02-13-04-20.json
+    datasetFile: test/Kraken-ETHBTC-2023-01-02-13-04-20.json
     pair: ethBtcKraken
     pollTime: 5s # Five seconds
     candleTime: 4h # Four hours
@@ -92,6 +92,13 @@ scenario:
       - # Latest candle
         - [outReal, '>=', 30]
 
+# Storage
+storage:
+  # file: # Default
+  #   class: File
+  # redis: # Currently supports localhost
+  #   class: Redis
+
 # Strategies
 strategy:
   rsi14BearishOverbought:
@@ -121,6 +128,8 @@ subscription:
     action:
       - actionEthBtcBuy
     chart: ethBtcKraken4h
+    # match: all # Action everytime seen
+    match: new # Default, action once when first seen
     condition:
       - [total, '>=', 1]
     timeframeAny:
