@@ -208,6 +208,10 @@ export class ChartItem implements ChartData {
 	) {
 		let finalData: ChartCandleData | undefined = this.dataset;
 
+		// Require OHLC
+		if (!data.open || !data.high || !data.low || !data.close)
+			return Bot.log(`Incomplete OHLC dataset`, Log.Warn);
+
 		// Update existing dataset
 		if (
 			finalData
