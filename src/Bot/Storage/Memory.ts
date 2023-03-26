@@ -26,7 +26,7 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 	): Promise<any> {
 		let returnValue: any = false;
 		try {
-			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === name);
+			let index = this.itemIndex.indexOf(name);
 			if (index >= 0)
 				returnValue = this.item[index];
 		} catch (error) {

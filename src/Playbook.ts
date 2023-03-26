@@ -192,7 +192,7 @@ dotenv.config();
 						// Establish item reference
 						if (typeof value === 'string') {
 							let itemLookup: any = false;
-							let cacheIdx = playbookCache[key].itemIndex.findIndex((x: string) => x === value);
+							let cacheIdx = playbookCache[key].itemIndex.indexOf(value as string);
 							if (cacheIdx >= 0)
 								itemLookup = Bot.getItem(playbookCache[key].item[cacheIdx]);
 
@@ -236,7 +236,7 @@ dotenv.config();
 						&& (key === 'a' || key === 'b')
 					) {
 						let itemLookup: any = false;
-						let cacheIdx = playbookCache.asset.itemIndex.findIndex((x: string) => x === value);
+						let cacheIdx = playbookCache.asset.itemIndex.indexOf(value as string);
 						if (cacheIdx >= 0)
 							itemLookup = Bot.getItem(playbookCache.asset.item[cacheIdx]);
 

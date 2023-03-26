@@ -156,12 +156,12 @@ export const Bot: BotData = {
 		let index: number = 0;
 
 		// Lookup `uuid`
-		index = this.itemIndex.findIndex((x: string) => x === identifier);
+		index = this.itemIndex.indexOf(identifier);
 		if (index >= 0)
 			return this.item[index];
 
 		// Lookup `name`
-		index = this.itemNameIndex.findIndex((x: string) => x === identifier);
+		index = this.itemNameIndex.indexOf(identifier);
 		if (index >= 0)
 			return this.item[index];
 

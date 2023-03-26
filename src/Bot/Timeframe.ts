@@ -84,12 +84,10 @@ export class TimeframeItem implements TimeframeData {
 		const startTime = Date.now();
 
 		let logLine = `Timeframe '${this.name}'; Executed; Interval '${this.intervalTime}ms'`;
-
 		if (this.lastStartTime) {
 			logLine = `${logLine}; Last run '${this.lastStartTime}'`;
 			logLine = `${logLine}; Time since '${startTime - this.lastStartTime}ms''`;
 		}
-
 		Bot.log(logLine);
 
 		// if ((startTime - this.lastStartTime) < this.intervalTime)
@@ -140,14 +138,6 @@ export class TimeframeItem implements TimeframeData {
 				Bot.log(err as string, Log.Err);
 			}
 		}
-
-		// Send a despatch to indicate the timeframe has results.
-		// if (this.result.length) {
-		// 	Subscription.despatch({
-		// 		event: SubscriptionEvent.TimeframeResult,
-		// 		uuid: this.uuid,
-		// 	});
-		// }
 
 		this.lastEndTime = Date.now();
 		Bot.log(`Timeframe '${this.name}'; Finished; Runtime '${this.lastEndTime - startTime}ms'`);

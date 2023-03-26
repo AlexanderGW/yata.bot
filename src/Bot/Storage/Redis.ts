@@ -46,7 +46,7 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 	): Promise<any> {
 		let returnValue: any = false;
 		try {
-			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === name);
+			let index = this.itemIndex.indexOf(name);
 			if (index >= 0)
 				return this.item[index];
 
@@ -71,7 +71,7 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 	): Promise<string> {
 		try {
 			// Reset existing item
-			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === name);
+			let index = this.itemIndex.indexOf(name);
 			if (index >= 0) {
 				this.item[index] = data;
 				
