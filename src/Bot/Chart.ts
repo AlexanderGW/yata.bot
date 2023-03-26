@@ -13,7 +13,7 @@ export const chartCandleFields = [
 	'openTime',
 	'tradeCount',
 	'volume',
-	'weightedAvePrice',
+	'vwap',
 ];
 
 export type ChartData = {
@@ -43,7 +43,7 @@ export type ChartCandleData = {
 	openTime?: number[],
 	tradeCount?: number[],
 	volume?: string[],
-	weightedAvePrice?: string[], // TWAP
+	vwap?: string[],
 };
 
 export class ChartItem implements ChartData {

@@ -290,7 +290,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				openTime: [],
 				tradeCount: [],
 				volume: [],
-				weightedAvePrice: [],
+				vwap: [],
 			};
 	
 			// Extract, transform, load response to chart
@@ -318,7 +318,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					etlData.openTime?.push(p[0]);
 					etlData.tradeCount?.push(p[7]);
 					etlData.volume?.push(p[6]);
-					etlData.weightedAvePrice?.push(p[5]);
+					etlData.vwap?.push(p[5]);
 				}
 
 				this.refreshChart(
