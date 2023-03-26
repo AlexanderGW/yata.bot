@@ -414,7 +414,6 @@ dotenv.config();
 
 	// Load the playbook state
 	let lastPlaybookState: BotStateType = await playbookStore.getItem(playbookStateName);
-	// console.log(playbookState);
 	if (!lastPlaybookState)
 		lastPlaybookState = {
 			timeframe: {
@@ -424,7 +423,7 @@ dotenv.config();
 			updateTime: 0
 		};
 
-	console.log(lastPlaybookState);
+	// console.log(lastPlaybookState);
 
 	let nextPlaybookState: BotStateType = {
 		timeframe: {
@@ -488,6 +487,7 @@ dotenv.config();
 						i++;
 					}
 
+					// TODO: Latest exchange dataset, didn't include previous datapoints??
 					nextPlaybookState.timeframe.result.push(timeframeSignal);
 					nextPlaybookState.timeframe.resultIndex.push(timeframe.name ?? timeframe.uuid);
 
@@ -503,12 +503,11 @@ dotenv.config();
 				Bot.log(err as string, Log.Err);
 			}
 		}
-
-		console.log(nextPlaybookState);
 	}
 
 	// Persist playbook state for next iteration
 	nextPlaybookState.updateTime = Date.now();
+	// console.log(nextPlaybookState);
 	await playbookStore.setItem(playbookStateName, nextPlaybookState);
 	await playbookStore.close();
 })();
