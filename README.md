@@ -111,6 +111,15 @@ npm test
 tsc --watch
 ```
 
+## Donations
+If you'd like to support, and see more time dedicated to the development of this project; donations will allow me to do that, and are greatly appreciated.
+
+#### Bitcoin
+`bc1qjzxdlf0w8dn3uvr2q7d4htqzg9fx3zs66shlht`
+
+#### Ethereum (EVM chains):
+`0x18cbb0b7Cf158042C9A9e660189Db76Ec0604370`
+
 ## Structure
 Here is a basic overview of how the bot is currently structured. Subject to change, as this project is still in development.
 
