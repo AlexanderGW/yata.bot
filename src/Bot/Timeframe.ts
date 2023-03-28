@@ -111,12 +111,13 @@ export class TimeframeItem implements TimeframeData {
 				(!process.env.BOT_TIMEFRAME_CHART_SYNC || process.env.BOT_TIMEFRAME_CHART_SYNC === '1')
 
 				// Chart is overdue `pollTime`
-				&& (startTime - strategy.chart.datasetUpdateTime) >= strategy.chart.pollTime
+				&& (startTime - strategy.chart.datasetSyncTime) >= strategy.chart.pollTime
 			) {
 				try {
 					await strategy.chart.pair.exchange.syncChart(
 						strategy.chart
 					);
+					strategy.chart.datasetSyncTime = Date.now();
 				} catch (err) {
 					Bot.log(err as string, Log.Err);
 				}

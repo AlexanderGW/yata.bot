@@ -15,12 +15,16 @@ export enum Log {
 }
 
 export type BotStateTimeframeType = {
-	result: any,
+	result: Array<any>,
 	resultIndex: Array<string>,
 };
 
 export type BotStateType = {
 	timeframe: BotStateTimeframeType,
+	chart: {
+		dataset: Array<ChartCandleData>,
+		datasetIndex: Array<string>,
+	},
 	updateTime: number,
 };
 

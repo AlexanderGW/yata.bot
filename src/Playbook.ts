@@ -414,14 +414,38 @@ dotenv.config();
 
 	// Load the playbook state
 	let lastPlaybookState: BotStateType = await playbookStore.getItem(playbookStateName);
-	if (!lastPlaybookState)
+
+	// Handle existing playbook state
+	if (lastPlaybookState) {
+
+		// Prime chart datasets
+		if (lastPlaybookState.chart.datasetIndex.length) {
+			for (let chartIdx in lastPlaybookState.chart.datasetIndex) {
+
+				// Add dataset to chart
+				const chart: ChartItem = Bot.getItem(lastPlaybookState.chart.datasetIndex[chartIdx]);
+				if (chart && lastPlaybookState.chart.dataset[chartIdx]) {
+					chart.updateDataset(lastPlaybookState.chart.dataset[chartIdx]);
+					chart.refreshDataset();
+				}
+			}
+		}
+	}
+	
+	// No existing playbook state, default to empty
+	else {
 		lastPlaybookState = {
 			timeframe: {
 				result: [],
 				resultIndex: [],
 			},
+			chart: {
+				dataset: [],
+				datasetIndex: [],
+			},
 			updateTime: 0
 		};
+	}
 
 	// console.log(lastPlaybookState);
 
@@ -429,6 +453,10 @@ dotenv.config();
 		timeframe: {
 			result: [],
 			resultIndex: [],
+		},
+		chart: {
+			dataset: [],
+			datasetIndex: [],
 		},
 		updateTime: 0
 	};
@@ -499,10 +527,21 @@ dotenv.config();
 						timeframe: timeframe,
 					});
 				}
-
-				// TODO: Persist dataset for the next run?
 			} catch (err) {
 				Bot.log(err as string, Log.Err);
+			}
+		}
+	}
+
+	// Persist chart datasets
+	if (playbookCache.chart.item.length) {
+		for (let chartIdx in playbookCache.chart.itemIndex) {
+			const chart: ChartItem = Bot.getItem(playbookCache.chart.item[chartIdx]);
+
+			// Add results to playbook state
+			if (chart.dataset) {
+				nextPlaybookState.chart.dataset.push(chart.dataset);
+				nextPlaybookState.chart.datasetIndex.push(chart.name ?? chart.uuid);
 			}
 		}
 	}

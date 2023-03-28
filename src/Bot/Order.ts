@@ -186,7 +186,7 @@ export const Order = {
 		// A percentage of a position
 		if (data.quantity?.substring(data.quantity.length - 1) === '%') {
 			if (!data.hasOwnProperty('position'))
-				throw (`Order percentage quantitys, require a position`);
+				throw (`Order percentage quantities, require a position`);
 
 			const quantityPercent = Number.parseFloat(data.quantity.substring(0, data.quantity.length - 1));
 			let positionAmount = '0';

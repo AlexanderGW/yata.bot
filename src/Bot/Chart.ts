@@ -21,6 +21,7 @@ export type ChartData = {
 	datasetFile?: string,
 	datasetEndTime?: number, // Milliseconds
 	datasetStartTime?: number, // Milliseconds
+	datasetSyncTime?: number, // Milliseconds
 	datasetTimeField?: string,
 	datasetUpdateTime?: number, // Milliseconds
 	name?: string,
@@ -51,6 +52,7 @@ export class ChartItem implements ChartData {
 	datasetFile?: string;
 	datasetEndTime: number = 0;
 	datasetStartTime: number = 0;
+	datasetSyncTime: number = 0;
 	datasetTimeField: string = '';
 	datasetUpdateTime: number = 0;
 	name?: string;
@@ -70,6 +72,8 @@ export class ChartItem implements ChartData {
 			this.datasetEndTime = data.datasetEndTime;
 		if (data.datasetStartTime)
 			this.datasetStartTime = data.datasetStartTime;
+		if (data.datasetSyncTime)
+			this.datasetSyncTime = data.datasetSyncTime;
 		if (data.datasetTimeField)
 			this.datasetTimeField = data.datasetTimeField;
 		if (data.datasetUpdateTime)
@@ -127,7 +131,9 @@ export class ChartItem implements ChartData {
 		if (!this.datasetNextTime) {
 
 			// Sync from when the chart was last updated
-			if (this.datasetUpdateTime > 0)
+			if (this.datasetSyncTime > 0)
+				nextTime = this.datasetSyncTime;
+			else if (this.datasetUpdateTime > 0)
 				nextTime = this.datasetUpdateTime;
 			
 			// Get a default number of candles
@@ -181,22 +187,27 @@ export class ChartItem implements ChartData {
 			logLine = `${logLine}; Field '${this.datasetTimeField}'`;
 
 		if (this.datasetStartTime) {
-			let startDate = new Date(this.datasetStartTime);
+			const startDate = new Date(this.datasetStartTime);
 			logLine = `${logLine}; Start '${startDate.toISOString()}'`;
 		}
 
 		if (this.datasetEndTime) {
-			let endDate = new Date(this.datasetEndTime);
+			const endDate = new Date(this.datasetEndTime);
 			logLine = `${logLine}; End '${endDate.toISOString()}'`;
 		}
 
 		if (this.datasetUpdateTime) {
-			let updateDate = new Date(this.datasetUpdateTime);
+			const updateDate = new Date(this.datasetUpdateTime);
 			logLine = `${logLine}; Update '${updateDate.toISOString()}'`;
 		}
 
+		if (this.datasetSyncTime) {
+			const syncDate = new Date(this.datasetSyncTime);
+			logLine = `${logLine}; Sync '${syncDate.toISOString()}'`;
+		}
+
 		if (this.datasetNextTime) {
-			let nextDate = new Date(this.datasetNextTime);
+			const nextDate = new Date(this.datasetNextTime);
 			logLine = `${logLine}; Next '${nextDate.toISOString()}'`;
 		}
 
