@@ -280,8 +280,16 @@ export class ChartItem implements ChartData {
 						&& data[field][i]
 						&& finalData[field]
 					) {
+						let logLine = `Chart '${this.name}'; updateDataset; Mapping 'finalData[${field}][${datasetOffset}] = new[${field}][${i}]'`;
+
+						if (finalData[field][datasetOffset]) {
+							logLine = `${logLine}; From '${finalData[field][datasetOffset]}'`;
+						}
+
+						logLine = `${logLine}; To '${data[field][i]}'`;
+
 						Bot.log(
-							`Chart '${this.name}'; updateDataset; Mapping 'finalData[${field}][${datasetOffset}] = new[${field}][${i}]'; From '${finalData[field][datasetOffset]}'; To '${data[field][i]}'`,
+							logLine,
 							Log.Verbose
 						);
 
