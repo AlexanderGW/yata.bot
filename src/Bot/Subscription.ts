@@ -167,13 +167,14 @@ export const Subscription: SubscriptionInterface = {
 									if (!result[l])
 										continue;
 
-									// TODO: Walk all strategies within timeframe
+									const strategy: StrategyItem = Bot.getItem(timeframe.resultIndex[k]);
+									
 									const latestCandle = result[l].length - 1;
 									const datapoint = result[l][latestCandle][0].datapoint;
-									const timeField = timeframe.strategy[0].chart.datasetTimeField;
-									if (timeframe.strategy[0].chart.dataset?.[timeField].hasOwnProperty(datapoint)) {
+									const timeField = strategy.chart.datasetTimeField;
+									if (strategy.chart.dataset?.[timeField].hasOwnProperty(datapoint)) {
 										// console.log(strategy.chart.dataset?[timeField][datapoint]);
-										timeframeSignal.push(timeframe.strategy[0].chart.dataset?.[timeField][datapoint]);
+										timeframeSignal.push(strategy.chart.dataset?.[timeField][datapoint]);
 									}
 								}
 							}
