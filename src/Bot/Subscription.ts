@@ -30,7 +30,7 @@ export type SubscriptionSignalData = {
 
 export type SubscriptionDespatchData = {
 	event: SubscriptionEvent,
-	lastState: BotStateTimeframeType,
+	lastState?: BotStateTimeframeType,
 	timeframe: TimeframeItem,
 };
 
@@ -113,7 +113,7 @@ export const Subscription: SubscriptionInterface = {
 	 */
 	itemIndex: [],
 
-	despatch(
+	despatch (
 		_: SubscriptionDespatchData,
 	): void {
 		switch (_.event) {
