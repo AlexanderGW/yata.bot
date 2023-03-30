@@ -78,8 +78,6 @@ export class ChartItem implements ChartData {
 			this.datasetTimeField = _.datasetTimeField;
 		if (_.datasetUpdateTime)
 			this.datasetUpdateTime = _.datasetUpdateTime;
-		if (_.name)
-			this.name = _.name;
 		if (_.datasetNextTime)
 			this.datasetNextTime = _.datasetNextTime;
 		this.pair = _.pair;
@@ -88,6 +86,9 @@ export class ChartItem implements ChartData {
 		if (_.candleTime)
 			this.candleTime = _.candleTime;
 		this.uuid = _.uuid ?? uuidv4();
+
+		// Set chart name
+		this.name = _.name ?? this.uuid;
 
 		if (this.datasetFile) {
 			const fs = require('fs');
