@@ -480,53 +480,49 @@ dotenv.config();
 				// Execute the timeframe
 				await timeframe.execute();
 
-				// Send a despatch to indicate the timeframe has results.
-				if (timeframe.result.length) {
-					let timeframeSignal: any = [];
-					let i = 0;
+				// No results, skip
+				if (!timeframe.result.length)
+					continue;
 
-					// Walk through timeframe strategy results
-					for (let strategyName in playbookCache.strategy.item) {
-						if (!timeframe.result[i])
+				// Send a despatch to subscribers, indicating the timeframe has results
+				Subscription.despatch({
+					event: SubscriptionEvent.TimeframeResult,
+
+					// Pass last playbook state timeframe results, for `new` comparison
+					lastState: lastPlaybookState.timeframe,
+
+					// The timeframe context
+					timeframe: timeframe,
+				});
+
+				// Collect timeframe results for playbook state
+				let timeframeSignal: any = [];
+
+				// Walk through timeframe strategy results
+				for (let i = 0; i <= timeframe.result.length; i++) {
+					if (!timeframe.result[i])
+						continue;
+
+					// Log the last candle datapoint time field, of each matching scenario
+					for (let j = 0; j <= timeframe.result[i].length; j++) {
+						if (!timeframe.result[i][j])
 							continue;
 
-						// console.log(timeframe.resultIndex[i]);
-						// let strategyName: string = timeframe.resultIndex[i];
-						// console.log(strategyName);
-						const strategy: StrategyItem = Bot.getItem(playbookCache.strategy.item[strategyName]);
+						const strategy: StrategyItem = Bot.getItem(timeframe.resultIndex[i]);
 
-						// Log the last candle datapoint time field, of each matching scenario
-						for (let j = 0; j <= timeframe.result[i].length; j++) {
-							if (!timeframe.result[i][j])
-								continue;
-
-							const latestCandle = timeframe.result[i][j].length - 1;
-							const datapoint = timeframe.result[i][j][latestCandle][0].datapoint;
-							const timeField = strategy.chart.datasetTimeField;
-							if (strategy.chart.dataset?.[timeField].hasOwnProperty(datapoint)) {
-								// console.log(strategy.chart.dataset?[timeField][datapoint]);
-								timeframeSignal.push(strategy.chart.dataset?.[timeField][datapoint]);
-							}
+						const latestCandle = timeframe.result[i][j].length - 1;
+						const datapoint = timeframe.result[i][j][latestCandle][0].datapoint;
+						const timeField = strategy.chart.datasetTimeField;
+						if (strategy.chart.dataset?.[timeField].hasOwnProperty(datapoint)) {
+							// console.log(strategy.chart.dataset?[timeField][datapoint]);
+							timeframeSignal.push(strategy.chart.dataset?.[timeField][datapoint]);
 						}
-
-						i++;
 					}
-
-					// Add results to playbook state
-					nextPlaybookState.timeframe.result.push(timeframeSignal);
-					nextPlaybookState.timeframe.resultIndex.push(timeframe.name ?? timeframe.uuid);
-
-					// Despatch to any subscribers
-					Subscription.despatch({
-						event: SubscriptionEvent.TimeframeResult,
-
-						// Pass last playbook state timeframe results, for `new` comparison
-						lastState: lastPlaybookState.timeframe,
-
-						// The timeframe context
-						timeframe: timeframe,
-					});
 				}
+
+				// Add results to playbook state
+				nextPlaybookState.timeframe.result.push(timeframeSignal);
+				nextPlaybookState.timeframe.resultIndex.push(timeframe.name ?? timeframe.uuid);
 			} catch (err) {
 				Bot.log(err as string, Log.Err);
 			}
