@@ -154,7 +154,8 @@ export class ChartItem implements ChartData {
 			else if (this.dataset?.closeTime)
 				timeField = 'closeTime';
 			
-			this.datasetTimeField = timeField;
+			if (timeField.length)
+				this.datasetTimeField = timeField;
 		}
 
 		// Get first and last chart dataset candle times
