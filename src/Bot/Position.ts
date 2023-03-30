@@ -16,22 +16,22 @@ export class PositionItem implements PositionData {
 	uuid: string;
 
 	constructor (
-		data: PositionData,
+		_: PositionData,
 	) {
-		if (data.name)
-			this.name = data.name;
-		this.pair = data.pair;
-		if (data.quantity)
-			this.quantity = data.quantity;
-		this.uuid = data.uuid ?? uuidv4();
+		if (_.name)
+			this.name = _.name;
+		this.pair = _.pair;
+		if (_.quantity)
+			this.quantity = _.quantity;
+		this.uuid = _.uuid ?? uuidv4();
 	}
 }
 
 export const Position = {
 	new (
-		data: PositionData,
+		_: PositionData,
 	): PositionItem {
-		let item = new PositionItem(data);
+		let item = new PositionItem(_);
 		let uuid = Bot.setItem(item);
 
 		return Bot.getItem(uuid);

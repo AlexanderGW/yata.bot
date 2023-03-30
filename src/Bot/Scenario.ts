@@ -47,16 +47,16 @@ export class ScenarioItem implements ScenarioData {
 	uuid: string;
 
 	constructor (
-		data: ScenarioData,
+		_: ScenarioData,
 	) {
-		this.analysis = data.analysis;
-		this.condition = data.condition;
-		this.name = data.name;
-		this.uuid = data.uuid ?? uuidv4();
+		this.analysis = _.analysis;
+		this.condition = _.condition;
+		this.name = _.name;
+		this.uuid = _.uuid ?? uuidv4();
 	}
 
 	test (
-		data: ScenarioTestData,
+		_: ScenarioTestData,
 	): Array<Array<Array<ScenarioConditionMatch>>> {
 		
 		// Increments if all conditions are met, on a dataset
@@ -90,22 +90,22 @@ export class ScenarioItem implements ScenarioData {
 				operator = condition[conditionIdx][1];
 				valueB = condition[conditionIdx][2];
 				
-				if (data.chart.dataset?.hasOwnProperty(valueA)) {
+				if (_.chart.dataset?.hasOwnProperty(valueA)) {
 					conditionMatch.push({
 						valueA: valueA,
 					});
-				} else if (data.analysisData) {
+				} else if (_.analysisData) {
 
 					// Walk through datasets
 					let analysis: AnalysisData;
 					let dataset: AnalysisResultData;
 					for (
 						let i: number = 0;
-						i < data.analysisData.length;
+						i < _.analysisData.length;
 						i++
 					) {
-						analysis = data.analysisData[i][0];
-						dataset = data.analysisData[i][1];
+						analysis = _.analysisData[i][0];
+						dataset = _.analysisData[i][1];
 						// Bot.log(dataset);
 
 						// if (analysis.config && dataset.result?.hasOwnProperty(valueA)) {
@@ -113,12 +113,12 @@ export class ScenarioItem implements ScenarioData {
 						// 	// If undefined, set the `startIndex` to the chart dataset, minus the length of the analysis dataset.
 						// 	if (
 						// 		!analysis.config?.startIndex
-						// 		&& data.chart.dataset?.open
+						// 		&& _.chart.dataset?.open
 						// 	) {
 						// 		const datasetResultField = dataset.result[valueA as keyof AnalysisExecuteResultData];
 						// 		if (datasetResultField) {
 						// 			analysis.config.startIndex = (
-						// 				data.chart.dataset.open.length
+						// 				_.chart.dataset.open.length
 						// 				- datasetResultField.length
 						// 			);
 						// 		}
@@ -138,34 +138,34 @@ export class ScenarioItem implements ScenarioData {
 
 
 
-				if (data.chart.dataset?.hasOwnProperty(valueB)) {
+				if (_.chart.dataset?.hasOwnProperty(valueB)) {
 					conditionMatch.push({
 						valueB: valueB,
 					});
-				} else if (data.analysisData) {
+				} else if (_.analysisData) {
 
 					// Walk through datasets
 					let analysis: AnalysisData;
 					let dataset: AnalysisResultData;
 					for (
 						let i: number = 0;
-						i < data.analysisData.length;
+						i < _.analysisData.length;
 						i++
 					) {
-						analysis = data.analysisData[i][0];
-						dataset = data.analysisData[i][1];
+						analysis = _.analysisData[i][0];
+						dataset = _.analysisData[i][1];
 
 						// If undefined, set the `startIndex` to the chart dataset, minus the length of the analysis dataset.
 						// if (dataset?.result?.hasOwnProperty(valueB)) {
 						// 	if (
 						// 		analysis?.config
 						// 		&& !analysis.config.startIndex
-						// 		&& data?.chart.dataset?.open
+						// 		&& _?.chart.dataset?.open
 						// 	) {
 						// 		const datasetResultField = dataset.result[valueB as keyof AnalysisExecuteResultData];
 						// 		if (datasetResultField) {
 						// 			analysis.config.startIndex = (
-						// 				data.chart.dataset.open.length
+						// 				_.chart.dataset.open.length
 						// 				- datasetResultField.length
 						// 			);
 						// 		}
@@ -191,17 +191,17 @@ export class ScenarioItem implements ScenarioData {
 			throw ('Scenario conditions are not compatible with dataset.');
 
 		let endPoint: number = 0;
-		if (data?.chart.dataset?.open?.length)
-			endPoint = data.chart.dataset.open.length;
+		if (_?.chart.dataset?.open?.length)
+			endPoint = _.chart.dataset.open.length;
 
 		// Walk through field values, on result dataset
 		let startPoint: number = 0;
 
 		// Offset from the front of the dataset
-		if (data.strategyExecuteData.timeframe.windowTime) {
+		if (_.strategyExecuteData.timeframe.windowTime) {
 			startPoint = (
 				endPoint
-				- Math.ceil((data.strategyExecuteData.timeframe.windowTime) / data.chart.candleTime)
+				- Math.ceil((_.strategyExecuteData.timeframe.windowTime) / _.chart.candleTime)
 			);
 		}
 
@@ -265,17 +265,17 @@ export class ScenarioItem implements ScenarioData {
 					let valueBReal = valueB;
 					
 					// Walk through datasets
-					if (data.analysisData.length) {
+					if (_.analysisData.length) {
 						let analysis: AnalysisData;
 						let dataset: AnalysisResultData;
 						
 						for (
 							let i: number = 0;
-							i < data.analysisData.length;
+							i < _.analysisData.length;
 							i++
 						) {
-							analysis = data.analysisData[i][0];
-							dataset = data.analysisData[i][1];
+							analysis = _.analysisData[i][0];
+							dataset = _.analysisData[i][1];
 
 							// Establish the analysis result offset from the dataset
 							let startIndex: number = dataset.begIndex;
@@ -349,8 +349,8 @@ export class ScenarioItem implements ScenarioData {
 					// console.log(`k: ${k}`);
 
 					if (typeof valueAReal === 'undefined') {
-						if (data.chart.dataset?.hasOwnProperty(valueA)) {
-							let datasetResultField = data.chart.dataset[valueA as keyof ChartCandleData];
+						if (_.chart.dataset?.hasOwnProperty(valueA)) {
+							let datasetResultField = _.chart.dataset[valueA as keyof ChartCandleData];
 
 							if (datasetResultField?.length) {
 								valueAReal = Number.parseFloat(
@@ -367,8 +367,8 @@ export class ScenarioItem implements ScenarioData {
 						typeof valueBReal === 'undefined'
 						&& typeof valueB === 'string'
 					) {
-						if(data.chart.dataset?.hasOwnProperty(valueB)) {
-							let datasetResultField = data.chart.dataset[valueB as keyof ChartCandleData];
+						if(_.chart.dataset?.hasOwnProperty(valueB)) {
+							let datasetResultField = _.chart.dataset[valueB as keyof ChartCandleData];
 
 							if (datasetResultField?.length) {
 								valueBReal = Number.parseFloat(
@@ -495,17 +495,17 @@ export class ScenarioItem implements ScenarioData {
 				scenarioMatch.push(conditionSetMatch);
 
 				// Execute chained strategy, if provided
-				if (data.strategy) {
-					Bot.log(`Scenario '${this.name}'; Triggered strategy '${data.strategy.name}'`);
+				if (_.strategy) {
+					Bot.log(`Scenario '${this.name}'; Triggered strategy '${_.strategy.name}'`);
 
 					// Try strategy
 					try {
-						let signal = data.strategy.execute(
-							data.strategyExecuteData
+						let signal = _.strategy.execute(
+							_.strategyExecuteData
 						);
 
-						data.strategyExecuteData.timeframe.result.push(signal);
-						data.strategyExecuteData.timeframe.resultIndex.push(data.strategy.uuid);
+						_.strategyExecuteData.timeframe.result.push(signal);
+						_.strategyExecuteData.timeframe.resultIndex.push(_.strategy.uuid);
 					} catch (err) {
 						Bot.log(err as string, Log.Err);
 					}
@@ -515,11 +515,11 @@ export class ScenarioItem implements ScenarioData {
 
 		// Log leading (last in array) candle of matching scenario
 		if (scenarioMatch.length) {
-			if (data.chart?.dataset) {
+			if (_.chart?.dataset) {
 				let timeField: string = '';
-				if (data.chart.dataset?.hasOwnProperty('openTime'))
+				if (_.chart.dataset?.hasOwnProperty('openTime'))
 					timeField = 'openTime';
-				else if (data.chart.dataset?.hasOwnProperty('closeTime'))
+				else if (_.chart.dataset?.hasOwnProperty('closeTime'))
 					timeField = 'closeTime';
 
 				for (let x = 0; x < scenarioMatch.length; x++) {
@@ -527,7 +527,7 @@ export class ScenarioItem implements ScenarioData {
 					let candle = scenarioMatch[x][len][0];
 					let idx = candle.datapoint as number;
 					
-					const milliseconds = data.chart.dataset[timeField][idx] * 1000;
+					const milliseconds = _.chart.dataset[timeField][idx] * 1000;
 					let date = new Date(milliseconds);
 					Bot.log(`Scenario '${this.name}'; Match '${date.toISOString()}'; Datapoint '${candle.datapoint}'`);
 					// console.log(conditionMatch);
@@ -542,9 +542,9 @@ export class ScenarioItem implements ScenarioData {
 
 export const Scenario = {
 	new (
-		data: ScenarioData,
+		_: ScenarioData,
 	): ScenarioItem {
-		let item = new ScenarioItem(data);
+		let item = new ScenarioItem(_);
 		let uuid = Bot.setItem(item);
 
 		return Bot.getItem(uuid);

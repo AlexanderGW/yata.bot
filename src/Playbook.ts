@@ -538,7 +538,7 @@ dotenv.config();
 		for (let chartIdx in playbookCache.chart.itemIndex) {
 			const chart: ChartItem = Bot.getItem(playbookCache.chart.item[chartIdx]);
 
-			// Add results to playbook state
+			// Add chart datasets to playbook state
 			if (chart.dataset) {
 				nextPlaybookState.chart.dataset.push(chart.dataset);
 				nextPlaybookState.chart.datasetIndex.push(chart.name ?? chart.uuid);

@@ -103,7 +103,7 @@ describe('Backtest dataset 1', () => {
                 'utf8',
                 function (
                     err: object,
-                    data: object
+                    _: object
                 ) {
                     if (err)
                         console.log(JSON.stringify(err), Log.Err);

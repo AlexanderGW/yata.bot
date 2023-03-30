@@ -12,7 +12,7 @@ export type StorageInterface = {
 	) => Promise<any>,
 	setItem: (
 		name: string,
-		data: ItemBaseData,
+		_: ItemBaseData,
 	) => Promise<string>,
 }
 
@@ -32,40 +32,40 @@ export class StorageBase implements StorageData {
 	uuid: string;
 
 	constructor (
-		data: StorageData,
+		_: StorageData,
 	) {
-		if (data.hasOwnProperty('class'))
-			this.class = data.class as string;
-		if (data.hasOwnProperty('name'))
-			this.name = data.name as string;
+		if (_.hasOwnProperty('class'))
+			this.class = _.class as string;
+		if (_.hasOwnProperty('name'))
+			this.name = _.name as string;
 		else
-			this.name = data.class as string;
-		if (typeof data.item === 'object')
-			this.item = data.item;
-		if (typeof data.itemIndex === 'object')
-			this.itemIndex = data.itemIndex;
-		this.uuid = data.uuid ?? uuidv4();
+			this.name = _.class as string;
+		if (typeof _.item === 'object')
+			this.item = _.item;
+		if (typeof _.itemIndex === 'object')
+			this.itemIndex = _.itemIndex;
+		this.uuid = _.uuid ?? uuidv4();
 	}
 }
 
 export const Storage = {
 	async new (
-		data: StorageData,
+		_: StorageData,
 	): Promise<any> {
 		let item: any;
 
 		// Default class if undefined
-		if (!data.class?.length)
-			data.class = 'Memory';
+		if (!_.class?.length)
+			_.class = 'Memory';
 		
-		let importPath = `./Storage/${data.class}`;
+		let importPath = `./Storage/${_.class}`;
 		Bot.log(`Storage import: ${importPath}`);
 
-		const className = `${data.class}StorageItem`;
+		const className = `${_.class}StorageItem`;
 			
 		// Import Storage extension
 		await import(importPath).then(module => {
-			let newItem: any = new module[className](data);
+			let newItem: any = new module[className](_);
 
 			if (newItem.constructor.name === className) {
 				let uuid = Bot.setItem(newItem);

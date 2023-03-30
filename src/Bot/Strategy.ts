@@ -29,14 +29,14 @@ export class StrategyItem implements StrategyData {
 	action: Array<[ScenarioItem, StrategyItem?]>;
 
 	constructor (
-		data: StrategyData,
+		_: StrategyData,
 	) {
-		this.analysis = data.analysis;
-		this.chart = data.chart;
-		if (data.name)
-			this.name = data.name;
-		this.action = data.action;
-		this.uuid = data.uuid ?? uuidv4();
+		this.analysis = _.analysis;
+		this.chart = _.chart;
+		if (_.name)
+			this.name = _.name;
+		this.action = _.action;
+		this.uuid = _.uuid ?? uuidv4();
 	}
 
 	/**
@@ -70,7 +70,7 @@ export class StrategyItem implements StrategyData {
 	 * Execute all analysis on the strategy
 	 */
 	execute (
-		data: StrategyExecuteData,
+		_: StrategyExecuteData,
 	) {
 		if (!this.chart.dataset)
 			throw (`Chart '${this.chart.name}' dataset is empty`);
@@ -168,7 +168,7 @@ export class StrategyItem implements StrategyData {
 	
 					// Optional `Strategy` to execute on a `Scenario` match
 					strategy: action[1],
-					strategyExecuteData: data,
+					strategyExecuteData: _,
 				});
 			} catch (err) {
 				Bot.log(err as string, Log.Err);
@@ -181,9 +181,9 @@ export class StrategyItem implements StrategyData {
 
 export const Strategy = {
 	new (
-		data: StrategyData,
+		_: StrategyData,
 	): StrategyItem {
-		let item = new StrategyItem(data);
+		let item = new StrategyItem(_);
 		let uuid = Bot.setItem(item);
 
 		return Bot.getItem(uuid);

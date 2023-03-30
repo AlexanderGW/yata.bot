@@ -64,38 +64,38 @@ export class OrderItem implements OrderData {
 	uuid: string;
 
 	constructor (
-		data: OrderData,
+		_: OrderData,
 	) {
-		if (data.hasOwnProperty('confirmed'))
-			this.confirmed = data.confirmed ? true : false;
-		if (data.hasOwnProperty('dryrun'))
-			this.dryrun = data.dryrun ? true : false;
+		if (_.hasOwnProperty('confirmed'))
+			this.confirmed = _.confirmed ? true : false;
+		if (_.hasOwnProperty('dryrun'))
+			this.dryrun = _.dryrun ? true : false;
 		else if (process.env.BOT_DRYRUN === '0')
 			this.dryrun = false;
-		if (data.name)
-			this.name = data.name;
-		this.pair = data.pair;
-		if (data.hasOwnProperty('position'))
-			this.position = data.position;
-		if (data.hasOwnProperty('price'))
-			this.price = data.price;
-		if (data.hasOwnProperty('quantity'))
-		this.quantity = data.quantity;
-		if (data.hasOwnProperty('quantityFilled'))
-			this.quantityFilled = data.quantityFilled;
-		if (data.hasOwnProperty('related'))
-			this.related = data.related;
-		if (data.hasOwnProperty('side'))
-			this.side = data.side;
-		if (data.hasOwnProperty('status'))
-		this.status = data.status;
-		if (data.hasOwnProperty('stopPrice'))
-			this.stopPrice = data.stopPrice;
-		if (data.hasOwnProperty('transactionId'))
-			this.transactionId = data.transactionId;
-		if (data.hasOwnProperty('type'))
-			this.type = data.type;
-		this.uuid = data.uuid ?? uuidv4();
+		if (_.name)
+			this.name = _.name;
+		this.pair = _.pair;
+		if (_.hasOwnProperty('position'))
+			this.position = _.position;
+		if (_.hasOwnProperty('price'))
+			this.price = _.price;
+		if (_.hasOwnProperty('quantity'))
+		this.quantity = _.quantity;
+		if (_.hasOwnProperty('quantityFilled'))
+			this.quantityFilled = _.quantityFilled;
+		if (_.hasOwnProperty('related'))
+			this.related = _.related;
+		if (_.hasOwnProperty('side'))
+			this.side = _.side;
+		if (_.hasOwnProperty('status'))
+		this.status = _.status;
+		if (_.hasOwnProperty('stopPrice'))
+			this.stopPrice = _.stopPrice;
+		if (_.hasOwnProperty('transactionId'))
+			this.transactionId = _.transactionId;
+		if (_.hasOwnProperty('type'))
+			this.type = _.type;
+		this.uuid = _.uuid ?? uuidv4();
 
 		// TODO: Sync exchange order, position etc
 	}
@@ -180,22 +180,22 @@ export class OrderItem implements OrderData {
 
 export const Order = {
 	new (
-		data: OrderData,
+		_: OrderData,
 	): OrderItem {
 
 		// A percentage of a position
-		if (data.quantity?.substring(data.quantity.length - 1) === '%') {
-			if (!data.hasOwnProperty('position'))
+		if (_.quantity?.substring(_.quantity.length - 1) === '%') {
+			if (!_.hasOwnProperty('position'))
 				throw (`Order percentage quantities, require a position`);
 
-			const quantityPercent = Number.parseFloat(data.quantity.substring(0, data.quantity.length - 1));
+			const quantityPercent = Number.parseFloat(_.quantity.substring(0, _.quantity.length - 1));
 			let positionAmount = '0';
-			if (data.position?.quantity)
-				positionAmount = data.position.quantity;
-			data.quantity = ((parseFloat(positionAmount) / 100) * quantityPercent).toString();
+			if (_.position?.quantity)
+				positionAmount = _.position.quantity;
+			_.quantity = ((parseFloat(positionAmount) / 100) * quantityPercent).toString();
 		}
 		
-		let item = new OrderItem(data);
+		let item = new OrderItem(_);
 		let uuid = Bot.setItem(item);
 
 		return Bot.getItem(uuid);

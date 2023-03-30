@@ -34,7 +34,7 @@ export interface ExchangeInterface {
 export interface ExchangeStorageInterface {
 	refreshChart: (
 		chart: ChartItem,
-		data: object,
+		_: object,
 	) => void;
 }
 
@@ -46,17 +46,17 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	uuid: string;
 	
 	constructor (
-		data: ExchangeData,
+		_: ExchangeData,
 	) {
-		this.class = data.class as string;
-		if (data.hasOwnProperty('name'))
-			this.name = data.name as string;
-		else if (data.hasOwnProperty('class'))
-			this.name = data.class as string;
+		this.class = _.class as string;
+		if (_.hasOwnProperty('name'))
+			this.name = _.name as string;
+		else if (_.hasOwnProperty('class'))
+			this.name = _.class as string;
 		else
 			this.name = 'Paper';
 		
-		this.uuid = data.uuid ?? uuidv4();
+		this.uuid = _.uuid ?? uuidv4();
 	}
 
 	async cancelOrder (
@@ -94,9 +94,9 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 
 	refreshChart (
 		chart: ChartItem,
-		data: ChartCandleData
+		_: ChartCandleData
 	) {
-		chart.updateDataset(data);
+		chart.updateDataset(_);
 		chart.refreshDataset();
 
 		// Check if datasets need to be stored
@@ -148,13 +148,13 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 			].join(''),
 
 			// Number of candles
-			data.open?.length,
+			_.open?.length,
 		];
 
 		const filename = filenameParts.join('-');
 		// Bot.log(filename);
 
-		const responseJson = JSON.stringify(data);
+		const responseJson = JSON.stringify(_);
 
 		const storagePath = `./storage/dataset/${path}`;
 		const storageFile = `${storagePath}/${filename}.json`;
@@ -205,20 +205,20 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 
 export const Exchange = {
 	async new (
-		data: ExchangeData,
+		_: ExchangeData,
 	): Promise<ExchangeItem> {
 		let item: any;
 
 		// Exchange class specified
-		if (data.class?.length) {
-			let importPath = `./Exchange/${data.class}`;
+		if (_.class?.length) {
+			let importPath = `./Exchange/${_.class}`;
 			Bot.log(`Exchange import: ${importPath}`);
 
-			const className = `${data.class}Item`;
+			const className = `${_.class}Item`;
 				
 			// Import exchange extension
 			await import(importPath).then(module => {
-				let newItem: any = new module[className](data);
+				let newItem: any = new module[className](_);
 
 				if (newItem.constructor.name === className) {
 					let uuid = Bot.setItem(newItem);
@@ -230,7 +230,7 @@ export const Exchange = {
 
 		// Default to base `Exchange` with paper trading
 		else {
-			let newItem: any = new ExchangeItem(data);
+			let newItem: any = new ExchangeItem(_);
 			let uuid = Bot.setItem(newItem);
 
 			item = Bot.getItem(uuid);

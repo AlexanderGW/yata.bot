@@ -63,10 +63,10 @@ export class AnalysisItem implements AnalysisData {
 	uuid: string;
 
 	constructor (
-		data: AnalysisData,
+		_: AnalysisData,
 	) {
-		this.name = data.name;
-		this.type = data.type;
+		this.name = _.name;
+		this.type = _.type;
 
 		let config: any = {
 			startIndex: 0,
@@ -85,27 +85,27 @@ export class AnalysisItem implements AnalysisData {
 
 			config = {
 				...config,
-				...data?.config
+				..._?.config
 			};
 		}
 
 		// Bot.log(this.explain);
-		// Bot.log(`type: ${data.type}`);
-		// Bot.log(`name: ${data.name}`);
+		// Bot.log(`type: ${_.type}`);
+		// Bot.log(`name: ${_.name}`);
 		// Bot.log(config);
 
 		this.config = config;
 
-		this.uuid = data.uuid ?? uuidv4();
+		this.uuid = _.uuid ?? uuidv4();
 		// Bot.log(`Added analysis: ${this.name}`);
 	}
 }
 
 export const Analysis = {
 	new (
-		data: AnalysisData,
+		_: AnalysisData,
 	): AnalysisItem {
-		let item = new AnalysisItem(data);
+		let item = new AnalysisItem(_);
 		let uuid = Bot.setItem(item);
 
 		return Bot.getItem(uuid);

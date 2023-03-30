@@ -21,14 +21,14 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 	};
 
 	constructor (
-		data: ExchangeData,
+		_: ExchangeData,
 	) {
-		super(data);
+		super(_);
 
 		const KrakenClient = require('kraken-api');
 		this.handle = new KrakenClient(
-			data.key,
-			data.secret
+			_.key,
+			_.secret
 		);
 	}
 
@@ -363,9 +363,9 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 export const Kraken = {
 	new (
-		data: ExchangeData,
+		_: ExchangeData,
 	): KrakenItem {
-		let item = new KrakenItem(data);
+		let item = new KrakenItem(_);
 		let uuid = Bot.setItem(item);
 
 		return Bot.getItem(uuid);

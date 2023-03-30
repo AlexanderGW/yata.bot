@@ -5,9 +5,9 @@ const fs = require('fs');
 
 export class FileStorageItem extends StorageBase implements StorageInterface {
 	constructor (
-		data: StorageData,
+		_: StorageData,
 	) {
-		super(data);
+		super(_);
 	}
 
 	/**
@@ -54,7 +54,7 @@ export class FileStorageItem extends StorageBase implements StorageInterface {
 	 */
 	async setItem (
 		name: string,
-		data: ItemBaseData,
+		_: ItemBaseData,
 	): Promise<any> {
 		const storagePath = `./storage/json`;
 		const storageFile = `${storagePath}/${name}.json`;
@@ -84,7 +84,7 @@ export class FileStorageItem extends StorageBase implements StorageInterface {
 		try {
 			fs.writeFile(
 				storageFile,
-				JSON.stringify(data),
+				JSON.stringify(_),
 				function (
 					err: object
 				) {
@@ -97,6 +97,6 @@ export class FileStorageItem extends StorageBase implements StorageInterface {
 			Bot.log(`FileStorage.setItem; writeFile; ${JSON.stringify(err)}`, Log.Err);
 		}
 
-		return data.uuid;
+		return _.uuid;
 	}
 }

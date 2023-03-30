@@ -59,10 +59,10 @@ export type SubscriptionInterface = {
 	item: SubscriptionItem[],
 	itemIndex: string[],
 	despatch: (
-		data: SubscriptionDespatchData,
+		_: SubscriptionDespatchData,
 	) => void,
 	new: (
-		data: SubscriptionData,
+		_: SubscriptionData,
 	) => void,
 };
 
@@ -79,25 +79,25 @@ export class SubscriptionItem implements SubscriptionData {
 	uuid: string;
 
 	constructor(
-		data: SubscriptionData,
+		_: SubscriptionData,
 	) {
-		if (data.action)
-			this.action = data.action;
-		if (data.actionCallback)
-			this.actionCallback = data.actionCallback;
-		this.condition = data.condition;
-		this.chart = data.chart;
-		if (data.name)
-			this.name = data.name;
-		if (data.match)
-			this.match = data.match;
-		if (data.playbook)
-			this.playbook = data.playbook;
-		if (data.timeframeAny)
-			this.timeframeAny = data.timeframeAny;
-		if (data.timeframeTotal)
-			this.timeframeTotal = data.timeframeTotal;
-		this.uuid = data.uuid ?? uuidv4();
+		if (_.action)
+			this.action = _.action;
+		if (_.actionCallback)
+			this.actionCallback = _.actionCallback;
+		this.condition = _.condition;
+		this.chart = _.chart;
+		if (_.name)
+			this.name = _.name;
+		if (_.match)
+			this.match = _.match;
+		if (_.playbook)
+			this.playbook = _.playbook;
+		if (_.timeframeAny)
+			this.timeframeAny = _.timeframeAny;
+		if (_.timeframeTotal)
+			this.timeframeTotal = _.timeframeTotal;
+		this.uuid = _.uuid ?? uuidv4();
 	}
 }
 
@@ -114,9 +114,9 @@ export const Subscription: SubscriptionInterface = {
 	itemIndex: [],
 
 	despatch(
-		data: SubscriptionDespatchData,
+		_: SubscriptionDespatchData,
 	): void {
-		switch (data.event) {
+		switch (_.event) {
 
 			/**
 			 * A `Timeframe` has finished with results
@@ -128,7 +128,7 @@ export const Subscription: SubscriptionInterface = {
 					if (!item.timeframeAny)
 						continue;
 
-					let index = item.timeframeAny.findIndex(timeframe => timeframe.uuid === data.timeframe.uuid);
+					let index = item.timeframeAny.findIndex(timeframe => timeframe.uuid === _.timeframe.uuid);
 					// console.log(`index: ${index}`);
 					if (index < 0)
 						continue;
@@ -149,7 +149,7 @@ export const Subscription: SubscriptionInterface = {
 						let timeframe: TimeframeItem = item.timeframeAny[j];
 						let timeframeSignal: any = [];
 
-						let eventTimeframe = (timeframe.uuid === data.timeframe.uuid);
+						let eventTimeframe = (timeframe.uuid === _.timeframe.uuid);
 
 						for (let k = 0; k < timeframe.result.length; k++) {
 							let result: any = timeframe.result[k];
@@ -183,14 +183,14 @@ export const Subscription: SubscriptionInterface = {
 						// Test for new results
 						if (
 							timeframeSignal.length
-							&& data.lastState
+							&& _.lastState
 						) {
-							let index = data.lastState.resultIndex.findIndex(_name => _name === timeframe.name);
+							let index = _.lastState.resultIndex.findIndex(_name => _name === timeframe.name);
 							if (index >= 0) {
 
 								// Count number of current state results, not in last state
 								for (let k = 0; k < timeframeSignal.length; k++) {
-									if (data.lastState.result[index].indexOf(timeframeSignal[k]) < 0)
+									if (_.lastState.result[index].indexOf(timeframeSignal[k]) < 0)
 										newSignal++;
 								}
 							}
@@ -342,15 +342,15 @@ export const Subscription: SubscriptionInterface = {
 			}
 
 			default: {
-				Bot.log(`Unknown subscription event '${data.event}'`, Log.Warn);
+				Bot.log(`Unknown subscription event '${_.event}'`, Log.Warn);
 			}
 		}
 	},
 
 	new(
-		data: SubscriptionData,
+		_: SubscriptionData,
 	): SubscriptionItem {
-		let item = new SubscriptionItem(data);
+		let item = new SubscriptionItem(_);
 		let uuid = Bot.setItem(item);
 
 		this.item.push(item);

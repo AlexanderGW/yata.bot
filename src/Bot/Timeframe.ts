@@ -29,20 +29,20 @@ export class TimeframeItem implements TimeframeData {
 	windowTime: number = 0;
 
 	constructor (
-		data: TimeframeData,
+		_: TimeframeData,
 	) {
-		if (data.lastStartTime)
-			this.lastStartTime = data.lastStartTime;
-		if (data.intervalTime && data.intervalTime >= 1000)
-			this.intervalTime = data.intervalTime;
-		if (data.name)
-			this.name = data.name;
-		if (data.pollTime && data.pollTime >= 1000)
-			this.pollTime = data.pollTime;
-		this.strategy = data.strategy;
-		this.uuid = data.uuid ?? uuidv4();
-		if (data.windowTime && data.windowTime >= 1000)
-			this.windowTime = data.windowTime;
+		if (_.lastStartTime)
+			this.lastStartTime = _.lastStartTime;
+		if (_.intervalTime && _.intervalTime >= 1000)
+			this.intervalTime = _.intervalTime;
+		if (_.name)
+			this.name = _.name;
+		if (_.pollTime && _.pollTime >= 1000)
+			this.pollTime = _.pollTime;
+		this.strategy = _.strategy;
+		this.uuid = _.uuid ?? uuidv4();
+		if (_.windowTime && _.windowTime >= 1000)
+			this.windowTime = _.windowTime;
 	}
 
 	activate () {
@@ -148,9 +148,9 @@ export class TimeframeItem implements TimeframeData {
 
 export const Timeframe = {
 	new (
-		data: TimeframeData,
+		_: TimeframeData,
 	): TimeframeItem {
-		let item = new TimeframeItem(data);
+		let item = new TimeframeItem(_);
 		let uuid = Bot.setItem(item);
 
 		return Bot.getItem(uuid);

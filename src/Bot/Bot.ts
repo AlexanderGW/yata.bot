@@ -48,7 +48,7 @@ export type BotData = {
 		uuid: string,
 	) => any,
 	setItem: (
-		data: ItemBaseData,
+		_: ItemBaseData,
 	) => string
 };
 
@@ -180,12 +180,12 @@ export const Bot: BotData = {
 	 * @returns {string} The items UUID
 	 */
 	setItem (
-		data: ItemBaseData,
+		_: ItemBaseData,
 	): string {
 		let index: number = 0;
 
 		// Lookup existing item by `uuid`, for overwrite
-		index = this.itemIndex.findIndex((x: string) => x === data.uuid);
+		index = this.itemIndex.findIndex((x: string) => x === _.uuid);
 		
 		// Item `name` based overwriting (if enabled)
 		if (
@@ -193,25 +193,25 @@ export const Bot: BotData = {
 			&& process.env.BOT_ITEM_NAME_OVERWRITE === '1'
 			&& index < 0
 		)
-			index = this.itemNameIndex.findIndex((x: string) => x === data.name);
+			index = this.itemNameIndex.findIndex((x: string) => x === _.name);
 
 		// Reset existing item
 		if (index >= 0)
-			this.item[index] = data;
+			this.item[index] = _;
 		
 		// Store new item
 		else {
 			// let newIndex = this.item.length;
 			
 			// The `name` is optional, fallback to `uuid` if not set
-			if (!data.hasOwnProperty('name') || !data.name?.length)
-				data.name = data.uuid;
+			if (!_.hasOwnProperty('name') || !_.name?.length)
+				_.name = _.uuid;
 
-			this.item.push(data);
-			this.itemIndex.push(data.uuid);
-			this.itemNameIndex.push(data.name);
+			this.item.push(_);
+			this.itemIndex.push(_.uuid);
+			this.itemNameIndex.push(_.name);
 		}
 
-		return data.uuid;
+		return _.uuid;
 	},
 };

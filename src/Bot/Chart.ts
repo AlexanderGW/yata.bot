@@ -17,18 +17,18 @@ export const chartCandleFields = [
 ];
 
 export type ChartData = {
+	candleTime?: number, // Seconds
 	dataset?: ChartCandleData,
-	datasetFile?: string,
 	datasetEndTime?: number, // Milliseconds
+	datasetFile?: string,
+	datasetNextTime?: number, // Milliseconds
 	datasetStartTime?: number, // Milliseconds
 	datasetSyncTime?: number, // Milliseconds
 	datasetTimeField?: string,
 	datasetUpdateTime?: number, // Milliseconds
 	name?: string,
-	datasetNextTime?: number, // Milliseconds
 	pair: PairItem,
 	pollTime?: number, // Seconds
-	candleTime?: number, // Seconds
 	uuid?: string,
 };
 
@@ -48,46 +48,46 @@ export type ChartCandleData = {
 };
 
 export class ChartItem implements ChartData {
+	candleTime: number = 3600000; // One hour
 	dataset?: ChartCandleData;
-	datasetFile?: string;
 	datasetEndTime: number = 0;
+	datasetFile?: string;
+	datasetNextTime: number = 0;
 	datasetStartTime: number = 0;
 	datasetSyncTime: number = 0;
 	datasetTimeField: string = '';
 	datasetUpdateTime: number = 0;
 	name?: string;
-	datasetNextTime: number = 0;
 	pair: PairItem;
 	pollTime: number = 0;
-	candleTime: number = 3600000; // One hour
 	uuid: string;
 
 	constructor (
-		data: ChartData,
+		_: ChartData,
 	) {
-		this.dataset = data.dataset;
-		if (data.datasetFile)
-			this.datasetFile = data.datasetFile;
-		if (data.datasetEndTime)
-			this.datasetEndTime = data.datasetEndTime;
-		if (data.datasetStartTime)
-			this.datasetStartTime = data.datasetStartTime;
-		if (data.datasetSyncTime)
-			this.datasetSyncTime = data.datasetSyncTime;
-		if (data.datasetTimeField)
-			this.datasetTimeField = data.datasetTimeField;
-		if (data.datasetUpdateTime)
-			this.datasetUpdateTime = data.datasetUpdateTime;
-		if (data.name)
-			this.name = data.name;
-		if (data.datasetNextTime)
-			this.datasetNextTime = data.datasetNextTime;
-		this.pair = data.pair;
-		if (data.pollTime)
-			this.pollTime = data.pollTime;
-		if (data.candleTime)
-			this.candleTime = data.candleTime;
-		this.uuid = data.uuid ?? uuidv4();
+		this.dataset = _.dataset;
+		if (_.datasetFile)
+			this.datasetFile = _.datasetFile;
+		if (_.datasetEndTime)
+			this.datasetEndTime = _.datasetEndTime;
+		if (_.datasetStartTime)
+			this.datasetStartTime = _.datasetStartTime;
+		if (_.datasetSyncTime)
+			this.datasetSyncTime = _.datasetSyncTime;
+		if (_.datasetTimeField)
+			this.datasetTimeField = _.datasetTimeField;
+		if (_.datasetUpdateTime)
+			this.datasetUpdateTime = _.datasetUpdateTime;
+		if (_.name)
+			this.name = _.name;
+		if (_.datasetNextTime)
+			this.datasetNextTime = _.datasetNextTime;
+		this.pair = _.pair;
+		if (_.pollTime)
+			this.pollTime = _.pollTime;
+		if (_.candleTime)
+			this.candleTime = _.candleTime;
+		this.uuid = _.uuid ?? uuidv4();
 
 		if (this.datasetFile) {
 			const fs = require('fs');
@@ -105,7 +105,7 @@ export class ChartItem implements ChartData {
 					'utf8',
 					function (
 						err: object,
-						data: object
+						_: object
 					) {
 						if (err)
 							console.error(err);
@@ -215,12 +215,12 @@ export class ChartItem implements ChartData {
 	}
 
 	updateDataset (
-		data: ChartCandleData,
+		_: ChartCandleData,
 	) {
 		let finalData: ChartCandleData | undefined = this.dataset;
 
 		// Require OHLC
-		if (!data.open || !data.high || !data.low || !data.close)
+		if (!_.open || !_.high || !_.low || !_.close)
 			return Bot.log(`Incomplete OHLC dataset`, Log.Warn);
 
 		// Update existing dataset
@@ -248,7 +248,7 @@ export class ChartItem implements ChartData {
 
 
 			// Get the index of `datasetEndTime` in new dataset
-			let dataEndTimeIndex: number = data[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
+			let dataEndTimeIndex: number = _[this.datasetTimeField].lastIndexOf(this.datasetEndTime / 1000);
 
 			// Index not found, default to start of new dataset
 			if (dataEndTimeIndex < 0) {
@@ -270,14 +270,14 @@ export class ChartItem implements ChartData {
 			// Merge new dataset, into exisiting, using the offsets of `datasetEndTime`
 			for (
 				let i = dataEndTimeIndex;
-				i < data[this.datasetTimeField].length;
+				i < _[this.datasetTimeField].length;
 				i++
 			) {
 				for (let j in chartCandleFields) {
 					let field = chartCandleFields[j];
 					if (
-						data.hasOwnProperty(field)
-						&& data[field][i]
+						_.hasOwnProperty(field)
+						&& _[field][i]
 						&& finalData[field]
 					) {
 						let logLine = `Chart '${this.name}'; updateDataset; Mapping 'finalData[${field}][${datasetOffset}] = new[${field}][${i}]'`;
@@ -286,14 +286,14 @@ export class ChartItem implements ChartData {
 							logLine = `${logLine}; From '${finalData[field][datasetOffset]}'`;
 						}
 
-						logLine = `${logLine}; To '${data[field][i]}'`;
+						logLine = `${logLine}; To '${_[field][i]}'`;
 
 						Bot.log(
 							logLine,
 							Log.Verbose
 						);
 
-						finalData[field][datasetOffset] = data[field][i];
+						finalData[field][datasetOffset] = _[field][i];
 					}
 				}
 
@@ -303,7 +303,7 @@ export class ChartItem implements ChartData {
 		
 		// Replace dataset with new data
 		else
-			finalData = data;
+			finalData = _;
 
 		this.dataset = finalData;
 		this.datasetUpdateTime = Date.now();
@@ -312,9 +312,9 @@ export class ChartItem implements ChartData {
 
 export const Chart = {
 	new (
-		data: ChartData,
+		_: ChartData,
 	): ChartItem {
-		let item = new ChartItem(data);
+		let item = new ChartItem(_);
 		let uuid = Bot.setItem(item);
 
 		return Bot.getItem(uuid);

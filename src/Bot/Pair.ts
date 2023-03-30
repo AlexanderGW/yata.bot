@@ -28,19 +28,19 @@ export class PairItem implements PairData {
 	uuid: string; 
 
 	constructor (
-		data: PairData,
+		_: PairData,
 	) {
 		// TODO: Compare exchange on assets
-		this.a = data.a;
-		this.b = data.b;
-		this.exchange = data.exchange;
-		if (data.name)
-			this.name = data.name;
-		this.uuid = data.uuid ?? uuidv4();
+		this.a = _.a;
+		this.b = _.b;
+		this.exchange = _.exchange;
+		if (_.name)
+			this.name = _.name;
+		this.uuid = _.uuid ?? uuidv4();
 	}
 
 	setPrice (
-		data: PairPriceData
+		_: PairPriceData
 	) {
 		
 	}
@@ -48,9 +48,9 @@ export class PairItem implements PairData {
 
 export const Pair = {
 	new (
-		data: PairData,
+		_: PairData,
 	): PairItem {
-		let item = new PairItem(data);
+		let item = new PairItem(_);
 		let uuid = Bot.setItem(item);
 
 		return Bot.getItem(uuid);

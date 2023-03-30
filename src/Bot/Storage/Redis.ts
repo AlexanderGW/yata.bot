@@ -8,9 +8,9 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 	client: RedisClientType;
 
 	constructor (
-		data: StorageData,
+		_: StorageData,
 	) {
-		super(data);
+		super(_);
 
 		this.client = createClient({
 			url: 'redis://127.0.0.1:6379'
@@ -67,13 +67,13 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 	 */
 	async setItem (
 		name: string,
-		data: ItemBaseData,
+		_: ItemBaseData,
 	): Promise<string> {
 		try {
 			// Reset existing item
 			let index = this.itemIndex.indexOf(name);
 			if (index >= 0) {
-				this.item[index] = data;
+				this.item[index] = _;
 				
 				return this.itemIndex[index];
 			}
@@ -81,10 +81,10 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 			// Store new item
 			else {
 				// let newIndex = this.item.length;
-				this.item.push(data);
+				this.item.push(_);
 				this.itemIndex.push(name);	
 
-				const value = JSON.stringify(data);
+				const value = JSON.stringify(_);
 				await this.client.set(name, value);
 
 				return name;

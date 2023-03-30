@@ -3,9 +3,9 @@ import { StorageBase, StorageData, StorageInterface } from "../Storage";
 
 export class MemoryStorageItem extends StorageBase implements StorageInterface {
 	constructor (
-		data: StorageData,
+		_: StorageData,
 	) {
-		super(data);
+		super(_);
 	}
 
 	/**
@@ -44,13 +44,13 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 	 */
 	async setItem (
 		name: string,
-		data: ItemBaseData,
+		_: ItemBaseData,
 	): Promise<string> {
 		try {
 			// Reset existing item
-			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === data.uuid);
+			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === _.uuid);
 			if (index >= 0) {
-				this.item[index] = data;
+				this.item[index] = _;
 				
 				return this.itemIndex[index];
 			}
@@ -58,10 +58,10 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 			// Store new item
 			else {
 				// let newIndex = this.item.length;
-				this.item.push(data);
-				this.itemIndex.push(data.uuid);	
+				this.item.push(_);
+				this.itemIndex.push(_.uuid);	
 
-				return data.uuid;
+				return _.uuid;
 			}
 		} catch (err) {
 			Bot.log(err as string, Log.Err);
