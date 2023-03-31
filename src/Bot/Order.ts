@@ -2,33 +2,41 @@ import { Bot } from "./Bot";
 import { PairItem } from "./Pair";
 import { PositionItem } from "./Position";
 import { v4 as uuidv4 } from 'uuid';
+import { ExchangeItem } from "./Exchange";
 
 export enum OrderAction {
-	Cancel = 0,
-	Create = 1,
-	Edit = 2,
+	Close = 'Close',
+	Edit = 'Edit',
+	None = 'None',
+	Open = 'Open',
+	Sync = 'Sync',
 }
 
 export enum OrderSide {
-	Buy = 1,
-	Sell = 0,
+	Buy = 'Buy',
+	Sell = 'Sell',
 };
 
 export enum OrderStatus {
-	Cancelled = 0,
-	Open = 1,
+	Close = 'Close',
+	Edit = 'Edit',
+	Open = 'Open',
+	Pending = 'Pending',
+	Unknown = 'Unknown',
 };
 
 export enum OrderType {
-	Market = 1,
-	Limit = 2,
-	TakeProfit = 4,
-	StopLoss = 8,
+	Market = 'Market',
+	Limit = 'Limit',
+	TakeProfit = 'TakeProfit',
+	StopLoss = 'StopLoss',
 };
 
 export type OrderData = {
-	confirmed?: boolean,
+	confirmStatus?: OrderStatus,
+	confirmTime?: number,
 	dryrun?: boolean,
+	exchange?: ExchangeItem,
 	name?: string,
 	pair: PairItem,
 	position?: PositionItem,
@@ -42,12 +50,15 @@ export type OrderData = {
 	stopPrice?: string,
 	transactionId?: string[],
 	type?: OrderType,
+	updateTime?: number,
 	uuid?: string,
 }
 
 export class OrderItem implements OrderData {
-	confirmed?: boolean = false;
+	confirmStatus: OrderStatus = OrderStatus.Unknown;
+	confirmTime: number = 0;
 	dryrun: boolean = true;
+	exchange?: ExchangeItem;
 	name?: string;
 	pair: PairItem;
 	position?: PositionItem;
@@ -57,17 +68,18 @@ export class OrderItem implements OrderData {
 	referenceId?: number = 0;
 	related?: OrderItem;
 	side?: OrderSide = OrderSide.Buy;
-	status?: OrderStatus = OrderStatus.Open;
+	status: OrderStatus = OrderStatus.Unknown;
 	stopPrice?: string = '0';
-	transactionId?: string[] = [];
+	transactionId: string[] = [];
 	type?: OrderType = OrderType.Market;
+	updateTime: number = 0;
 	uuid: string;
 
 	constructor (
 		_: OrderData,
 	) {
-		if (_.hasOwnProperty('confirmed'))
-			this.confirmed = _.confirmed ? true : false;
+		if (_.confirmTime)
+			this.confirmTime = _.confirmTime;
 		if (_.hasOwnProperty('dryrun'))
 			this.dryrun = _.dryrun ? true : false;
 		else if (process.env.BOT_DRYRUN === '0')
@@ -75,6 +87,8 @@ export class OrderItem implements OrderData {
 		if (_.name)
 			this.name = _.name;
 		this.pair = _.pair;
+		if (_.hasOwnProperty('position'))
+			this.position = _.position;
 		if (_.hasOwnProperty('position'))
 			this.position = _.position;
 		if (_.hasOwnProperty('price'))
@@ -88,13 +102,16 @@ export class OrderItem implements OrderData {
 		if (_.hasOwnProperty('side'))
 			this.side = _.side;
 		if (_.hasOwnProperty('status'))
-		this.status = _.status;
+		if (_.status)
+			this.status = _.status;
 		if (_.hasOwnProperty('stopPrice'))
 			this.stopPrice = _.stopPrice;
-		if (_.hasOwnProperty('transactionId'))
+		if (_.transactionId)
 			this.transactionId = _.transactionId;
 		if (_.hasOwnProperty('type'))
 			this.type = _.type;
+		if (_.updateTime)
+			this.updateTime = _.updateTime;
 		this.uuid = _.uuid ?? uuidv4();
 
 		// TODO: Sync exchange order, position etc
@@ -104,74 +121,114 @@ export class OrderItem implements OrderData {
 		return this.quantity === this.quantityFilled;
 	}
 
-	async execute (
-		action: OrderAction,
-	) {
+	determineAction () {
+
+		// Has no transaction ID
+		if (
+			typeof this.transactionId === 'undefined'
+			|| !this.transactionId.length
+		) {
+			switch (this.status) {
+				case OrderStatus.Open:
+					return OrderAction.Open;
+				default:
+					return OrderAction.Sync;
+			}
+		}
+		
+		// Order has a transaction ID
+		else {
+			switch (this.status) {
+				case OrderStatus.Close:
+					return OrderAction.Close;
+				case OrderStatus.Edit:
+					return OrderAction.Edit;
+			}
+		}
+
+		return OrderAction.None;
+	}
+
+	async execute () {
 		if (
 			!this.quantity
 			|| this.quantity === '0'
 		)
-			throw (`Order '${this.name}' quantity is empty`);
+			throw (`Order '${this.name}'; Requires a non-zero quantity`);
+
+		if (
+			this.type === OrderType.Limit
+			&& Number.parseFloat(this.price as string) === 0
+		)
+			throw (`Order '${this.name}'; Defined as a limit, requires a non-zero price`);
 
 		// Build log message
 		let logParts: string[] = [];
 
 		if (this.dryrun)
-			logParts.push('Dry-run:');
+			logParts.push('DRYRUN');
 
 		logParts.push(`Order '${this.name}'`);
-		logParts.push(`${this.pair.exchange.name}:${this.pair.a.symbol}-${this.pair.b.symbol};`);
-		logParts.push(`action: ${action};`);
-		logParts.push(`type: ${this.type};`);
-		logParts.push(`side: ${this.side};`);
-		logParts.push(`quantity: ${this.quantity};`);
-		logParts.push(`price: ${this.price}`);
+		logParts.push(`${this.pair.exchange.name}:${this.pair.a.symbol}-${this.pair.b.symbol}`);
+		logParts.push(`State: ${this.status};`);
+		logParts.push(`Type '${this.type}'`);
+		logParts.push(`Side '${this.side}'`);
+		logParts.push(`Qty '${this.quantity}'`);
+		logParts.push(`Price '${this.price}'`);
 		// logParts.push(`stopPrice: ${this.stopPrice}`);
 
-		Bot.log(logParts.join(' '));
+		Bot.log(logParts.join('; '));
 
 		let orderResponse: OrderItem = this;
-		let logMessage: string = '';
+
+		let logLine: string = '';
 				
 		// Dry-run testing
-		if (this.dryrun) {
-			logMessage = `Dry-run:`;
-		}
+		if (this.dryrun)
+			logLine = `DRYRUN`;
+
+		logLine = `Order '${this.name}'; Exchange '${this.pair.exchange.name}'`;
+
+		// Determine next action with exchange
+		const action = this.determineAction();
 
 		switch (action) {
-			case OrderAction.Cancel : {
-				Bot.log(`${logMessage} Order '${this.name}' cancel on '${this.pair.exchange.name}'`);
-				orderResponse = await this.pair.exchange.cancelOrder(this);
+			case OrderAction.Close: {
+				Bot.log(`${logLine}; Close`);
+				orderResponse = await this.pair.exchange.closeOrder(this);
 
 				break;
 			}
 
-			case OrderAction.Create : {
-				Bot.log(`${logMessage} Order '${this.name}' create on '${this.pair.exchange.name}'`);
-				orderResponse = await this.pair.exchange.createOrder(this);
+			case OrderAction.Open: {
+				Bot.log(`${logLine}; Open`);
+				orderResponse = await this.pair.exchange.openOrder(this);
 
 				break;
 			}
 
-			case OrderAction.Edit : {
-				Bot.log(`${logMessage} Order '${this.name}' edited on '${this.pair.exchange.name}'`);
+			case OrderAction.Edit: {
+				Bot.log(`${logLine}; Edit`);
 				orderResponse = await this.pair.exchange.editOrder(this);
 
 				break;
 			}
-		}
-		
-		// Order response indicates confirmation
-		if (orderResponse.confirmed === true) {
-			this.confirmed = true;
-			logMessage = `Order '${this.name}' confirmed on '${this.pair.exchange.name}'`;
-				
-			// Dry-run testing
-			if (this.dryrun) {
-				logMessage = `Dry-run: ${logMessage}`;
+
+			case OrderAction.Sync: {
+				Bot.log(`${logLine}; Sync`);
+				orderResponse = await this.pair.exchange.syncOrder(this);
+
+				break;
 			}
 
-			Bot.log(logMessage);
+			// `OrderStatus.None` to do
+		}
+		
+		// Order response contains higher confirmation time
+		if (orderResponse.confirmTime >= this.confirmTime) {
+			Bot.log(`${logLine}; Confirmed`);
+
+			// TODO: Log changed order values
 		}
 
 		return orderResponse;
@@ -199,5 +256,14 @@ export const Order = {
 		let uuid = Bot.setItem(item);
 
 		return Bot.getItem(uuid);
-	}
+	},
+
+	// sync (): void {
+	// 	for (let itemIdx in Bot.item) {
+	// 		const item = Bot.item[itemIdx];
+	// 		if (item instanceof OrderItem) {
+	// 			item.execute();
+	// 		}
+	// 	}
+	// },
 };

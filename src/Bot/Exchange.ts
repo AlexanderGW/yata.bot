@@ -18,11 +18,11 @@ export interface ExchangeInterface {
 		chart: ChartItem,
 	) => Promise<void>;
 
-	cancelOrder: (
+	closeOrder: (
 		order: OrderItem,
 	) => Promise<OrderItem>;
 
-	createOrder: (
+	openOrder: (
 		order: OrderItem,
 	) => Promise<OrderItem>;
 
@@ -59,29 +59,44 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		this.uuid = _.uuid ?? uuidv4();
 	}
 
-	async cancelOrder (
-		order: OrderItem,
+	async closeOrder (
+		_: OrderItem,
 	) {
-		order.status = OrderStatus.Cancelled;
-		Bot.log(`Order '${order.name}' cancelled (paper) on exchange '${order.pair.exchange.name}'`);
+		let order = _;
+		order.status = OrderStatus.Close;
+		order.confirmTime = Date.now();
+		Bot.log(`Order '${order.name}'; Close; Paper`);
 		return order;
 	}
 
-	async createOrder (
-		order: OrderItem,
+	async openOrder (
+		_: OrderItem,
 	) {
-		order.confirmed = true;
-		Bot.log(`Order '${order.name}' created (paper) on exchange '${order.pair.exchange.name}'`);
+		let order = _;
+		order.confirmStatus = OrderStatus.Open;
+		order.confirmTime = Date.now();
+		Bot.log(`Order '${order.name}'; Open; Paper`);
 		return order;
 	}
 
 	async editOrder (
-		order: OrderItem,
+		_: OrderItem,
 	) {
-		let orderResult: OrderItem = order;
-		orderResult.status = OrderStatus.Cancelled;
-		Bot.log(`Order '${order.name}' edited (paper) on exchange '${order.pair.exchange.name}'`);
-		return orderResult;
+		let order = _;
+		order.confirmStatus = OrderStatus.Edit;
+		order.confirmTime = Date.now();
+		Bot.log(`Order '${order.name}'; Edit; Paper`);
+		return order;
+	}
+
+	async syncOrder (
+		_: OrderItem,
+	) {
+		let order = _;
+		order.confirmStatus = OrderStatus.Unknown;
+		order.confirmTime = Date.now();
+		Bot.log(`Order '${_.name}'; Sync; Paper`);
+		return order;
 	}
 
 	compat (

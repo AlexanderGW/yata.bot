@@ -41,7 +41,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		return symbol;
 	}
 
-	async createOrder (
+	async openOrder (
 		order: OrderItem,
 	) {
 		let orderResult: OrderItem = order;
@@ -55,7 +55,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 			// Set empty `referenceId` as current time
 			if (order.referenceId === 0) {
-				order.referenceId = Math.floor(Date.now() / 1000);
+				order.referenceId = Math.floor(Date.now());
 			}
 
 			let responseJson = await this.handle?.api(
@@ -98,24 +98,22 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 						Bot.log(responseJson.error[i], Log.Err);
 					}
 				}
-
-				orderResult.confirmed = false;
 				
 				// Confirmed
 				if (responseJson.result.count > 0) {
-					orderResult.confirmed = true;
-					orderResult.status = OrderStatus.Open;
+					orderResult.confirmStatus = OrderStatus.Open;
+					orderResult.confirmTime = Date.now();
 					orderResult.transactionId = responseJson.result.txid;
 				}
 			}
 		} catch (error) {
-			console.error(error);
+			Bot.log(`Order '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
 		}
 
 		return orderResult;
 	}
 
-	async cancelOrder (
+	async closeOrder (
 		order: OrderItem,
 	) {
 		let orderResult: OrderItem = order;
@@ -124,7 +122,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			let responseJson = await this.handle?.api(
 
 				// Type
-				'CancelOrder',
+				'CloseOrder',
 
 				// Options
 				{
@@ -144,19 +142,20 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					}
 				}
 
-				orderResult.confirmed = false;
-				
 				// Response contains a count of one, with no pending state
 				if (
-					responseJson.result.count === 1
-					&& responseJson.result.pending === false
+					responseJson.result.pending === true
+					|| responseJson.result.count === 0
 				) {
-					orderResult.confirmed = true;
-					orderResult.status = OrderStatus.Cancelled;
+					orderResult.confirmStatus = OrderStatus.Pending;
+				} else {
+					orderResult.confirmStatus = OrderStatus.Close;
 				}
+
+				orderResult.confirmTime = Date.now();
 			}
 		} catch (error) {
-			console.error(error);
+			Bot.log(`Order '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
 		}
 
 		return orderResult;
@@ -176,7 +175,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 			// Set empty `referenceId` as current time
 			if (order.referenceId === 0) {
-				order.referenceId = Math.floor(Date.now() / 1000);
+				order.referenceId = Math.floor(Date.now());
 			}
 
 			let responseJson = await this.handle?.api(
@@ -223,17 +222,22 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					}
 				}
 
-				orderResult.confirmed = false;
+				// Get latest transaction ID index
+				let lastTransactionIdx = 0;
+				if (order.transactionId?.length) {
+					lastTransactionIdx = order.transactionId.length - 1;
+				}
 
 				// Response carries previous, new foreign 
 				// transaction ID, and status is `Ok`
 				if (
-					responseJson.result.originaltxid === order.transactionId
+					responseJson.result.originaltxid === order.transactionId[lastTransactionIdx]
 					&& responseJson.result.txid
 					&& responseJson.result.status === 'Ok'
 				) {
-					orderResult.confirmed = true;
-					orderResult.transactionId = responseJson.result.txid;
+					orderResult.confirmStatus = OrderStatus.Edit;
+					orderResult.confirmTime = Date.now();
+					orderResult.transactionId?.push(responseJson.result.txid);
 				}
 
 				// Throw error
@@ -243,7 +247,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 			}
 		} catch (error) {
-			console.error(error);
+			Bot.log(`Order '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
 		}
 
 		return orderResult;
