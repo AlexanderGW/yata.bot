@@ -23,10 +23,8 @@ import {
 	Rsi14 as analysisRsi14,
 	Sma20 as analysisSma20
 } from '../src/Helper/Analysis';
-import { Position, PositionItem } from '../src/Bot/Position';
-import { Order, OrderAction, OrderItem, OrderSide, OrderType } from '../src/Bot/Order';
 import { Exchange, ExchangeItem } from '../src/Bot/Exchange';
-import { Subscription, SubscriptionData } from '../src/Bot/Subscription';
+import { Subscription, SubscriptionData, SubscriptionEvent } from '../src/Bot/Subscription';
 
 const fs = require('fs');
 
@@ -183,6 +181,9 @@ describe('Backtest dataset 1', () => {
                     ['total', '>=', '0'],
                 ],
 
+                // 
+                match: 'all',
+
                 // A friendly name...
                 name: 'botSubscriptionActionCallback',
 
@@ -192,7 +193,16 @@ describe('Backtest dataset 1', () => {
                 ],
             });
 
+            // Execute the timeframe
             timeframe.execute();
+
+            // Send a despatch to subscribers, indicating the timeframe has results
+            Subscription.despatch({
+                event: SubscriptionEvent.TimeframeResult,
+
+                // The timeframe context
+                timeframe: timeframe,
+            });
         })
 
         .then(
@@ -299,7 +309,7 @@ describe('Backtest dataset 1', () => {
             // Default execute once. Specify a time to run every interval.
             intervalTime: 0,
 
-            // last 100 days of the dataset
+            // last 50 days of the dataset
             windowTime: 86400000 * 50,
 
             // Strategies to run
