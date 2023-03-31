@@ -9,8 +9,10 @@ Following a concept of timeframes with strategies, which look for scenarios (def
 - Spot trading only (could expand on this later)
 
 ## Todo
-- In-progress: JSON/YAML support for configurations
-- In-progress: Expand `Bot.setItem` and `Bot.getItem` storage interface (File, Memory, Redis, MongoDB, etc)
+- In-progress
+  - JSON/YAML support for configurations
+  - Expand storage interfacing (File, Memory, Redis, MongoDB, etc)
+  - State persistence: Timeframe results, chart datasets, orders, asset positions, etc.
 - Support for web3 exchanges
 - Scenario condition percentage values (changes from previous datapoints)
 - Unify log formatting for better data ingestion
