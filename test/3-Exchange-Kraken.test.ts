@@ -8,7 +8,7 @@ import { Bot, Log } from '../src/Bot/Bot';
 import { Pair, PairItem } from '../src/Bot/Pair';
 
 import { Position, PositionItem } from '../src/Bot/Position';
-import { Order, OrderAction, OrderItem, OrderSide, OrderType } from '../src/Bot/Order';
+import { Order, OrderAction, OrderItem, OrderSide, OrderStatus, OrderType } from '../src/Bot/Order';
 import { Exchange, ExchangeItem } from '../src/Bot/Exchange';
 
 const fs = require('fs');
@@ -26,9 +26,9 @@ if (
         let position1: PositionItem;
         let order1: OrderItem;
 
-        let order1CreateMarketBuy: OrderItem;
-        let order1CancelLimitBuy: OrderItem;
-        let order1CreateLimitBuy: OrderItem;
+        let order1OpenMarketBuy: OrderItem;
+        let order1CloseLimitBuy: OrderItem;
+        let order1OpenLimitBuy: OrderItem;
         let order1EditLimitBuy: OrderItem;
     
         before(async function () {
@@ -40,24 +40,24 @@ if (
                 secret: process.env.KRAKEN_CLIENT_SECRET,
             });
     
-            // Create ETH asset
+            // ETH asset
             assetEth = Asset.new({
                 symbol: 'ETH'
             });
     
-            // Create BTC asset
+            // BTC asset
             assetBtc = Asset.new({
                 symbol: 'BTC'
             });
     
-            // Create ETH BTC pair of assets
+            // ETH BTC pair of assets
             pairEthBtcKraken = Pair.new({
                 a: assetEth,
                 b: assetBtc,
                 exchange: exchangeKraken,
             });
     
-            // Create an existing position on exchange
+            // Existing position on exchange
             position1 = Position.new({
                 pair: pairEthBtcKraken,
     
@@ -66,39 +66,44 @@ if (
             });
     
             order1 = Order.new({
-    
+
                 // Percentages can only be used if a `position` is provided, otherwise e.g. 0.01
                 // For ETHBTC, this would be the quantity of ETH
                 quantity: '10%',
-    
-                // NOTE: Ensure we are only testing orders, regardless of `BOT_DRYRUN`
+
+                // NOTE: Ensure we are only testing orders
+                // `BOT_DRYRUN=1` environment (will set all orders to default dry-run)
                 dryrun: true,
-    
+
                 // The trading pair, i.e. ETH/BTC on Kraken
                 pair: pairEthBtcKraken,
-    
+
                 // An optional `Position`
                 position: position1,
-    
+
                 // Either `OrderSide.Buy`, or `OrderSide.Sell`
                 side: OrderSide.Buy,
-    
+
+                // Order `confirmStatus` response should match this, with a new `confirmTime`
+                status: OrderStatus.Open,
+
                 // Default: Order type is `OrderType.Market`
-                // type: OrderType.Market,
+                type: OrderType.Market,
             });
         });
-    
+
         it('should validate market buy order creation', async () => {
-    
+
             // Execute market buy order create on exchange
             try {
-                // NOTE: `order1` has been defined above as a market buy order
-    
+
                 // Response will contain original `order1` with any changes, such as 
-                // the exchange side transaction ID, and `confirmed` should be `true` if successful
+                // the exchange side transaction ID, and updated `confirmTime`, and `confirmState` if successful
                 // For the purposes of testing, we'll store the response in its own variable
-                order1CreateMarketBuy = await order1.execute(OrderAction.Create);
-                console.log(order1CreateMarketBuy);
+                order1OpenMarketBuy = await order1.execute();
+
+                // Check order confirmation
+                console.log(order1OpenMarketBuy);
             } catch (err) {
                 Bot.log(err as string, Log.Err);
             }
@@ -108,23 +113,25 @@ if (
     
             // Execute limit buy order create on exchange
             try {
-                // Modifying `order1`
+
                 // Price. For ETHBTC, This would be at the price of BTC
                 order1.price = '0.01';
-        
-                // Type of order 
+
+                // Type of order
                 order1.type = OrderType.Limit;
-    
+
                 // Response will contain original `order1` with any changes, such as 
-                // the exchange side transaction ID, and `confirmed` should be `true` if successful
+                // the exchange side transaction ID, and updated `confirmTime`, and `confirmState` if successful
                 // For the purposes of testing, we'll store the response in its own variable
-                order1CreateLimitBuy = await order1.execute(OrderAction.Create);
-                console.log(order1CreateLimitBuy);
+                order1OpenLimitBuy = await order1.execute();
+
+                // Check order confirmation
+                console.log(order1OpenLimitBuy);
             } catch (err) {
                 Bot.log(err as string, Log.Err);
             }
         });
-    
+
         // it('should validate limit buy order edit', async () => {
 
         //     // Execute limit buy order edit on exchange
@@ -132,18 +139,18 @@ if (
         //         // Modifying `order1`
 
         //         // Price. For ETHBTC, This would be at the price of BTC
-        //         order1CreateLimitBuy.price = '0.009';
+        //         order1OpenLimitBuy.price = '0.009';
 
         //         // Type of order 
-        //         order1CreateLimitBuy.type = OrderType.Limit;
+        //         order1OpenLimitBuy.type = OrderType.Limit;
 
         //         // Call requires `transactionId` value
-        //         order1CreateLimitBuy.transactionId = ['false'];
+        //         order1OpenLimitBuy.transactionId = ['false'];
 
         //         // Response will contain original `order1` with any changes, such as 
         //         // the exchange side transaction ID, and `confirmed` should be `true` if successful
         //         // For the purposes of testing, we'll store the response in its own variable
-        //         order1EditLimitBuy = await order1CreateLimitBuy.execute(OrderAction.Edit);
+        //         order1EditLimitBuy = await order1OpenLimitBuy.execute(OrderAction.Edit);
         //         console.log(order1EditLimitBuy);
         //     } catch (err) {
         //         Bot.log(err as string, Log.Err);
@@ -157,13 +164,13 @@ if (
         //         // Modifying `order1`
 
         //         // Call requires `transactionId` value
-        //         order1CreateLimitBuy.transactionId = ['false'];
+        //         order1OpenLimitBuy.transactionId = ['false'];
 
         //         // Response will contain original `order1` with any changes, such as 
         //         // the exchange side transaction ID, and `confirmed` should be `true` if successful
         //         // For the purposes of testing, we'll store the response in its own variable
-        //         order1CancelLimitBuy = await order1CreateLimitBuy.execute(OrderAction.Cancel);
-        //         console.log(order1CancelLimitBuy);
+        //         order1CloseLimitBuy = await order1OpenLimitBuy.execute(OrderAction.Close);
+        //         console.log(order1CloseLimitBuy);
         //     } catch (err) {
         //         Bot.log(err as string, Log.Err);
         //     }

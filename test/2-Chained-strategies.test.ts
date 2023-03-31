@@ -24,7 +24,7 @@ import {
 	Sma20 as analysisSma20
 } from '../src/Helper/Analysis';
 import { Position } from '../src/Bot/Position';
-import { Order, OrderAction, OrderSide, OrderType } from '../src/Bot/Order';
+import { Order, OrderAction, OrderSide, OrderStatus, OrderType } from '../src/Bot/Order';
 import { Exchange } from '../src/Bot/Exchange';
 import { Subscription, SubscriptionData } from '../src/Bot/Subscription';
 
@@ -191,17 +191,18 @@ describe('Backtest dataset 1', () => {
                 subscribe: SubscriptionData
             ) => {
 
-                // Create an order, ready to be executed on exchange
+                // Create and execute an open order on exchange
                 try {
                     let order1 = Order.new({
-                        quantity: '10%', // of provided position,
-                        side: OrderSide.Buy,
                         pair: pairEthBtcKraken,
                         position: pos1,
                         price: '0.05',
+                        quantity: '10%', // of provided position,
+                        side: OrderSide.Buy,
+                        status: OrderStatus.Open,
                         type: OrderType.Limit,
                     });
-                    order1.execute(OrderAction.Create);
+                    order1.execute();
                 } catch (err) {
                     Bot.log(err as string);
                 }
