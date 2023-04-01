@@ -15,6 +15,7 @@ export enum OrderAction {
 export enum OrderSide {
 	Buy = 'Buy',
 	Sell = 'Sell',
+	Unknown = 'Unknown',
 };
 
 export enum OrderStatus {

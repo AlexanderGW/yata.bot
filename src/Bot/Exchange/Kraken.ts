@@ -321,7 +321,20 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 						if (transaction.starttm)
 							orderResponse.startTime = transaction.starttm;
 						
-						// Collect response status
+						// Order side
+						switch (transaction.descr.type) {
+							case 'buy':
+								orderResponse.side = OrderSide.Buy;
+								break;
+							case 'sell':
+								orderResponse.side = OrderSide.Sell;
+								break;
+							default:
+								orderResponse.side = OrderSide.Unknown;
+								break;
+						}
+
+						// Order status
 						switch (transaction.status) {
 							case 'canceled':
 								orderResponse.status = OrderStatus.Cancel;
@@ -343,8 +356,8 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 								break;
 						}
 
-						// Collect response type
-						switch (transaction.status) {
+						// Order type
+						switch (transaction.descr.ordertype) {
 							case 'limit':
 								orderResponse.type = OrderType.Limit;
 								break;
