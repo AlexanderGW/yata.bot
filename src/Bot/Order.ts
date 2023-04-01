@@ -153,7 +153,9 @@ export class OrderItem implements OrderData {
 		return OrderAction.None;
 	}
 
-	async execute () {
+	async execute (
+		_?: OrderAction
+	) {
 		if (
 			!this.quantity
 			|| this.quantity === '0'
@@ -194,7 +196,7 @@ export class OrderItem implements OrderData {
 		logLine = `Order '${this.name}'; Exchange '${this.pair.exchange.name}'`;
 
 		// Determine next action with exchange
-		const action = this.nextAction();
+		const action = _ ?? this.nextAction();
 
 		switch (action) {
 			case OrderAction.Close:
