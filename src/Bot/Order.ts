@@ -33,6 +33,7 @@ export enum OrderType {
 	Limit = 'Limit',
 	TakeProfit = 'TakeProfit',
 	StopLoss = 'StopLoss',
+	Unknown = 'Unknown',
 };
 
 export type OrderData = {
@@ -68,7 +69,7 @@ export type OrderExchangeReponseData = {
 	quantity?: string,
 	quantityFilled?: string,
 	referenceId?: number | string,
-	responseStatus?: OrderStatus,
+	status?: OrderStatus,
 	responseTime?: number,
 	side?: OrderSide,
 	startTime?: number,
@@ -238,7 +239,7 @@ export class OrderItem implements OrderData {
 				orderResponse.responseTime
 				&& orderResponse.responseTime > this.responseTime
 			) {
-				logParts.push(`Confirmed '${orderResponse.responseStatus},${orderResponse.responseTime}'`);
+				logParts.push(`Confirmed '${orderResponse.status},${orderResponse.responseTime}'`);
 			}
 
 			// Log order response values

@@ -63,7 +63,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		_: OrderItem,
 	) {
 		const orderResponse: OrderExchangeReponseData = {
-			responseStatus: OrderStatus.Close,
+			status: OrderStatus.Close,
 			responseTime: Date.now(),
 		};
 		Bot.log(`Order '${_.name}'; Close; Paper`);
@@ -74,7 +74,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		_: OrderItem,
 	) {
 		const orderResponse: OrderExchangeReponseData = {
-			responseStatus: OrderStatus.Open,
+			status: OrderStatus.Open,
 			responseTime: Date.now(),
 		};
 		Bot.log(`Order '${_.name}'; Open; Paper`);
@@ -85,7 +85,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		_: OrderItem,
 	) {
 		const orderResponse: OrderExchangeReponseData = {
-			responseStatus: OrderStatus.Edit,
+			status: OrderStatus.Edit,
 			responseTime: Date.now(),
 		};
 		Bot.log(`Order '${_.name}'; Edit; Paper`);
@@ -96,7 +96,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		_: OrderItem,
 	) {
 		const orderResponse: OrderExchangeReponseData = {
-			responseStatus: OrderStatus.Unknown,
+			status: OrderStatus.Unknown,
 			responseTime: Date.now(),
 		};
 		Bot.log(`Order '${_.name}'; Sync; Paper`);
