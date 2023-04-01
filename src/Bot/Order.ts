@@ -1,4 +1,4 @@
-import { Bot } from "./Bot";
+import { Bot, Log } from "./Bot";
 import { PairItem } from "./Pair";
 import { PositionItem } from "./Position";
 import { v4 as uuidv4 } from 'uuid';
@@ -20,6 +20,7 @@ export enum OrderSide {
 export enum OrderStatus {
 	Close = 'Close',
 	Edit = 'Edit',
+	Error = 'Error',
 	Open = 'Open',
 	Pending = 'Pending',
 	Unknown = 'Unknown',
@@ -121,28 +122,31 @@ export class OrderItem implements OrderData {
 		return this.quantity === this.quantityFilled;
 	}
 
-	determineAction () {
+	nextAction () {
 
-		// Has no transaction ID
-		if (
-			typeof this.transactionId === 'undefined'
-			|| !this.transactionId.length
-		) {
-			switch (this.status) {
-				case OrderStatus.Open:
-					return OrderAction.Open;
-				default:
-					return OrderAction.Sync;
+		// Confirmed status does not match status, test for next action
+		if (this.confirmStatus !== this.status) {
+
+			// Has no transaction ID
+			if (
+				!this.transactionId.length
+			) {
+				switch (this.status) {
+					case OrderStatus.Open:
+						return OrderAction.Open;
+				}
 			}
-		}
-		
-		// Order has a transaction ID
-		else {
-			switch (this.status) {
-				case OrderStatus.Close:
-					return OrderAction.Close;
-				case OrderStatus.Edit:
-					return OrderAction.Edit;
+			
+			// Order has a transaction ID
+			else {
+				switch (this.status) {
+					case OrderStatus.Close:
+						return OrderAction.Close;
+					case OrderStatus.Edit:
+						return OrderAction.Edit;
+					default:
+						return OrderAction.Sync;
+				}
 			}
 		}
 
@@ -190,38 +194,32 @@ export class OrderItem implements OrderData {
 		logLine = `Order '${this.name}'; Exchange '${this.pair.exchange.name}'`;
 
 		// Determine next action with exchange
-		const action = this.determineAction();
+		const action = this.nextAction();
 
 		switch (action) {
-			case OrderAction.Close: {
+			case OrderAction.Close:
 				Bot.log(`${logLine}; Close`);
 				orderResponse = await this.pair.exchange.closeOrder(this);
-
 				break;
-			}
 
-			case OrderAction.Open: {
+			case OrderAction.Open:
 				Bot.log(`${logLine}; Open`);
 				orderResponse = await this.pair.exchange.openOrder(this);
-
 				break;
-			}
 
-			case OrderAction.Edit: {
+			case OrderAction.Edit:
 				Bot.log(`${logLine}; Edit`);
 				orderResponse = await this.pair.exchange.editOrder(this);
-
 				break;
-			}
 
-			case OrderAction.Sync: {
+			case OrderAction.Sync:
 				Bot.log(`${logLine}; Sync`);
 				orderResponse = await this.pair.exchange.syncOrder(this);
-
 				break;
-			}
 
-			// `OrderStatus.None` to do
+			default:
+				Bot.log(`${logLine}; None`, Log.Verbose);
+				break;
 		}
 		
 		// Order response contains higher confirmation time
