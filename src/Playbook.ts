@@ -418,14 +418,14 @@ dotenv.config();
 	// Handle existing playbook state
 	if (lastPlaybookState) {
 
-		// Prime chart datasets
-		if (lastPlaybookState.chart.datasetIndex.length) {
-			for (let chartIdx in lastPlaybookState.chart.datasetIndex) {
+		// Prime chart datasets, if available
+		if (lastPlaybookState.chart?.dataIndex?.length) {
+			for (let chartIdx in lastPlaybookState.chart.dataIndex) {
 
 				// Add dataset to chart
-				const chart: ChartItem = Bot.getItem(lastPlaybookState.chart.datasetIndex[chartIdx]);
-				if (chart && lastPlaybookState.chart.dataset[chartIdx]) {
-					chart.updateDataset(lastPlaybookState.chart.dataset[chartIdx]);
+				const chart: ChartItem = Bot.getItem(lastPlaybookState.chart.dataIndex[chartIdx]);
+				if (chart && lastPlaybookState.chart.data[chartIdx]) {
+					chart.updateDataset(lastPlaybookState.chart.data[chartIdx]);
 					chart.refreshDataset();
 				}
 			}
@@ -436,12 +436,16 @@ dotenv.config();
 	else {
 		lastPlaybookState = {
 			timeframe: {
-				result: [],
-				resultIndex: [],
+				data: [],
+				dataIndex: [],
 			},
 			chart: {
-				dataset: [],
-				datasetIndex: [],
+				data: [],
+				dataIndex: [],
+			},
+			order: {
+				data: [],
+				dataIndex: [],
 			},
 			updateTime: 0
 		};
@@ -451,12 +455,16 @@ dotenv.config();
 
 	let nextPlaybookState: BotStateType = {
 		timeframe: {
-			result: [],
-			resultIndex: [],
+			data: [],
+			dataIndex: [],
 		},
 		chart: {
-			dataset: [],
-			datasetIndex: [],
+			data: [],
+			dataIndex: [],
+		},
+		order: {
+			data: [],
+			dataIndex: [],
 		},
 		updateTime: 0
 	};
@@ -520,9 +528,9 @@ dotenv.config();
 					}
 				}
 
-				// Add results to playbook state
-				nextPlaybookState.timeframe.result.push(timeframeSignal);
-				nextPlaybookState.timeframe.resultIndex.push(timeframe.name ?? timeframe.uuid);
+				// Add timeframe results to playbook state
+				nextPlaybookState.timeframe.data.push(timeframeSignal);
+				nextPlaybookState.timeframe.dataIndex.push(timeframe.name ?? timeframe.uuid);
 			} catch (err) {
 				Bot.log(err as string, Log.Err);
 			}
@@ -536,8 +544,8 @@ dotenv.config();
 
 			// Add chart datasets to playbook state
 			if (chart.dataset) {
-				nextPlaybookState.chart.dataset.push(chart.dataset);
-				nextPlaybookState.chart.datasetIndex.push(chart.name ?? chart.uuid);
+				nextPlaybookState.chart.data.push(chart.dataset);
+				nextPlaybookState.chart.dataIndex.push(chart.name ?? chart.uuid);
 			}
 		}
 	}
@@ -547,4 +555,7 @@ dotenv.config();
 	// console.log(nextPlaybookState);
 	await playbookStore.setItem(playbookStateName, nextPlaybookState);
 	await playbookStore.close();
+
+	// const used = process.memoryUsage().heapUsed / 1024 / 1024;
+	// console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`)
 })();

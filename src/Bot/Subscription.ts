@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Bot, BotStateTimeframeType, BotStateType, Log } from './Bot';
+import { Bot, BotStateDataIndexType, BotStateType, Log } from './Bot';
 import { ChartCandleData, ChartItem } from './Chart';
 import { OrderItem } from './Order';
 import { StrategyItem } from "./Strategy";
@@ -30,7 +30,7 @@ export type SubscriptionSignalData = {
 
 export type SubscriptionDespatchData = {
 	event: SubscriptionEvent,
-	lastState?: BotStateTimeframeType,
+	lastState?: BotStateDataIndexType,
 	timeframe: TimeframeItem,
 };
 
@@ -183,14 +183,14 @@ export const Subscription: SubscriptionInterface = {
 						// Test for new results
 						if (
 							timeframeSignal.length
-							&& _.lastState
+							&& _.lastState?.dataIndex
 						) {
-							let index = _.lastState.resultIndex.findIndex(_name => _name === timeframe.name);
+							let index = _.lastState.dataIndex.findIndex(_name => _name === timeframe.name);
 							if (index >= 0) {
 
 								// Count number of current state results, not in last state
 								for (let k = 0; k < timeframeSignal.length; k++) {
-									if (_.lastState.result[index].indexOf(timeframeSignal[k]) < 0)
+									if (_.lastState.data[index].indexOf(timeframeSignal[k]) < 0)
 										newSignal++;
 								}
 							}

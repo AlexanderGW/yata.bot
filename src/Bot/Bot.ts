@@ -14,17 +14,15 @@ export enum Log {
 	Verbose = 0,
 }
 
-export type BotStateTimeframeType = {
-	result: Array<any>,
-	resultIndex: Array<string>,
+export type BotStateDataIndexType = {
+	data: Array<any>,
+	dataIndex: Array<string>,
 };
 
 export type BotStateType = {
-	timeframe: BotStateTimeframeType,
-	chart: {
-		dataset: Array<ChartCandleData>,
-		datasetIndex: Array<string>,
-	},
+	timeframe: BotStateDataIndexType,
+	chart: BotStateDataIndexType,
+	order: BotStateDataIndexType,
 	updateTime: number,
 };
 
