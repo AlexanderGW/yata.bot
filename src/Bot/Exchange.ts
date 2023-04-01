@@ -1,7 +1,7 @@
 import { ChartCandleData, ChartItem } from "./Chart";
 import { v4 as uuidv4 } from 'uuid';
 import { Bot, Log } from "./Bot";
-import { OrderExchangeReponseData, OrderItem, OrderStatus } from "./Order";
+import { OrderExchangeData, OrderItem, OrderStatus } from "./Order";
 
 const fs = require('fs');
 
@@ -20,15 +20,15 @@ export interface ExchangeInterface {
 
 	closeOrder: (
 		_: OrderItem,
-	) => Promise<OrderExchangeReponseData>;
+	) => Promise<OrderExchangeData>;
 
 	openOrder: (
 		_: OrderItem,
-	) => Promise<OrderExchangeReponseData>;
+	) => Promise<OrderExchangeData>;
 
 	editOrder: (
 		_: OrderItem,
-	) => Promise<OrderExchangeReponseData>;
+	) => Promise<OrderExchangeData>;
 }
 
 export interface ExchangeStorageInterface {
@@ -62,7 +62,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	async closeOrder (
 		_: OrderItem,
 	) {
-		const orderResponse: OrderExchangeReponseData = {
+		const orderResponse: OrderExchangeData = {
 			status: OrderStatus.Close,
 			responseTime: Date.now(),
 		};
@@ -73,7 +73,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	async openOrder (
 		_: OrderItem,
 	) {
-		const orderResponse: OrderExchangeReponseData = {
+		const orderResponse: OrderExchangeData = {
 			status: OrderStatus.Open,
 			responseTime: Date.now(),
 		};
@@ -84,7 +84,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	async editOrder (
 		_: OrderItem,
 	) {
-		const orderResponse: OrderExchangeReponseData = {
+		const orderResponse: OrderExchangeData = {
 			status: OrderStatus.Edit,
 			responseTime: Date.now(),
 		};
@@ -95,7 +95,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	async getOrder (
 		_: OrderItem,
 	) {
-		const orderResponse: OrderExchangeReponseData = {
+		const orderResponse: OrderExchangeData = {
 			status: OrderStatus.Unknown,
 			responseTime: Date.now(),
 		};

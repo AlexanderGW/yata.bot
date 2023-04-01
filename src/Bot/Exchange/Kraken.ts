@@ -1,7 +1,7 @@
 import { Bot, Log } from '../Bot';
 import { ChartCandleData, ChartItem } from '../Chart';
 import { ExchangeData, ExchangeInterface, ExchangeItem } from '../Exchange';
-import { OrderSide, OrderItem, OrderType, OrderStatus, OrderExchangeReponseData, Order } from '../Order';
+import { OrderSide, OrderItem, OrderType, OrderStatus, OrderExchangeData, Order } from '../Order';
 
 const fs = require('fs');
 
@@ -60,7 +60,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 	async openOrder (
 		_: OrderItem,
 	) {
-		let orderResponse: OrderExchangeReponseData = {};
+		let orderResponse: OrderExchangeData = {};
 
 		try {
 			let assetASymbol = this.translateSymbol(_.pair.a.symbol);
@@ -131,7 +131,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 	async closeOrder (
 		_: OrderItem,
 	) {
-		let orderResponse: OrderExchangeReponseData = {};
+		let orderResponse: OrderExchangeData = {};
 
 		try {
 
@@ -187,7 +187,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 	async editOrder (
 		_: OrderItem,
 	) {
-		let orderResponse: OrderExchangeReponseData = {};
+		let orderResponse: OrderExchangeData = {};
 
 		try {
 
@@ -272,7 +272,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 	async getOrder (
 		_: OrderItem,
 	) {
-		let orderResponse: OrderExchangeReponseData = {};
+		let orderResponse: OrderExchangeData = {};
 
 		try {
 

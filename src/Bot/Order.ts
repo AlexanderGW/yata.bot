@@ -63,7 +63,7 @@ export type OrderData = {
 	uuid?: string,
 }
 
-export type OrderExchangeReponseData = {
+export type OrderExchangeData = {
 	closeTime?: number,
 	expireTime?: number,
 	limitPrice?: string,
@@ -207,7 +207,7 @@ export class OrderItem implements OrderData {
 		)
 			throw (`Order '${this.name}'; Defined as a limit, requires a non-zero price`);
 
-		let orderResponse: OrderExchangeReponseData | undefined;
+		let orderResponse: OrderExchangeData | undefined;
 		
 		// Build log message
 		let logParts: string[] = [];
@@ -279,6 +279,12 @@ export class OrderItem implements OrderData {
 		Bot.log(logParts.join('; '), logType);
 
 		return orderResponse;
+	}
+
+	update (
+		_: OrderExchangeData
+	) {
+		
 	}
 }
 
