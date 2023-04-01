@@ -332,13 +332,26 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 						if (transaction.closetm)
 							orderResponse.closeTime = transaction.closetm;
-						if (transaction.expiretm)
-							orderResponse.expireTime = transaction.expiretm;
-						if (transaction.opentm)
-							orderResponse.openTime = transaction.opentm;
-						if (transaction.starttm)
-							orderResponse.startTime = transaction.starttm;
 						
+						// Order type
+						switch (transaction.descr.ordertype) {
+							case 'limit':
+								orderResponse.type = OrderType.Limit;
+								break;
+							case 'market':
+								orderResponse.type = OrderType.Market;
+								break;
+							case 'stop-loss':
+								orderResponse.type = OrderType.StopLoss;
+								break;
+							case 'take-profit':
+								orderResponse.type = OrderType.TakeProfit;
+								break;
+							default:
+								orderResponse.type = OrderType.Unknown;
+								break;
+						}
+
 						// Order side
 						switch (transaction.descr.type) {
 							case 'buy':
@@ -351,6 +364,18 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 								orderResponse.side = OrderSide.Unknown;
 								break;
 						}
+
+						if (transaction.expiretm)
+							orderResponse.expireTime = transaction.expiretm;
+						if (transaction.limitprice)
+							orderResponse.limitPrice = transaction.limitprice;
+						if (transaction.opentm)
+							orderResponse.openTime = transaction.opentm;
+						if (transaction.price)
+							orderResponse.price = transaction.price;
+						orderResponse.responseTime = Date.now();
+						if (transaction.starttm)
+							orderResponse.startTime = transaction.starttm;
 
 						// Order status
 						switch (transaction.status) {
@@ -374,31 +399,8 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 								break;
 						}
 
-						// Order type
-						switch (transaction.descr.ordertype) {
-							case 'limit':
-								orderResponse.type = OrderType.Limit;
-								break;
-							case 'market':
-								orderResponse.type = OrderType.Market;
-								break;
-							case 'stop-loss':
-								orderResponse.type = OrderType.StopLoss;
-								break;
-							case 'take-profit':
-								orderResponse.type = OrderType.TakeProfit;
-								break;
-							default:
-								orderResponse.type = OrderType.Unknown;
-								break;
-						}
-
-						if (transaction.price)
-							orderResponse.price = transaction.price;
 						if (transaction.stopprice)
 							orderResponse.stopPrice = transaction.stopprice;
-						if (transaction.limitprice)
-							orderResponse.limitPrice = transaction.limitprice;
 						if (transaction.vol)
 							orderResponse.quantity = transaction.vol;
 						if (transaction.vol_exec)
