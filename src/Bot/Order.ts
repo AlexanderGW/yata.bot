@@ -175,13 +175,16 @@ export class OrderItem implements OrderData {
 			logParts.push('DRYRUN');
 
 		logParts.push(`Order '${this.name}'`);
-		logParts.push(`${this.pair.exchange.name}:${this.pair.a.symbol}-${this.pair.b.symbol}`);
-		logParts.push(`State: ${this.status};`);
+		logParts.push(`Exchange '${this.pair.exchange.name}'`);
+		logParts.push(`Pair '${this.pair.name}'`);
+		logParts.push(`State '${this.status}';`);
 		logParts.push(`Type '${this.type}'`);
 		logParts.push(`Side '${this.side}'`);
 		logParts.push(`Qty '${this.quantity}'`);
-		logParts.push(`Price '${this.price}'`);
-		// logParts.push(`stopPrice: ${this.stopPrice}`);
+		if (this.price)
+			logParts.push(`Price '${this.price}'`);
+		if (this.stopPrice)
+			logParts.push(`Stop '${this.stopPrice}'`);
 
 		Bot.log(logParts.join('; '));
 
