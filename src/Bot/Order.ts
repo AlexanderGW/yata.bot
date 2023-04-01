@@ -38,6 +38,7 @@ export enum OrderType {
 };
 
 export type OrderData = {
+	closeTime?: number,
 	dryrun?: boolean,
 	expireTime?: number,
 	limitPrice?: string,
@@ -63,6 +64,7 @@ export type OrderData = {
 }
 
 export type OrderExchangeReponseData = {
+	closeTime?: number,
 	expireTime?: number,
 	limitPrice?: string,
 	openTime?: number,
@@ -80,8 +82,12 @@ export type OrderExchangeReponseData = {
 }
 
 export class OrderItem implements OrderData {
+	closeTime?: number = 0;
 	dryrun: boolean = true;
+	expireTime?: number = 0;
+	limitPrice?: string = '';
 	name?: string;
+	openTime?: number = 0;
 	pair: PairItem;
 	position?: PositionItem;
 	price?: string = '0';
@@ -92,6 +98,7 @@ export class OrderItem implements OrderData {
 	responseStatus: OrderStatus = OrderStatus.Unknown;
 	responseTime: number = 0;
 	side?: OrderSide = OrderSide.Buy;
+	startTime?: number = 0;
 	status: OrderStatus = OrderStatus.Unknown;
 	stopPrice?: string = '0';
 	transactionId: string[] = [];
@@ -125,7 +132,6 @@ export class OrderItem implements OrderData {
 			this.responseTime = _.responseTime;
 		if (_.hasOwnProperty('side'))
 			this.side = _.side;
-		if (_.hasOwnProperty('status'))
 		if (_.status)
 			this.status = _.status;
 		if (_.hasOwnProperty('stopPrice'))
@@ -148,7 +154,17 @@ export class OrderItem implements OrderData {
 	nextAction () {
 
 		// Confirmed status does not match status, test for next action
-		if (this.responseStatus !== this.status) {
+		if (
+
+			// Unknown state
+			(
+				!this.responseTime
+				&& this.status === OrderStatus.Unknown
+			)
+
+			// Status mismatch
+			|| this.responseStatus !== this.status
+		) {
 
 			// Has no transaction ID
 			if (
