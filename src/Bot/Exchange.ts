@@ -1,7 +1,7 @@
 import { ChartCandleData, ChartItem } from "./Chart";
 import { v4 as uuidv4 } from 'uuid';
 import { Bot, Log } from "./Bot";
-import { OrderItem, OrderStatus } from "./Order";
+import { OrderExchangeReponseData, OrderItem, OrderStatus } from "./Order";
 
 const fs = require('fs');
 
@@ -19,16 +19,16 @@ export interface ExchangeInterface {
 	) => Promise<void>;
 
 	closeOrder: (
-		order: OrderItem,
-	) => Promise<OrderItem>;
+		_: OrderItem,
+	) => Promise<OrderExchangeReponseData>;
 
 	openOrder: (
-		order: OrderItem,
-	) => Promise<OrderItem>;
+		_: OrderItem,
+	) => Promise<OrderExchangeReponseData>;
 
 	editOrder: (
-		order: OrderItem,
-	) => Promise<OrderItem>;
+		_: OrderItem,
+	) => Promise<OrderExchangeReponseData>;
 }
 
 export interface ExchangeStorageInterface {
@@ -62,37 +62,45 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	async closeOrder (
 		_: OrderItem,
 	) {
-		_.status = OrderStatus.Close;
-		_.confirmTime = Date.now();
+		const orderResponse: OrderExchangeReponseData = {
+			responseStatus: OrderStatus.Close,
+			responseTime: Date.now(),
+		};
 		Bot.log(`Order '${_.name}'; Close; Paper`);
-		return _;
+		return orderResponse;
 	}
 
 	async openOrder (
 		_: OrderItem,
 	) {
-		_.confirmStatus = OrderStatus.Open;
-		_.confirmTime = Date.now();
+		const orderResponse: OrderExchangeReponseData = {
+			responseStatus: OrderStatus.Open,
+			responseTime: Date.now(),
+		};
 		Bot.log(`Order '${_.name}'; Open; Paper`);
-		return _;
+		return orderResponse;
 	}
 
 	async editOrder (
 		_: OrderItem,
 	) {
-		_.confirmStatus = OrderStatus.Edit;
-		_.confirmTime = Date.now();
+		const orderResponse: OrderExchangeReponseData = {
+			responseStatus: OrderStatus.Edit,
+			responseTime: Date.now(),
+		};
 		Bot.log(`Order '${_.name}'; Edit; Paper`);
-		return _;
+		return orderResponse;
 	}
 
 	async syncOrder (
 		_: OrderItem,
 	) {
-		_.confirmStatus = OrderStatus.Unknown;
-		_.confirmTime = Date.now();
+		const orderResponse: OrderExchangeReponseData = {
+			responseStatus: OrderStatus.Unknown,
+			responseTime: Date.now(),
+		};
 		Bot.log(`Order '${_.name}'; Sync; Paper`);
-		return _;
+		return orderResponse;
 	}
 
 	compat (
