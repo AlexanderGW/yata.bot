@@ -246,9 +246,6 @@ export class OrderItem implements OrderData {
 				break;
 		}
 
-		console.log(`res`);
-		console.log(orderResponse);
-
 		if (orderResponse) {
 
 			// Order response contains higher confirmation time
