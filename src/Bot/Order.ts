@@ -156,11 +156,11 @@ export class OrderItem implements OrderData {
 		// Confirmed status does not match status, test for next action
 		if (
 
+			// Unconfirmed
+			!this.responseTime
+
 			// Unknown state
-			(
-				!this.responseTime
-				&& this.status === OrderStatus.Unknown
-			)
+			|| this.status === OrderStatus.Unknown
 
 			// Status mismatch
 			|| this.responseStatus !== this.status
