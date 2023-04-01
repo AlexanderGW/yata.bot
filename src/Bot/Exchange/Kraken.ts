@@ -308,110 +308,110 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			// Log raw response
 			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
 
-			if (responseJson) {
+			if (!responseJson)
+				return orderResponse;
+			
+			// Handle any errors
+			this._handleError(responseJson);
+
+			// Walk all transactions
+			for (let resultTxId in responseJson.result) {
+				const transaction = responseJson.result[resultTxId];
+
+				// The requested transasction
+				if (
+
+					// Transaction within top-level results
+					// _.transactionId.indexOf(resultTxId) >= 0 // Is one of the orders transactions
+					_.transactionId[lastTransactionIdx] !== resultTxId
+
+					// Referral order transaction ID that created this order
+					&& transaction.refid !== _.transactionId[lastTransactionIdx]
+				)
+					return orderResponse;
 				
-				// Handle any errors
-				this._handleError(responseJson);
+				// TODO: Compare response pair
 
-				// Walk all transactions
-				for (let resultTxId in responseJson.result) {
-					const transaction = responseJson.result[resultTxId];
-
-					// The requested transasction
-					if (
-
-						// Transaction within top-level results
-						// _.transactionId.indexOf(resultTxId) >= 0 // Is one of the orders transactions
-						_.transactionId[lastTransactionIdx] === resultTxId
-
-						// Referral order transaction ID that created this order
-						|| transaction.refid === _.transactionId[lastTransactionIdx]
-					) {
-
-						// TODO: Compare response pair
-
-						if (transaction.closetm)
-							orderResponse.closeTime = transaction.closetm;
-						
-						// Order type
-						switch (transaction.descr.ordertype) {
-							case 'limit':
-								orderResponse.type = OrderType.Limit;
-								break;
-							case 'market':
-								orderResponse.type = OrderType.Market;
-								break;
-							case 'stop-loss':
-								orderResponse.type = OrderType.StopLoss;
-								break;
-							case 'take-profit':
-								orderResponse.type = OrderType.TakeProfit;
-								break;
-							default:
-								orderResponse.type = OrderType.Unknown;
-								break;
-						}
-
-						// Order side
-						switch (transaction.descr.type) {
-							case 'buy':
-								orderResponse.side = OrderSide.Buy;
-								break;
-							case 'sell':
-								orderResponse.side = OrderSide.Sell;
-								break;
-							default:
-								orderResponse.side = OrderSide.Unknown;
-								break;
-						}
-
-						if (transaction.expiretm)
-							orderResponse.expireTime = transaction.expiretm;
-						if (transaction.limitprice)
-							orderResponse.limitPrice = transaction.limitprice;
-						if (transaction.opentm)
-							orderResponse.openTime = transaction.opentm;
-						if (transaction.price)
-							orderResponse.price = transaction.price;
-						orderResponse.responseTime = Date.now();
-						if (transaction.starttm)
-							orderResponse.startTime = transaction.starttm;
-
-						// Order status
-						switch (transaction.status) {
-							case 'canceled':
-								orderResponse.status = OrderStatus.Cancel;
-								break;
-							case 'closed':
-								orderResponse.status = OrderStatus.Close;
-								break;
-							case 'expired':
-								orderResponse.status = OrderStatus.Expired;
-								break;
-							case 'open':
-								orderResponse.status = OrderStatus.Open;
-								break;
-							case 'pending':
-								orderResponse.status = OrderStatus.Pending;
-								break;
-							default:
-								orderResponse.status = OrderStatus.Unknown;
-								break;
-						}
-
-						if (transaction.stopprice)
-							orderResponse.stopPrice = transaction.stopprice;
-						if (transaction.vol)
-							orderResponse.quantity = transaction.vol;
-						if (transaction.vol_exec)
-							orderResponse.quantityFilled = transaction.vol_exec;
-
-						// Transaction was matched as a referral, add 
-						// the `resultTxId` to the order
-						if (_.transactionId[lastTransactionIdx] !== resultTxId)
-							_.transactionId.push(resultTxId);
-					}
+				if (transaction.closetm)
+				orderResponse.closeTime = transaction.closetm;
+			
+				// Order type
+				switch (transaction.descr.ordertype) {
+					case 'limit':
+						orderResponse.type = OrderType.Limit;
+						break;
+					case 'market':
+						orderResponse.type = OrderType.Market;
+						break;
+					case 'stop-loss':
+						orderResponse.type = OrderType.StopLoss;
+						break;
+					case 'take-profit':
+						orderResponse.type = OrderType.TakeProfit;
+						break;
+					default:
+						orderResponse.type = OrderType.Unknown;
+						break;
 				}
+
+				// Order side
+				switch (transaction.descr.type) {
+					case 'buy':
+						orderResponse.side = OrderSide.Buy;
+						break;
+					case 'sell':
+						orderResponse.side = OrderSide.Sell;
+						break;
+					default:
+						orderResponse.side = OrderSide.Unknown;
+						break;
+				}
+
+				if (transaction.expiretm)
+					orderResponse.expireTime = transaction.expiretm;
+				if (transaction.limitprice)
+					orderResponse.limitPrice = transaction.limitprice;
+				if (transaction.opentm)
+					orderResponse.openTime = transaction.opentm;
+				if (transaction.price)
+					orderResponse.price = transaction.price;
+				orderResponse.responseTime = Date.now();
+				if (transaction.starttm)
+					orderResponse.startTime = transaction.starttm;
+
+				// Order status
+				switch (transaction.status) {
+					case 'canceled':
+						orderResponse.status = OrderStatus.Cancel;
+						break;
+					case 'closed':
+						orderResponse.status = OrderStatus.Close;
+						break;
+					case 'expired':
+						orderResponse.status = OrderStatus.Expired;
+						break;
+					case 'open':
+						orderResponse.status = OrderStatus.Open;
+						break;
+					case 'pending':
+						orderResponse.status = OrderStatus.Pending;
+						break;
+					default:
+						orderResponse.status = OrderStatus.Unknown;
+						break;
+				}
+
+				if (transaction.stopprice)
+					orderResponse.stopPrice = transaction.stopprice;
+				if (transaction.vol)
+					orderResponse.quantity = transaction.vol;
+				if (transaction.vol_exec)
+					orderResponse.quantityFilled = transaction.vol_exec;
+
+				// Transaction was matched as a referral, add 
+				// the `resultTxId` to the order
+				if (_.transactionId[lastTransactionIdx] !== resultTxId)
+					_.transactionId.push(resultTxId);
 			}
 		} catch (error) {
 			orderResponse.status = OrderStatus.Error;
