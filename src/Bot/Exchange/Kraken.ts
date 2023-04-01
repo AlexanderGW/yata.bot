@@ -134,6 +134,12 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		let orderResponse: OrderExchangeReponseData = {};
 
 		try {
+
+			// Get latest order transaction ID index
+			let lastTransactionIdx = 0;
+			if (_.transactionId?.length)
+				lastTransactionIdx = _.transactionId.length - 1;
+
 			let responseJson = await this.handle?.api(
 
 				// Type
@@ -143,7 +149,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				{
 
 					// Transaction ID
-					txid: _.transactionId,
+					txid: _.transactionId[lastTransactionIdx],
 				}
 			);
 
@@ -184,6 +190,12 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		let orderResponse: OrderExchangeReponseData = {};
 
 		try {
+
+			// Get latest order transaction ID index
+			let lastTransactionIdx = 0;
+			if (_.transactionId?.length)
+				lastTransactionIdx = _.transactionId.length - 1;
+
 			let assetASymbol = this.translateSymbol(_.pair.a.symbol);
 			let assetBSymbol = this.translateSymbol(_.pair.b.symbol);
 
@@ -213,7 +225,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 					price: _.price,
 
 					// Transaction ID
-					txid: _.transactionId,
+					txid: _.transactionId[lastTransactionIdx],
 
 					// Order direction (buy/sell)
 					type: _.side === OrderSide.Buy ? 'buy' : 'sell',
@@ -236,11 +248,6 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 				// Handle any errors
 				this._handleError(responseJson);
-
-				// Get latest order transaction ID index
-				let lastTransactionIdx = 0;
-				if (_.transactionId?.length)
-					lastTransactionIdx = _.transactionId.length - 1;
 
 				// Response carries previous, new foreign 
 				// transaction ID, and status is `Ok`
@@ -273,22 +280,29 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			let lastTransactionIdx = 0;
 			if (_.transactionId?.length)
 				lastTransactionIdx = _.transactionId.length - 1;
-			
+
+			// Options
+			let requestOptions: any = {
+
+				// Transaction ID
+				// txid: _.transactionId.reverse().join(','), // Provide all order transaction, newest first
+				txid: _.transactionId[lastTransactionIdx],
+			};
+
+			// Set order `referenceId` if we have one
+			if (_.referenceId)
+				requestOptions.userref = _.referenceId;
+
+			// console.log(requestOptions);
+			// return orderResponse;
+
 			let responseJson = await this.handle?.api(
 
 				// Type
 				'QueryOrders',
 
 				// Options
-				{
-
-					// Transaction ID
-					// txid: _.transactionId.reverse().join(','), // Provide all order transaction, newest first
-					txid: _.transactionId[lastTransactionIdx],
-
-					// Set order `referenceId`
-					userref: _.referenceId,
-				}
+				requestOptions
 			);
 
 			// Log raw response
@@ -313,6 +327,8 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 						// Referral order transaction ID that created this order
 						|| transaction.refid === _.transactionId[lastTransactionIdx]
 					) {
+
+						// TODO: Compare response pair
 
 						if (transaction.expiretm)
 							orderResponse.expireTime = transaction.expiretm;
