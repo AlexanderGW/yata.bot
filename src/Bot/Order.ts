@@ -64,6 +64,7 @@ export type OrderData = {
 }
 
 export type OrderExchangeData = {
+	[index: string]: any,
 	closeTime?: number,
 	expireTime?: number,
 	limitPrice?: string,
@@ -82,6 +83,7 @@ export type OrderExchangeData = {
 }
 
 export class OrderItem implements OrderData {
+	[index: string]: any,
 	closeTime?: number = 0;
 	dryrun: boolean = true;
 	expireTime?: number = 0;
@@ -153,7 +155,7 @@ export class OrderItem implements OrderData {
 
 	nextAction () {
 
-		// Confirmed status does not match status, test for next action
+		// Response status does not match status, test for next action
 		if (
 
 			// Unconfirmed
@@ -284,7 +286,11 @@ export class OrderItem implements OrderData {
 	update (
 		_: OrderExchangeData
 	) {
-		
+		for (let key in _) {
+			if (this.hasOwnProperty(key)) {
+				this[key] = _[key];
+			}
+		}
 	}
 }
 
