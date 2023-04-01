@@ -62,41 +62,37 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	async closeOrder (
 		_: OrderItem,
 	) {
-		let order = _;
-		order.status = OrderStatus.Close;
-		order.confirmTime = Date.now();
-		Bot.log(`Order '${order.name}'; Close; Paper`);
-		return order;
+		_.status = OrderStatus.Close;
+		_.confirmTime = Date.now();
+		Bot.log(`Order '${_.name}'; Close; Paper`);
+		return _;
 	}
 
 	async openOrder (
 		_: OrderItem,
 	) {
-		let order = _;
-		order.confirmStatus = OrderStatus.Open;
-		order.confirmTime = Date.now();
-		Bot.log(`Order '${order.name}'; Open; Paper`);
-		return order;
+		_.confirmStatus = OrderStatus.Open;
+		_.confirmTime = Date.now();
+		Bot.log(`Order '${_.name}'; Open; Paper`);
+		return _;
 	}
 
 	async editOrder (
 		_: OrderItem,
 	) {
-		let order = _;
-		order.confirmStatus = OrderStatus.Edit;
-		order.confirmTime = Date.now();
-		Bot.log(`Order '${order.name}'; Edit; Paper`);
-		return order;
+		_.confirmStatus = OrderStatus.Edit;
+		_.confirmTime = Date.now();
+		Bot.log(`Order '${_.name}'; Edit; Paper`);
+		return _;
 	}
 
 	async syncOrder (
 		_: OrderItem,
 	) {
-		let order = _;
-		order.confirmStatus = OrderStatus.Unknown;
-		order.confirmTime = Date.now();
+		_.confirmStatus = OrderStatus.Unknown;
+		_.confirmTime = Date.now();
 		Bot.log(`Order '${_.name}'; Sync; Paper`);
-		return order;
+		return _;
 	}
 
 	compat (

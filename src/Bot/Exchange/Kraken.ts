@@ -42,20 +42,18 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 	}
 
 	async openOrder (
-		order: OrderItem,
+		_: OrderItem,
 	) {
-		let orderResult: OrderItem = order;
-
 		try {
-			let assetASymbol = this.translateSymbol(order.pair.a.symbol);
-			let assetBSymbol = this.translateSymbol(order.pair.b.symbol);
+			let assetASymbol = this.translateSymbol(_.pair.a.symbol);
+			let assetBSymbol = this.translateSymbol(_.pair.b.symbol);
 
 			// All response assets are prefixed with an `X`. Add one to ease lookups
 			let pair = `X${assetASymbol}X${assetBSymbol}`;
 
 			// Set empty `referenceId` as current time
-			if (order.referenceId === 0) {
-				order.referenceId = Math.floor(Date.now());
+			if (_.referenceId === 0) {
+				_.referenceId = Math.floor(Date.now());
 			}
 
 			let responseJson = await this.handle?.api(
@@ -67,25 +65,25 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				{
 
 					// Order type
-					ordertype: this.getOrderTypeValue(order),
+					ordertype: this.getOrderTypeValue(_),
 
 					// Order type
 					pair: pair,
 
 					// Order price
-					price: order.price,
+					price: _.price,
 
 					// Order direction (buy/sell)
-					type: order.side === OrderSide.Buy ? 'buy' : 'sell',
+					type: _.side === OrderSide.Buy ? 'buy' : 'sell',
 
 					// Set order `referenceId`
-					userref: order.referenceId,
+					userref: _.referenceId,
 
 					// Validate inputs only. Do not submit order.
-					validate: order.dryrun,
+					validate: _.dryrun,
 
 					// Order quantity in terms of the base asset
-					volume: order.quantity,
+					volume: _.quantity,
 				}
 			);
 
@@ -101,23 +99,21 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				
 				// Confirmed
 				if (responseJson.result.count > 0) {
-					orderResult.confirmStatus = OrderStatus.Open;
-					orderResult.confirmTime = Date.now();
-					orderResult.transactionId = responseJson.result.txid;
+					_.confirmStatus = OrderStatus.Open;
+					_.confirmTime = Date.now();
+					_.transactionId = responseJson.result.txid;
 				}
 			}
 		} catch (error) {
-			Bot.log(`Order '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(`Exchange '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
 		}
 
-		return orderResult;
+		return _;
 	}
 
 	async closeOrder (
-		order: OrderItem,
+		_: OrderItem,
 	) {
-		let orderResult: OrderItem = order;
-
 		try {
 			let responseJson = await this.handle?.api(
 
@@ -128,7 +124,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				{
 
 					// Transaction ID
-					txid: order.transactionId,
+					txid: _.transactionId,
 				}
 			);
 
@@ -139,43 +135,44 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				if (responseJson.error) {
 					for (let i = 0; i < responseJson.error.length; i++) {
 						Bot.log(responseJson.error[i], Log.Err);
-					}
+					} 
 				}
 
-				// Response contains a count of one, with no pending state
+				// Response either in pending state, or count is zero
 				if (
 					responseJson.result.pending === true
 					|| responseJson.result.count === 0
 				) {
-					orderResult.confirmStatus = OrderStatus.Pending;
-				} else {
-					orderResult.confirmStatus = OrderStatus.Close;
+					_.confirmStatus = OrderStatus.Pending;
+				}
+				
+				// Successful
+				else {
+					_.confirmStatus = OrderStatus.Close;
 				}
 
-				orderResult.confirmTime = Date.now();
+				_.confirmTime = Date.now();
 			}
 		} catch (error) {
 			Bot.log(`Order '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
 		}
 
-		return orderResult;
+		return _;
 	}
 
 	async editOrder (
-		order: OrderItem,
+		_: OrderItem,
 	) {
-		let orderResult: OrderItem = order;
-
 		try {
-			let assetASymbol = this.translateSymbol(order.pair.a.symbol);
-			let assetBSymbol = this.translateSymbol(order.pair.b.symbol);
+			let assetASymbol = this.translateSymbol(_.pair.a.symbol);
+			let assetBSymbol = this.translateSymbol(_.pair.b.symbol);
 
 			// All response assets are prefixed with an `X`. Add one to ease lookups
 			let pair = `X${assetASymbol}X${assetBSymbol}`;
 
 			// Set empty `referenceId` as current time
-			if (order.referenceId === 0) {
-				order.referenceId = Math.floor(Date.now());
+			if (_.referenceId === 0) {
+				_.referenceId = Math.floor(Date.now());
 			}
 
 			let responseJson = await this.handle?.api(
@@ -187,28 +184,28 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				{
 
 					// Order type
-					ordertype: this.getOrderTypeValue(order),
+					ordertype: this.getOrderTypeValue(_),
 
 					// Order type
 					pair: pair,
 
 					// Order price
-					price: order.price,
+					price: _.price,
 
 					// Transaction ID
-					txid: order.transactionId,
+					txid: _.transactionId,
 
 					// Order direction (buy/sell)
-					type: order.side === OrderSide.Buy ? 'buy' : 'sell',
+					type: _.side === OrderSide.Buy ? 'buy' : 'sell',
 
 					// Set order `referenceId`
-					userref: order.referenceId,
+					userref: _.referenceId,
 
 					// Validate inputs only. Do not submit order.
-					validate: order.dryrun,
+					validate: _.dryrun,
 
 					// Order quantity in terms of the base asset
-					volume: order.quantity,
+					volume: _.quantity,
 				}
 			);
 
@@ -224,20 +221,20 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 				// Get latest transaction ID index
 				let lastTransactionIdx = 0;
-				if (order.transactionId?.length) {
-					lastTransactionIdx = order.transactionId.length - 1;
+				if (_.transactionId?.length) {
+					lastTransactionIdx = _.transactionId.length - 1;
 				}
 
 				// Response carries previous, new foreign 
 				// transaction ID, and status is `Ok`
 				if (
-					responseJson.result.originaltxid === order.transactionId[lastTransactionIdx]
+					responseJson.result.originaltxid === _.transactionId[lastTransactionIdx]
 					&& responseJson.result.txid
 					&& responseJson.result.status === 'Ok'
 				) {
-					orderResult.confirmStatus = OrderStatus.Edit;
-					orderResult.confirmTime = Date.now();
-					orderResult.transactionId?.push(responseJson.result.txid);
+					_.confirmStatus = OrderStatus.Edit;
+					_.confirmTime = Date.now();
+					_.transactionId?.push(responseJson.result.txid);
 				}
 
 				// Throw error
@@ -247,10 +244,100 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 
 			}
 		} catch (error) {
-			Bot.log(`Order '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(`Exchange '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
 		}
 
-		return orderResult;
+		return _;
+	}
+
+	async syncOrder (
+		_: OrderItem,
+	) {
+		try {
+			let assetASymbol = this.translateSymbol(_.pair.a.symbol);
+			let assetBSymbol = this.translateSymbol(_.pair.b.symbol);
+
+			// All response assets are prefixed with an `X`. Add one to ease lookups
+			let pair = `X${assetASymbol}X${assetBSymbol}`;
+
+			// Set empty `referenceId` as current time
+			if (_.referenceId === 0) {
+				_.referenceId = Math.floor(Date.now());
+			}
+
+			let responseJson = await this.handle?.api(
+
+				// Type
+				'EditOrder',
+
+				// Options
+				{
+
+					// Order type
+					ordertype: this.getOrderTypeValue(_),
+
+					// Order type
+					pair: pair,
+
+					// Order price
+					price: _.price,
+
+					// Transaction ID
+					txid: _.transactionId,
+
+					// Order direction (buy/sell)
+					type: _.side === OrderSide.Buy ? 'buy' : 'sell',
+
+					// Set order `referenceId`
+					userref: _.referenceId,
+
+					// Validate inputs only. Do not submit order.
+					validate: _.dryrun,
+
+					// Order quantity in terms of the base asset
+					volume: _.quantity,
+				}
+			);
+
+			// Log raw response
+			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
+
+			if (responseJson) {
+				if (responseJson.error) {
+					for (let i = 0; i < responseJson.error.length; i++) {
+						Bot.log(responseJson.error[i], Log.Err);
+					}
+				}
+
+				// Get latest transaction ID index
+				let lastTransactionIdx = 0;
+				if (_.transactionId?.length) {
+					lastTransactionIdx = _.transactionId.length - 1;
+				}
+
+				// Response carries previous, new foreign 
+				// transaction ID, and status is `Ok`
+				if (
+					responseJson.result.originaltxid === _.transactionId[lastTransactionIdx]
+					&& responseJson.result.txid
+					&& responseJson.result.status === 'Ok'
+				) {
+					_.confirmStatus = OrderStatus.Edit;
+					_.confirmTime = Date.now();
+					_.transactionId?.push(responseJson.result.txid);
+				}
+
+				// Throw error
+				else if (responseJson.result.status === 'Err') {
+					throw responseJson.result.error_message;
+				}
+
+			}
+		} catch (error) {
+			Bot.log(`Exchange '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
+		}
+
+		return _;
 	}
 
 	async syncChart (
