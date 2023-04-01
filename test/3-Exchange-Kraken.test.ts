@@ -84,7 +84,7 @@ if (
                 // Either `OrderSide.Buy`, or `OrderSide.Sell`
                 side: OrderSide.Buy,
 
-                // Order `confirmStatus` response should match this, with a new `confirmTime`
+                // Exchange response should match this, with a new `responseTime`
                 status: OrderStatus.Open,
 
                 // Default: Order type is `OrderType.Market`
@@ -97,40 +97,40 @@ if (
             // Execute market buy order create on exchange
             try {
 
-                // Response will contain original `order1` with any changes, such as 
-                // the exchange side transaction ID, and updated `confirmTime`, and `confirmState` if successful
-                // For the purposes of testing, we'll store the response in its own variable
-                order1OpenMarketBuy = await order1.execute();
+                // Response will contain the exchange side transaction ID, and a
+                // new `responseTime`, and `status` if successful. You will
+                // need to update the order accordingly.
+                let orderResponse = await order1.execute();
 
                 // Check order confirmation
-                console.log(order1OpenMarketBuy);
+                console.log(orderResponse);
             } catch (err) {
                 Bot.log(err as string, Log.Err);
             }
         });
     
-        it('should validate limit buy order creation', async () => {
+        // it('should validate limit buy order creation', async () => {
     
-            // Execute limit buy order create on exchange
-            try {
+        //     // Execute limit buy order create on exchange
+        //     try {
 
-                // Price. For ETHBTC, This would be at the price of BTC
-                order1.price = '0.01';
+        //         // Price. For ETHBTC, This would be at the price of BTC
+        //         order1.price = '0.01';
 
-                // Type of order
-                order1.type = OrderType.Limit;
+        //         // Type of order
+        //         order1.type = OrderType.Limit;
 
-                // Response will contain original `order1` with any changes, such as 
-                // the exchange side transaction ID, and updated `confirmTime`, and `confirmState` if successful
-                // For the purposes of testing, we'll store the response in its own variable
-                order1OpenLimitBuy = await order1.execute();
+        //         // Response will contain the exchange side transaction ID, and a
+        //         // new `responseTime`, and `status` if successful. You will
+        //         // need to update the order accordingly.
+        //         let orderResponse = await order1.execute();
 
-                // Check order confirmation
-                console.log(order1OpenLimitBuy);
-            } catch (err) {
-                Bot.log(err as string, Log.Err);
-            }
-        });
+        //         // Check order confirmation
+        //         console.log(orderResponse);
+        //     } catch (err) {
+        //         Bot.log(err as string, Log.Err);
+        //     }
+        // });
 
         // it('should validate limit buy order edit', async () => {
 
