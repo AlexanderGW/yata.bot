@@ -237,7 +237,7 @@ export class OrderItem implements OrderData {
 
 			case OrderAction.Sync:
 				logParts.push(`Sync`);
-				orderResponse = await this.pair.exchange.syncOrder(this);
+				orderResponse = await this.pair.exchange.getOrder(this);
 				break;
 
 			default:

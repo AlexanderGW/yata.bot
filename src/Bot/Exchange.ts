@@ -92,7 +92,7 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		return orderResponse;
 	}
 
-	async syncOrder (
+	async getOrder (
 		_: OrderItem,
 	) {
 		const orderResponse: OrderExchangeReponseData = {

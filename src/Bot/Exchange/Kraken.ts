@@ -117,7 +117,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				if (responseJson.result.count > 0) {
 					orderResponse.status = OrderStatus.Open;
 					orderResponse.responseTime = Date.now();
-					orderResponse.transactionId = responseJson.result.txid;
+					orderResponse.transactionId?.push(responseJson.result.txid);
 				}
 			}
 		} catch (error) {
@@ -269,7 +269,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		return orderResponse;
 	}
 
-	async syncOrder (
+	async getOrder (
 		_: OrderItem,
 	) {
 		let orderResponse: OrderExchangeReponseData = {};
