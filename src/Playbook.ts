@@ -9,7 +9,7 @@ import { Exchange, ExchangeItem } from './Bot/Exchange';
 import { Chart, ChartCandleData, ChartItem } from './Bot/Chart';
 import { Timeframe, TimeframeItem } from './Bot/Timeframe';
 import { Position, PositionItem } from './Bot/Position';
-import { Order, OrderItem } from './Bot/Order';
+import { Order, OrderExchangeData, OrderItem } from './Bot/Order';
 import { Analysis, AnalysisItem } from './Bot/Analysis';
 import { Storage } from './Bot/Storage';
 import { Subscription, SubscriptionActionCallbackModule, SubscriptionEvent, SubscriptionItem } from './Bot/Subscription';
@@ -430,20 +430,32 @@ dotenv.config();
 				}
 			}
 		}
+
+		// Prime orders, if available
+		if (lastPlaybookState.order?.dataIndex?.length) {
+			for (let orderIdx in lastPlaybookState.order.dataIndex) {
+
+				const order: OrderItem = Bot.getItem(lastPlaybookState.order.dataIndex[orderIdx]);
+				if (order && lastPlaybookState.order.data[orderIdx]) {
+					console.log(lastPlaybookState.order.data[orderIdx]);
+					// order.update(lastPlaybookState.order.data[orderIdx]);
+				}
+			}
+		}
 	}
 	
 	// No existing playbook state, default to empty
 	else {
 		lastPlaybookState = {
-			timeframe: {
-				data: [],
-				dataIndex: [],
-			},
 			chart: {
 				data: [],
 				dataIndex: [],
 			},
 			order: {
+				data: [],
+				dataIndex: [],
+			},
+			timeframe: {
 				data: [],
 				dataIndex: [],
 			},
@@ -454,15 +466,15 @@ dotenv.config();
 	// console.log(lastPlaybookState);
 
 	let nextPlaybookState: BotStateType = {
-		timeframe: {
-			data: [],
-			dataIndex: [],
-		},
 		chart: {
 			data: [],
 			dataIndex: [],
 		},
 		order: {
+			data: [],
+			dataIndex: [],
+		},
+		timeframe: {
 			data: [],
 			dataIndex: [],
 		},
@@ -537,16 +549,45 @@ dotenv.config();
 		}
 	}
 
-	// Persist chart datasets
+	// Persist chart data
 	if (playbookCache.chart.item.length) {
 		for (let chartIdx in playbookCache.chart.itemIndex) {
 			const chart: ChartItem = Bot.getItem(playbookCache.chart.item[chartIdx]);
 
-			// Add chart datasets to playbook state
+			// Add chart data to playbook state
 			if (chart.dataset) {
 				nextPlaybookState.chart.data.push(chart.dataset);
 				nextPlaybookState.chart.dataIndex.push(chart.name ?? chart.uuid);
 			}
+		}
+	}
+
+	// Persist order data
+	if (playbookCache.order.item.length) {
+		for (let orderIdx in playbookCache.order.itemIndex) {
+			const order: OrderItem = Bot.getItem(playbookCache.order.item[orderIdx]);
+
+			let orderData: OrderExchangeData = {
+				closeTime: order.closeTime,
+				expireTime: order.expireTime,
+				limitPrice: order.limitPrice,
+				openTime: order.openTime,
+				price: order.price,
+				quantity: order.quantity,
+				quantityFilled: order.quantityFilled,
+				referenceId: order.referenceId,
+				status: order.status,
+				responseTime: order.responseTime,
+				side: order.side,
+				startTime: order.startTime,
+				stopPrice: order.stopPrice,
+				transactionId: order.transactionId,
+				type: order.type,
+			};
+
+			// Add order data to playbook state
+			nextPlaybookState.order.data.push(orderData);
+			nextPlaybookState.order.dataIndex.push(order.name ?? order.uuid);
 		}
 	}
 
