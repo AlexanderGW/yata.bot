@@ -9,7 +9,7 @@ export enum OrderAction {
 	Edit = 'Edit',
 	None = 'None',
 	Open = 'Open',
-	Sync = 'Sync',
+	Get = 'Get',
 }
 
 export enum OrderSide {
@@ -144,7 +144,7 @@ export class OrderItem implements OrderData {
 			this.updateTime = _.updateTime;
 		this.uuid = _.uuid ?? uuidv4();
 
-		// TODO: Sync exchange order, position etc
+		// TODO: Get exchange order, position etc
 	}
 
 	isFilled() {
@@ -184,7 +184,7 @@ export class OrderItem implements OrderData {
 					case OrderStatus.Edit:
 						return OrderAction.Edit;
 					default:
-						return OrderAction.Sync;
+						return OrderAction.Get;
 				}
 			}
 		}
@@ -235,8 +235,8 @@ export class OrderItem implements OrderData {
 				orderResponse = await this.pair.exchange.editOrder(this);
 				break;
 
-			case OrderAction.Sync:
-				logParts.push(`Sync`);
+			case OrderAction.Get:
+				logParts.push(`Get`);
 				orderResponse = await this.pair.exchange.getOrder(this);
 				break;
 
