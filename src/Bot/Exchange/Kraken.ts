@@ -399,6 +399,10 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 							orderResponse.stopPrice = transaction.stopprice;
 						if (transaction.limitprice)
 							orderResponse.limitPrice = transaction.limitprice;
+						if (transaction.vol)
+							orderResponse.quantity = transaction.vol;
+						if (transaction.vol_exec)
+							orderResponse.quantityFilled = transaction.vol_exec;
 
 						// Transaction was matched as a referral, add 
 						// the `resultTxId` to the order
