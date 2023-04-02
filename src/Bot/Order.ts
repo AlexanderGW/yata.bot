@@ -198,8 +198,12 @@ export class OrderItem implements OrderData {
 		_?: OrderAction
 	) {
 		if (
-			!this.quantity
-			|| this.quantity === '0'
+			(
+				!this.quantity
+				|| Number.parseFloat(this.quantity) === 0
+			)
+			&& this.status === OrderStatus.Open
+			&& !this.transactionId.length
 		)
 			throw (`Order '${this.name}'; Requires a non-zero quantity`);
 
@@ -220,6 +224,9 @@ export class OrderItem implements OrderData {
 
 		// Determine next action with exchange
 		const action = _ ?? this.nextAction();
+
+		console.log(`action`);
+		console.log(action);
 
 		switch (action) {
 			case OrderAction.Close:
@@ -286,9 +293,14 @@ export class OrderItem implements OrderData {
 	update (
 		_: OrderExchangeData
 	) {
+		console.log(`_`);
+		console.log(_);
 		for (let key in _) {
 			if (this.hasOwnProperty(key)) {
-				this[key] = _[key];
+				if (key === 'status')
+					this.responseStatus = _.status ?? OrderStatus.Unknown;
+				else
+					this[key] = _[key];
 			}
 		}
 	}
