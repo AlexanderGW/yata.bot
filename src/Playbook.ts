@@ -425,8 +425,12 @@ dotenv.config();
 				// Add dataset to chart
 				const chart: ChartItem = Bot.getItem(lastPlaybookState.chart.dataIndex[chartIdx]);
 				if (chart && lastPlaybookState.chart.data[chartIdx]) {
-					chart.updateDataset(lastPlaybookState.chart.data[chartIdx]);
-					chart.refreshDataset();
+					try {
+						chart.updateDataset(lastPlaybookState.chart.data[chartIdx]);
+						chart.refreshDataset();
+					} catch (err) {
+						console.log(err);
+					}
 				}
 			}
 		}
@@ -434,11 +438,14 @@ dotenv.config();
 		// Prime orders, if available
 		if (lastPlaybookState.order?.dataIndex?.length) {
 			for (let orderIdx in lastPlaybookState.order.dataIndex) {
-
 				const order: OrderItem = Bot.getItem(lastPlaybookState.order.dataIndex[orderIdx]);
 				if (order && lastPlaybookState.order.data[orderIdx]) {
-					console.log(lastPlaybookState.order.data[orderIdx]);
-					// order.update(lastPlaybookState.order.data[orderIdx]);
+					try {
+						order.update(lastPlaybookState.order.data[orderIdx]);
+						await order.execute();
+					} catch (err) {
+						console.log(err);
+					}
 				}
 			}
 		}

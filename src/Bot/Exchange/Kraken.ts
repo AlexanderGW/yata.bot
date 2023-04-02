@@ -333,7 +333,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				// TODO: Compare response pair
 
 				if (transaction.closetm)
-				orderResponse.closeTime = transaction.closetm;
+					orderResponse.closeTime = transaction.closetm;
 			
 				// Order type
 				switch (transaction.descr.ordertype) {
