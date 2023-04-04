@@ -89,11 +89,6 @@ if (
 
                 // Default: Order type is `OrderType.Market`
                 type: OrderType.Market,
-
-                // transactionId: [
-                //     // 'OYE4KY-BQPRK-MAVQB3'
-                //     'OFGS5E-QIECA-VSNNQE'
-                // ]
             });
         });
 
