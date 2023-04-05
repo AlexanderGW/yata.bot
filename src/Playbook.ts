@@ -8,7 +8,6 @@ import { Scenario, ScenarioItem } from './Bot/Scenario';
 import { Exchange, ExchangeItem } from './Bot/Exchange';
 import { Chart, ChartCandleData, ChartItem } from './Bot/Chart';
 import { Timeframe, TimeframeItem } from './Bot/Timeframe';
-import { Position, PositionItem } from './Bot/Position';
 import { Order, OrderExchangeData, OrderItem } from './Bot/Order';
 import { Analysis, AnalysisItem } from './Bot/Analysis';
 import { Storage } from './Bot/Storage';
@@ -52,7 +51,6 @@ dotenv.config();
 		exchange: Exchange,
 		asset: Asset,
 		pair: Pair,
-		position: Position,
 		order: Order,
 		chart: Chart,
 		analysis: Analysis,
@@ -75,7 +73,6 @@ dotenv.config();
 		exchange: ItemIndexType,
 		pair: ItemIndexType,
 		asset: ItemIndexType,
-		position: ItemIndexType,
 		order: ItemIndexType,
 		chart: ItemIndexType,
 		analysis: ItemIndexType,
@@ -97,10 +94,6 @@ dotenv.config();
 			item: [],
 		},
 		asset: {
-			itemIndex: [],
-			item: [],
-		},
-		position: {
 			itemIndex: [],
 			item: [],
 		},
@@ -303,7 +296,7 @@ dotenv.config();
 						for (let i in finalItemData[key]) {	
 							// let line = finalItemData[key][i];
 
-							// Import exchange extension
+							// Import module file with callback
 							if (!fs.existsSync(playbookActions))
 								throw (`Playbook subscription action file not found '${playbookActions}'`);
 						}
