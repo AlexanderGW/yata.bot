@@ -1,6 +1,5 @@
 import { Bot, Log } from "./Bot";
 import { PairItem } from "./Pair";
-import { PositionItem } from "./Position";
 import { v4 as uuidv4 } from 'uuid';
 import { ExchangeItem } from "./Exchange";
 
@@ -45,7 +44,6 @@ export type OrderData = {
 	name?: string,
 	openTime?: number,
 	pair: PairItem,
-	position?: PositionItem,
 	price?: string,
 	quantity?: string,
 	quantityFilled?: string,
@@ -84,25 +82,24 @@ export type OrderExchangeData = {
 
 export class OrderItem implements OrderData {
 	[index: string]: any,
-	closeTime?: number = 0;
+	closeTime: number = 0;
 	dryrun: boolean = true;
-	expireTime?: number = 0;
-	limitPrice?: string = '';
+	expireTime: number = 0;
+	limitPrice: string = '0';
 	name?: string;
 	openTime?: number = 0;
 	pair: PairItem;
-	position?: PositionItem;
-	price?: string = '0';
-	quantity?: string = '0';
-	quantityFilled?: string = '0';
-	referenceId?: number = 0;
+	price: string = '0';
+	quantity: string = '0';
+	quantityFilled: string = '0';
+	referenceId: number = 0;
 	related?: OrderItem;
 	responseStatus: OrderStatus = OrderStatus.Unknown;
 	responseTime: number = 0;
-	side?: OrderSide = OrderSide.Buy;
-	startTime?: number = 0;
+	side: OrderSide = OrderSide.Buy;
+	startTime: number = 0;
 	status: OrderStatus = OrderStatus.Unknown;
-	stopPrice?: string = '0';
+	stopPrice: string = '0';
 	transactionId: string[] = [];
 	type?: OrderType = OrderType.Market;
 	updateTime: number = 0;
@@ -118,25 +115,21 @@ export class OrderItem implements OrderData {
 		if (_.name)
 			this.name = _.name;
 		this.pair = _.pair;
-		if (_.hasOwnProperty('position'))
-			this.position = _.position;
-		if (_.hasOwnProperty('position'))
-			this.position = _.position;
-		if (_.hasOwnProperty('price'))
+		if (_.price)
 			this.price = _.price;
-		if (_.hasOwnProperty('quantity'))
+		if (_.quantity)
 		this.quantity = _.quantity;
-		if (_.hasOwnProperty('quantityFilled'))
+		if (_.quantityFilled)
 			this.quantityFilled = _.quantityFilled;
-		if (_.hasOwnProperty('related'))
+		if (_.related)
 			this.related = _.related;
 		if (_.responseTime)
 			this.responseTime = _.responseTime;
-		if (_.hasOwnProperty('side'))
+		if (_.side)
 			this.side = _.side;
 		if (_.status)
 			this.status = _.status;
-		if (_.hasOwnProperty('stopPrice'))
+		if (_.stopPrice)
 			this.stopPrice = _.stopPrice;
 		if (_.transactionId)
 			this.transactionId = _.transactionId;
@@ -208,7 +201,7 @@ export class OrderItem implements OrderData {
 			throw (`Order '${this.name}'; Requires a non-zero quantity`);
 
 		if (
-			this.type === OrderType.Limit
+			this.type !== OrderType.Market
 			&& Number.parseFloat(this.price as string) === 0
 		)
 			throw (`Order '${this.name}'; Defined as a limit, requires a non-zero price`);
@@ -307,22 +300,84 @@ export class OrderItem implements OrderData {
 }
 
 export const Order = {
-	new (
+	async new (
 		_: OrderData,
-	): OrderItem {
+	): Promise<OrderItem> {
+		const assetASymbol = _.pair.a.symbol;
+		const assetBSymbol = _.pair.b.symbol;
+		const pairTicker = `${assetASymbol}-${assetBSymbol}`;
 
-		// A percentage of a position
-		if (_.quantity?.substring(_.quantity.length - 1) === '%') {
-			if (!_.hasOwnProperty('position'))
-				throw (`Order percentage quantities, require a position`);
+		const pairTickerIndex = _.pair.exchange.tickerIndex.indexOf(pairTicker);
+		if (pairTickerIndex < 0)
+			throw (`Exchange '${_.pair.exchange.name}'; No ticker information for '${pairTicker}'`);
 
-			const quantityPercent = Number.parseFloat(_.quantity.substring(0, _.quantity.length - 1));
-			let positionAmount = '0';
-			if (_.position?.quantity)
-				positionAmount = _.position.quantity;
-			_.quantity = ((parseFloat(positionAmount) / 100) * quantityPercent).toString();
+		let assetAPrice = '0';
+		switch (_.type) {
+			case OrderType.Limit:
+			case OrderType.StopLoss:
+			case OrderType.TakeProfit:
+				assetAPrice = _.price as string;
+				break;
+			default:
+				assetAPrice = _.pair.exchange.ticker[pairTickerIndex].ask;
 		}
-		
+		const assetAPriceFloat = Number.parseFloat(assetAPrice);
+
+		console.log(`assetAPriceFloat`);
+		console.log(assetAPriceFloat);
+
+		let assetABalanceIndex = _.pair.exchange.balanceIndex.indexOf(assetASymbol);
+		if (assetABalanceIndex < 0) {
+			await _.pair.exchange.getBalances();
+			assetABalanceIndex = _.pair.exchange.balanceIndex.indexOf(assetASymbol);
+			if (assetABalanceIndex < 0)
+				throw (`Order '${_.name}'; Asset '${_.pair.a.name}'; Quantity percentage values require balance information`);
+		}
+
+		const assetABalance = _.pair.exchange.balance[assetABalanceIndex];
+		if (_.side === OrderSide.Sell && Number.parseFloat(assetABalance) === 0)
+			throw (`Order '${_.name}'; Asset '${_.pair.a.name}'; Quantity percentage values require balance greater than zero`);
+
+		console.log(`assetABalance`);
+		console.log(assetABalance);
+
+		let assetBBalanceIndex = _.pair.exchange.balanceIndex.indexOf(assetBSymbol);
+		if (assetBBalanceIndex < 0)
+			throw (`Order '${_.name}'; Asset '${_.pair.b.name}'; Quantity percentage values require balance information`);
+
+		const assetBBalance = _.pair.exchange.balance[assetBBalanceIndex];
+		if (_.side === OrderSide.Buy && Number.parseFloat(assetBBalance) === 0)
+			throw (`Order '${_.name}'; Asset '${_.pair.b.name}'; Quantity percentage values require balance greater than zero`);
+
+		console.log(`assetBBalance`);
+		console.log(assetBBalance);
+
+		console.log(`quantityBefore`);
+		console.log(_.quantity);
+			
+		// A percentage of a pair asset amount
+		if (_.quantity?.substring(_.quantity.length - 1) === '%') {
+			const quantityPercent = Number.parseFloat(_.quantity.substring(0, _.quantity.length - 1));
+
+			// Buy side order
+			if (_.side === OrderSide.Buy) {
+				const assetBQuantity = (parseFloat(assetBBalance) / 100) * quantityPercent;
+				const assetAQuantity = assetBQuantity / assetAPriceFloat;
+				_.quantity = assetAQuantity.toString();
+			}
+			
+			// Sell side order
+			else if (_.side === OrderSide.Sell) {
+				const assetAQuantity = (parseFloat(assetABalance) / 100) * quantityPercent;
+				_.quantity = assetAQuantity.toString();
+			}
+		}
+
+		console.log(`order`);
+		console.log(_);
+
+		// TODO: Check range boundaries, price min/max etc
+
 		let item = new OrderItem(_);
 		let uuid = Bot.setItem(item);
 

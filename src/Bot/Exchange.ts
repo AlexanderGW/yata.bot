@@ -2,33 +2,70 @@ import { ChartCandleData, ChartItem } from "./Chart";
 import { v4 as uuidv4 } from 'uuid';
 import { Bot, Log } from "./Bot";
 import { OrderExchangeData, OrderItem, OrderStatus } from "./Order";
+import { PairData, PairItem } from "./Pair";
 
 const fs = require('fs');
 
+export type ExchangeTickerData = {
+	[index: string]: any,
+	ask: string,
+	bid: string,
+	high: string,
+	low: string,
+	open: number,
+	price: string,
+	tradeCount: number,
+	volumeMin: string,
+};
+
 export type ExchangeData = {
+	balance?: string[],
+	balanceIndex?: string[],
 	class?: string,
 	name?: string,
 	key?: string,
-	secret?: string,	
+	secret?: string,
+	symbolLocal?: string[],
+	symbolForeign?: string[],
+	ticker?: Array<ExchangeTickerData>,
+	tickerIndex?: string[],
 	uuid?: string,
 }
 
 export interface ExchangeInterface {
-	syncChart: (
-		chart: ChartItem,
-	) => Promise<void>;
-
 	closeOrder: (
-		_: OrderItem,
-	) => Promise<OrderExchangeData>;
-
-	openOrder: (
 		_: OrderItem,
 	) => Promise<OrderExchangeData>;
 
 	editOrder: (
 		_: OrderItem,
 	) => Promise<OrderExchangeData>;
+
+	getBalances: () => Promise<void>;
+
+	getOrder: (
+		_: OrderItem,
+	) => Promise<OrderExchangeData>;
+
+	getTicker: (
+		_: PairData,
+	) => Promise<void>;
+
+	openOrder: (
+		_: OrderItem,
+	) => Promise<OrderExchangeData>;
+
+	symbolToLocal: (
+		symbol: string,
+	) => string;
+
+	symbolToForeign: (
+		symbol: string,
+	) => string;
+
+	syncChart: (
+		chart: ChartItem,
+	) => Promise<void>;
 }
 
 export interface ExchangeStorageInterface {
@@ -39,10 +76,16 @@ export interface ExchangeStorageInterface {
 }
 
 export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
+	balance: string[] = [];
+	balanceIndex: string[] = [];
 	class: string = '';
 	name: string;
-	order: Array<OrderItem> = [];
-	orderIndex: string[] = [];
+	// order: Array<OrderItem> = [];
+	// orderIndex: string[] = [];
+	symbolForeign: string[] = [];
+	symbolLocal: string[] = [];
+	ticker: ExchangeTickerData[] = [];
+	tickerIndex: string[] = [];
 	uuid: string;
 	
 	constructor (
@@ -92,6 +135,10 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		return orderResponse;
 	}
 
+	async getBalances () {
+		return;
+	}
+
 	async getOrder (
 		_: OrderItem,
 	) {
@@ -101,6 +148,12 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		};
 		Bot.log(`Order '${_.name}'; Sync; Paper`);
 		return orderResponse;
+	}
+
+	async getTicker (
+		_: PairData,
+	) {
+		return;
 	}
 
 	compat (
@@ -219,6 +272,26 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		chart: ChartItem,
 	) {
 		Bot.log(`Chart '${chart.name}' sync`);
+	}
+
+	symbolToLocal (
+		symbol: string,
+	) {
+		const index = this.symbolForeign.indexOf(symbol);
+		if (index >= 0)
+			return this.symbolLocal[index];
+
+		return symbol;
+	}
+
+	symbolToForeign (
+		symbol: string,
+	) {
+		const index = this.symbolLocal.indexOf(symbol);
+		if (index >= 0)
+			return this.symbolForeign[index];
+
+		return symbol;
 	}
 }
 

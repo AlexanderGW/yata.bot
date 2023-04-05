@@ -2,6 +2,7 @@ import { Bot, Log } from '../Bot';
 import { ChartCandleData, ChartItem } from '../Chart';
 import { ExchangeData, ExchangeInterface, ExchangeItem } from '../Exchange';
 import { OrderSide, OrderItem, OrderType, OrderStatus, OrderExchangeData, Order } from '../Order';
+import { PairData, PairItem } from '../Pair';
 
 const fs = require('fs');
 
@@ -12,15 +13,30 @@ export type KrakenExchangeResponse = {
 
 export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 	handle?: {
-		api: (type: string, options: object) => Promise<KrakenExchangeResponse>,
+		api: (type: string, options?: object) => Promise<KrakenExchangeResponse>,
 	};
 
-	// Omitting 4th char prefix of `X`, added on `pair` assignment
-	symbols: {
-		[index: string]: string,
-	} = {
-		BTC: 'XBT',
-	};
+	symbolForeign = [
+		'XXBT',
+		'XETH',
+		'XEUR',
+		'ZEUR',
+		'XGBP',
+		'ZGBP',
+		'ZUSD',
+		'XXDG',
+	];
+
+	symbolLocal = [
+		'BTC',
+		'ETH',
+		'EUR',
+		'EUR',
+		'GBP',
+		'GBP',
+		'USD',
+		'DOGE',
+	];
 
 	constructor (
 		_: ExchangeData,
@@ -32,15 +48,6 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			_.key,
 			_.secret
 		);
-	}
-
-	translateSymbol (
-		symbol: string,
-	) {
-		if (this.symbols[symbol])
-			return this.symbols[symbol];
-
-		return symbol;
 	}
 
 	_handleError (
@@ -63,16 +70,39 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		let orderResponse: OrderExchangeData = {};
 
 		try {
-			let assetASymbol = this.translateSymbol(_.pair.a.symbol);
-			let assetBSymbol = this.translateSymbol(_.pair.b.symbol);
-
-			// All response assets are prefixed with an `X`. Add one to ease lookups
-			let pair = `X${assetASymbol}X${assetBSymbol}`;
+			let assetASymbol = this.symbolToForeign(_.pair.a.symbol);
+			let assetBSymbol = this.symbolToForeign(_.pair.b.symbol);
+			let pair = `${assetASymbol}${assetBSymbol}`;
 
 			// Set empty `referenceId` as current time
 			if (_.referenceId === 0) {
 				orderResponse.referenceId = Math.floor(Date.now());
 			}
+
+			const requestOptions = {
+
+				// Order type
+				ordertype: this.getOrderTypeValue(_),
+
+				// Order type
+				pair: pair,
+
+				// Order price
+				price: _.price,
+
+				// Order direction (buy/sell)
+				type: _.side === OrderSide.Buy ? 'buy' : 'sell',
+
+				// Set order `referenceId`
+				userref: _.referenceId,
+
+				// Validate inputs only. Do not submit order.
+				validate: _.dryrun,
+
+				// Order quantity in terms of the base asset
+				volume: _.quantity,
+			};
+			console.log(requestOptions);
 
 			let responseJson = await this.handle?.api(
 
@@ -80,29 +110,7 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				'AddOrder',
 
 				// Options
-				{
-
-					// Order type
-					ordertype: this.getOrderTypeValue(_),
-
-					// Order type
-					pair: pair,
-
-					// Order price
-					price: _.price,
-
-					// Order direction (buy/sell)
-					type: _.side === OrderSide.Buy ? 'buy' : 'sell',
-
-					// Set order `referenceId`
-					userref: _.referenceId,
-
-					// Validate inputs only. Do not submit order.
-					validate: _.dryrun,
-
-					// Order quantity in terms of the base asset
-					volume: _.quantity,
-				}
+				requestOptions
 			);
 
 			// Log raw response
@@ -196,11 +204,9 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			if (_.transactionId?.length)
 				lastTransactionIdx = _.transactionId.length - 1;
 
-			let assetASymbol = this.translateSymbol(_.pair.a.symbol);
-			let assetBSymbol = this.translateSymbol(_.pair.b.symbol);
-
-			// All response assets are prefixed with an `X`. Add one to ease lookups
-			let pair = `X${assetASymbol}X${assetBSymbol}`;
+			let assetASymbol = this.symbolToForeign(_.pair.a.symbol);
+			let assetBSymbol = this.symbolToForeign(_.pair.b.symbol);
+			let pair = `${assetASymbol}${assetBSymbol}`;
 
 			// Set empty `referenceId` as current time
 			if (_.referenceId === 0) {
@@ -267,6 +273,104 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		}
 
 		return orderResponse;
+	}
+
+	async getTicker (
+		_: PairData,
+	) {
+		try {
+			let assetASymbol = _.a.symbol;
+			let assetBSymbol = _.b.symbol;
+			
+			// Get balances on exchange
+			let responseJson = await this.handle?.api(
+
+				// Type
+				'Ticker',
+
+				{
+					pair: `${assetASymbol}/${assetBSymbol}`,
+				}
+			);
+
+			// Log raw response
+			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
+
+			if (responseJson) {
+
+				// Handle any errors
+				this._handleError(responseJson);
+
+				// Walk all balances
+				for (let resultPair in responseJson.result) {
+					const pairTicker = `${assetASymbol}-${assetBSymbol}`;
+					const ticker = responseJson.result[resultPair];
+					const tickerData = {
+						ask: ticker.a[0],
+						bid: ticker.b[0],
+						open: ticker.o,
+						high: ticker.h[0],
+						low: ticker.l[0],
+						price: ticker.c[0],
+						tradeCount: ticker.t[0],
+						volumeMin: '',
+					};
+					const index = this.tickerIndex.indexOf(pairTicker);
+					if (index < 0) {
+						this.ticker.push(tickerData);
+						this.tickerIndex.push(pairTicker);
+					} else
+						this.ticker[index] = tickerData;
+				}
+
+				console.log(`this.tickerIndex`);
+				console.log(this.tickerIndex);
+				console.log(`this.ticker`);
+				console.log(this.ticker);
+			}
+		} catch (error) {
+			Bot.log(`Exchange '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
+		}
+	}
+
+	async getBalances () {
+		try {
+			
+			// Get balances on exchange
+			let responseJson = await this.handle?.api(
+
+				// Type
+				'Balance',
+			);
+
+			// Log raw response
+			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
+
+			if (responseJson) {
+
+				// Handle any errors
+				this._handleError(responseJson);
+
+				// Walk all balances
+				for (let symbol in responseJson.result) {
+					const symbolLocal = this.symbolToLocal(symbol);
+					const balance = responseJson.result[symbol];
+					const index = this.balanceIndex.indexOf(symbolLocal);
+					if (index < 0) {
+						this.balance.push(balance);
+						this.balanceIndex.push(symbolLocal);
+					} else
+						this.balance[index] = balance;
+				}
+
+				console.log(`this.balanceIndex`);
+				console.log(this.balanceIndex);
+				console.log(`this.balance`);
+				console.log(this.balance);
+			}
+		} catch (error) {
+			Bot.log(`Exchange '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
+		}
 	}
 
 	async getOrder (
@@ -428,11 +532,9 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			throw ('This chart belongs to a different exchange.');
 
 		try {
-			let assetASymbol = this.translateSymbol(chart.pair.a.symbol);
-			let assetBSymbol = this.translateSymbol(chart.pair.b.symbol);
-
-			// All response assets are prefixed with an `X`. Add one to ease lookups
-			let pair: string = `X${assetASymbol}X${assetBSymbol}`;
+			let assetASymbol = this.symbolToForeign(chart.pair.a.symbol);
+			let assetBSymbol = this.symbolToForeign(chart.pair.b.symbol);
+			let pair: string = `${assetASymbol}${assetBSymbol}`;
 
 			let nextDate = new Date(chart.datasetNextTime);
 			Bot.log(`Chart '${chart.name}'; Sync from: ${nextDate.toISOString()}`);
