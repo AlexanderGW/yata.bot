@@ -23,7 +23,7 @@
     "redis": "^4.6.4",
     "talib": "^1.1.4",
     "uuid": "^9.0.0",
-    "yaml": "^2.2.1"
+    "yaml": "^2.3.4"
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",
