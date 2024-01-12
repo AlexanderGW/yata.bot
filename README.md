@@ -2,9 +2,9 @@
 Still in very early stages of development. Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.com/package/talib).
 
 Following a concept of timeframes with strategies, which look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
- 
-## Update: March 2023
-- Planning a candidate release in the coming months.
+
+## Update: January 2024
+- Planning a candidate release for March 2024.
 - YAML playbook templates to configure environments, and execute callbacks 
 - Spot trading only (could expand on this later)
 
