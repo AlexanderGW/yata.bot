@@ -6,33 +6,80 @@ import { PairData, PairItem } from "./Pair";
 
 const fs = require('fs');
 
+export type ExchangeBalanceData = {
+	[index: string]: any,
+	available?: number,
+	balance?: number,
+	credit?: number,
+	creditUsed?: number,
+	tradeHeld?: number,
+};
+
 export type ExchangeTickerData = {
 	[index: string]: any,
-	ask: string,
-	bid: string,
-	high: string,
-	low: string,
-	open: number,
-	price: string,
-	tradeCount: number,
-	volumeMin: string,
+	ask?: number,
+	bid?: number,
+	decimals?: number,
+	high?: number,
+	low?: number,
+	open?: number,
+	price?: number,
+	tradeCount?: number,
+	volume?: number,
+	vwap?: number,
 };
 
 export type ExchangeData = {
-	balance?: string[],
+	[index: string]: any,
+	// api?: ExchangeApiInterface,
+	balance?: ExchangeBalanceData[],
 	balanceIndex?: string[],
 	class?: string,
 	name?: string,
 	key?: string,
 	secret?: string,
-	symbolLocal?: string[],
-	symbolForeign?: string[],
-	ticker?: Array<ExchangeTickerData>,
+	ticker?: ExchangeTickerData[],
 	tickerIndex?: string[],
 	uuid?: string,
 }
 
-export interface ExchangeInterface {
+export type ExchangeApiBalanceData = {
+	[index: string]: any,
+	balance?: ExchangeBalanceData[],
+	balanceIndex?: string[],
+}
+
+export type ExchangeApiTickerData = {
+	[index: string]: any,
+	ticker?: ExchangeTickerData[],
+	tickerIndex?: string[],
+}
+
+export type ExchangeApiData = {
+	name: string,
+	key?: string,
+	secret?: string,
+	uuid: string,
+}
+
+export type ExchangeApiInterface = {
+	name: string,
+	uuid: string,
+
+	symbolLocal?: string[],
+	symbolForeign?: string[],
+
+	// doApi: () => Promise<ExchangeApiInterface>;
+
+	getBalance: () => Promise<ExchangeApiBalanceData>;
+
+	// TODO: Collate all defined ticker symbols - then call en-masse?
+	// syncTickers: () => Promise<void>;
+
+	getTicker: (
+		_: PairData,
+	) => Promise<ExchangeApiTickerData>;
+
 	closeOrder: (
 		_: OrderItem,
 	) => Promise<OrderExchangeData>;
@@ -41,42 +88,43 @@ export interface ExchangeInterface {
 		_: OrderItem,
 	) => Promise<OrderExchangeData>;
 
-	getBalances: () => Promise<void>;
-
 	getOrder: (
 		_: OrderItem,
 	) => Promise<OrderExchangeData>;
 
-	getTicker: (
-		_: PairData,
-	) => Promise<void>;
-
 	openOrder: (
 		_: OrderItem,
 	) => Promise<OrderExchangeData>;
+}
 
-	symbolToLocal: (
+export type ExchangeBaseInterface = {
+	api?: ExchangeApiInterface,
+
+	getBalance: (
 		symbol: string,
-	) => string;
+	) => Promise<ExchangeBalanceData>;
 
-	symbolToForeign: (
-		symbol: string,
-	) => string;
+	getTicker: (
+		_: PairData,
+	) => Promise<ExchangeTickerData>;
+}
 
+export type ExchangeInterface = {
 	syncChart: (
 		chart: ChartItem,
 	) => Promise<void>;
 }
 
-export interface ExchangeStorageInterface {
+export type ExchangeStorageInterface = {
 	refreshChart: (
 		chart: ChartItem,
 		_: object,
 	) => void;
 }
 
-export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeStorageInterface {
-	balance: string[] = [];
+export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, ExchangeInterface {
+	api?: ExchangeApiInterface;
+	balance: ExchangeBalanceData[] = [];
 	balanceIndex: string[] = [];
 	class: string = '';
 	name: string;
@@ -91,6 +139,19 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 	constructor (
 		_: ExchangeData,
 	) {
+		// Import exchange extension
+		// await import(importPath).then(module => {
+		// 	let newItem: any = new module[className](_);
+
+		// 	if (newItem.constructor.name === className) {
+		// 		let uuid = Bot.setItem(newItem);
+
+		// 		item = Bot.getItem(uuid);
+		// 	}
+		// }).catch(err => Bot.log(err.message, Log.Err));
+		
+		// if (_.hasOwnProperty('api'))
+		// 	this.api = await this.doApi(_);
 		this.class = _.class as string;
 		if (_.hasOwnProperty('name'))
 			this.name = _.name as string;
@@ -102,59 +163,105 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		this.uuid = _.uuid ?? uuidv4();
 	}
 
-	async closeOrder (
-		_: OrderItem,
-	) {
-		const orderResponse: OrderExchangeData = {
-			status: OrderStatus.Close,
-			responseTime: Date.now(),
-		};
-		Bot.log(`Order '${_.name}'; Close; Paper`);
-		return orderResponse;
-	}
+	// async doApi (
+	// 	_: ExchangeData,
+	// ): Promise<ExchangeApiInterface> {
+		
+	// }
 
-	async openOrder (
-		_: OrderItem,
+	// return both symbol balances?
+	async getBalance (
+		symbol: string
 	) {
-		const orderResponse: OrderExchangeData = {
-			status: OrderStatus.Open,
-			responseTime: Date.now(),
-		};
-		Bot.log(`Order '${_.name}'; Open; Paper`);
-		return orderResponse;
-	}
+		try {
+			let assetBalanceIndex = this.balanceIndex.indexOf(symbol);
+			if (assetBalanceIndex < 0) {
+				// Bot.log(`Do api.getBalance`);
+				const response = await this.api?.getBalance();
+				// Bot.log(`RESPONSE api.getBalance`);
+				// Bot.log(response);
 
-	async editOrder (
-		_: OrderItem,
-	) {
-		const orderResponse: OrderExchangeData = {
-			status: OrderStatus.Edit,
-			responseTime: Date.now(),
-		};
-		Bot.log(`Order '${_.name}'; Edit; Paper`);
-		return orderResponse;
-	}
+				if (response?.balance && response?.balanceIndex) {
+					this.balance = [
+						...this.balance,
+						...response.balance
+					];
+					this.balanceIndex = [
+						...this.balanceIndex,
+						...response.balanceIndex
+					];
+					// Bot.log(`this.balance`);
+					// Bot.log(this.balance);
+					// Bot.log(`this.balanceIndex`);
+					// Bot.log(this.balanceIndex);
+				}
 
-	async getBalances () {
-		return;
-	}
+				assetBalanceIndex = this.balanceIndex.indexOf(symbol);
+				if (assetBalanceIndex < 0)
+					throw new Error(`Exchange '${this.name}'; Symbol '${symbol}' not found.`);
+			}
 
-	async getOrder (
-		_: OrderItem,
-	) {
-		const orderResponse: OrderExchangeData = {
-			status: OrderStatus.Unknown,
-			responseTime: Date.now(),
-		};
-		Bot.log(`Order '${_.name}'; Sync; Paper`);
-		return orderResponse;
+			return this.balance[assetBalanceIndex];
+		} catch(error) {
+			Bot.log(error, Log.Err);
+			return {};
+		}
 	}
 
 	async getTicker (
 		_: PairData,
 	) {
-		return;
+		try {
+			if (_.exchange.uuid !== this.uuid)
+				throw new Error(`Exchange '${this.name}'; Pair '${_.name}'; Incompatible exchange pair`);
+
+			const pairTicker = `${_.a.symbol}-${_.b.symbol}`;
+			
+			let pairTickerIndex = this.tickerIndex.indexOf(pairTicker);
+			if (pairTickerIndex < 0) {
+				
+				// TODO: Check and sync ticker data - track last poll?
+				const response = await this.api?.getTicker(_);
+				
+				if (response?.ticker && response?.tickerIndex) {
+					this.ticker = [
+						...this.ticker,
+						...response.ticker
+					];
+					this.tickerIndex = [
+						...this.tickerIndex,
+						...response.tickerIndex
+					];
+				}
+
+				pairTickerIndex = this.tickerIndex.indexOf(pairTicker);
+				if (pairTickerIndex < 0)
+					throw new Error(`Exchange '${this.name}'; No ticker information for '${pairTicker}'`);
+			}
+
+			return this.ticker[pairTickerIndex];
+		} catch (error) {
+			Bot.log(error, Log.Err);
+			return {};
+		}
 	}
+
+	// async getTicker (
+	// 	_: PairData,
+	// ) {
+	// 	if (_.exchange.uuid !== this.uuid)
+	// 		throw new Error(`Exchange '${this.name}'; Pair '${_.name}'; Incompatible exchange pair`);
+
+	// 	const assetASymbol = _.a.symbol;
+	// 	const assetBSymbol = _.b.symbol;
+	// 	const pairTicker = `${assetASymbol}-${assetBSymbol}`;
+
+	// 	const pairTickerIndex = this.tickerIndex.indexOf(pairTicker);
+	// 	if (pairTickerIndex < 0)
+	// 		throw new Error(`Exchange '${this.name}'; No ticker information for '${pairTicker}'`);
+		
+	// 	return this.ticker[pairTickerIndex];
+	// }
 
 	compat (
 		chart: ChartItem,
@@ -164,136 +271,23 @@ export class ExchangeItem implements ExchangeData, ExchangeInterface, ExchangeSt
 		return false;
 	}
 
-	refreshChart (
-		chart: ChartItem,
-		_: ChartCandleData
-	) {
-		chart.updateDataset(_);
-		chart.refreshDataset();
-
-		// Check if datasets need to be stored
-		if (!process.env.BOT_EXCHANGE_STORE_DATASET || process.env.BOT_EXCHANGE_STORE_DATASET !== '1')
-			return true;
-
-		const pad = (value: number) =>
-			value.toString().length == 1
-			? `0${value}`
-			: value;
-
-		const now = new Date();
-
-		const candleTimeMinutes = chart.candleTime / 60000;
-
-		const pathParts = [
-			chart.pair.exchange.name,
-			chart.pair.a.symbol + chart.pair.b.symbol,
-			now.getUTCFullYear(),
-			pad(now.getUTCMonth() + 1),
-			pad(now.getUTCDate()),
-			candleTimeMinutes,
-		];
-		const path = pathParts.join('/');
-		// Bot.log(path);
-
-		const filenameParts = [
-
-			// Exchange
-			chart.pair.exchange.name,
-
-			// Pair
-			[
-				chart.pair.a.symbol,
-				chart.pair.b.symbol,
-			].join(''),
-
-			// Candle size in minutes to save space
-			candleTimeMinutes,
-
-			// Timestamp
-			[
-				now.getUTCFullYear(),
-				pad(now.getUTCMonth() + 1),
-				pad(now.getUTCDate()),
-				pad(now.getUTCHours()),
-				pad(now.getUTCMinutes()),
-				pad(now.getUTCSeconds()),
-			].join(''),
-
-			// Number of candles
-			_.open?.length,
-		];
-
-		const filename = filenameParts.join('-');
-		// Bot.log(filename);
-
-		const responseJson = JSON.stringify(_);
-
-		const storagePath = `./storage/dataset/${path}`;
-		const storageFile = `${storagePath}/${filename}.json`;
-
-		try {
-			if (!fs.existsSync(storagePath)) {
-				fs.mkdirSync(
-					storagePath,
-					{
-						recursive: true
-					},
-					(err: object) => {
-						if (err)
-							throw err;
-
-						Bot.log(`Exchange.refreshChart; Path created: ${storagePath}`, Log.Verbose);
-					}
-				)
-			}
-		} catch (err: any) {
-			return Bot.log(`Exchange.refreshChart; mkdirSync; ${JSON.stringify(err)}`, Log.Err);
-		}
-
-        try {
-			fs.writeFile(
-				storageFile,
-				responseJson,
-				function (
-					err: object
-				) {
-					if (err)
-						throw err;
-					
-					Bot.log(`Exchange.refreshChart; Dataset written: ${storageFile}`, Log.Verbose);
-				}
-			);
-		} catch (err: any) {
-			return Bot.log(`Exchange.refreshChart; writeFile; ${JSON.stringify(err)}`, Log.Err);
-		}
-	}
+	
 
 	async syncChart (
 		chart: ChartItem,
 	) {
 		Bot.log(`Chart '${chart.name}' sync`);
-	}
 
-	symbolToLocal (
-		symbol: string,
-	) {
-		const index = this.symbolForeign.indexOf(symbol);
-		if (index >= 0)
-			return this.symbolLocal[index];
+		if (!this.compat(chart))
+			throw new Error('This chart belongs to a different exchange.');
 
-		return symbol;
-	}
-
-	symbolToForeign (
-		symbol: string,
-	) {
-		const index = this.symbolLocal.indexOf(symbol);
-		if (index >= 0)
-			return this.symbolForeign[index];
-
-		return symbol;
+		// 
 	}
 }
+
+// IDEA: Implement exchanges as a drop in interface? Or as an instance defiend within the `Exchange` item? - this will avoid having to redefine/implment all functions - instead allows calling `Exchange`, with underlying sub-class instance for ticket/balance lookups.?
+
+// OR - Define all within `Exchange` such as `getBalance` - exchange backend classes then either call the default `getBalance` - or implmement something else
 
 export const Exchange = {
 	async new (
@@ -301,32 +295,34 @@ export const Exchange = {
 	): Promise<ExchangeItem> {
 		let item: any;
 
-		// Exchange class specified
-		if (_.class?.length) {
-			let importPath = `./Exchange/${_.class}`;
-			Bot.log(`Exchange import: ${importPath}`);
+		if (!_.class)
+			_.class = 'Paper';
 
-			const className = `${_.class}Item`;
-				
-			// Import exchange extension
-			await import(importPath).then(module => {
-				let newItem: any = new module[className](_);
+		let exchangeItem: ExchangeItem = new ExchangeItem(_);
 
-				if (newItem.constructor.name === className) {
-					let uuid = Bot.setItem(newItem);
 
-					item = Bot.getItem(uuid);
-				}
-			}).catch(err => Bot.log(err.message, Log.Err));
-		}
 
-		// Default to base `Exchange` with paper trading
-		else {
-			let newItem: any = new ExchangeItem(_);
-			let uuid = Bot.setItem(newItem);
 
-			item = Bot.getItem(uuid);
-		}
+		let importPath = `./Exchange/${_.class}`;
+		Bot.log(`Exchange import: ${importPath}`);
+
+		const className = `${_.class}Exchange`;
+
+		await import(importPath).then(module => {
+			let exchangeApi: any = new module[className](_);
+
+			if (exchangeApi.constructor.name !== className)
+				throw new Error(`Failed to instanciate class`);
+
+			exchangeItem.api = exchangeApi;
+		}).catch(err => Bot.log(err.message, Log.Err));
+
+
+
+
+		let uuid = Bot.setItem(exchangeItem);
+
+		item = Bot.getItem(uuid);
 
 		return item;
 	}

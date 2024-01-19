@@ -188,7 +188,7 @@ export class ScenarioItem implements ScenarioData {
 		}
 
 		if (conditionMatch.length < this.condition.length)
-			throw ('Scenario conditions are not compatible with dataset.');
+			throw new Error('Scenario conditions are not compatible with dataset.');
 
 		let endPoint: number = 0;
 		if (_?.chart.dataset?.open?.length)
@@ -506,8 +506,8 @@ export class ScenarioItem implements ScenarioData {
 
 						_.strategyExecuteData.timeframe.result.push(signal);
 						_.strategyExecuteData.timeframe.resultIndex.push(_.strategy.uuid);
-					} catch (err) {
-						Bot.log(err as string, Log.Err);
+					} catch (error) {
+						Bot.log(error, Log.Err);
 					}
 				}
 			}

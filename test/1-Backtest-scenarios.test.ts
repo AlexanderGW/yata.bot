@@ -231,7 +231,7 @@ describe('Backtest dataset 1', () => {
         });
 
         // Create ETH BTC pair of assets
-        pairEthBtc = Pair.new({
+        pairEthBtc = await Pair.new({
             a: assetEth,
             b: assetBtc,
             exchange: exchangeDefaultPaper,

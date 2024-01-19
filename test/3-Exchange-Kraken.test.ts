@@ -7,7 +7,6 @@ import { Asset, AssetItem } from '../src/Bot/Asset';
 import { Bot, Log } from '../src/Bot/Bot';
 import { Pair, PairItem } from '../src/Bot/Pair';
 
-import { Position, PositionItem } from '../src/Bot/Position';
 import { Order, OrderAction, OrderItem, OrderSide, OrderStatus, OrderType } from '../src/Bot/Order';
 import { Exchange, ExchangeItem } from '../src/Bot/Exchange';
 
@@ -22,8 +21,9 @@ if (
         let exchangeKraken: ExchangeItem;
         let assetEth: AssetItem;
         let assetBtc: AssetItem;
+        let assetGbp: AssetItem;
         let pairEthBtcKraken: PairItem;
-        let position1: PositionItem;
+        let pairEthGbpKraken: PairItem;
         let order1: OrderItem;
 
         let order1OpenMarketBuy: OrderItem;
@@ -49,26 +49,28 @@ if (
             assetBtc = Asset.new({
                 symbol: 'BTC'
             });
+
+            assetGbp = Asset.new({
+                symbol: 'GBP'
+            });
     
             // ETH BTC pair of assets
-            pairEthBtcKraken = Pair.new({
+            // pairEthBtcKraken = await Pair.new({
+            //     a: assetEth,
+            //     b: assetBtc,
+            //     exchange: exchangeKraken,
+            // });
+
+            pairEthGbpKraken = await Pair.new({
                 a: assetEth,
-                b: assetBtc,
+                b: assetGbp,
                 exchange: exchangeKraken,
             });
     
-            // Existing position on exchange
-            position1 = Position.new({
-                pair: pairEthBtcKraken,
-    
-                // 0.1 ETH
-                quantity: '0.1'
-            });
-    
-            order1 = Order.new({
+            order1 = await Order.new({
 
-                // Percentages can only be used if a `position` is provided, otherwise e.g. 0.01
-                // For ETHBTC, this would be the quantity of ETH
+                // Percentages can only be used if a balance of pair asset B (BTC) is known
+                // For ETHBTC, this would be the quantity of BTC
                 quantity: '10%',
 
                 // NOTE: Ensure we are only testing orders
@@ -76,10 +78,7 @@ if (
                 dryrun: true,
 
                 // The trading pair, i.e. ETH/BTC on Kraken
-                pair: pairEthBtcKraken,
-
-                // An optional `Position`
-                position: position1,
+                pair: pairEthGbpKraken,
 
                 // Either `OrderSide.Buy`, or `OrderSide.Sell`
                 side: OrderSide.Buy,
@@ -92,45 +91,45 @@ if (
             });
         });
 
-        it('should validate market buy order creation', async () => {
+        // it('should validate market buy order creation', async () => {
 
-            // Execute market buy order create on exchange
-            try {
-
-                // Response will contain the exchange side transaction ID, and a
-                // new `responseTime`, and `status` if successful. You will
-                // need to update the order accordingly.
-                let orderResponse = await order1.execute();
-
-                // Check order confirmation
-                console.log(orderResponse);
-            } catch (err) {
-                Bot.log(err as string, Log.Err);
-            }
-        });
-    
-        // it('should validate limit buy order creation', async () => {
-    
-        //     // Execute limit buy order create on exchange
+        //     // Execute market buy order create on exchange
         //     try {
-
-        //         // Price. For ETHBTC, This would be at the price of BTC
-        //         order1.price = '0.01';
-
-        //         // Type of order
-        //         order1.type = OrderType.Limit;
 
         //         // Response will contain the exchange side transaction ID, and a
         //         // new `responseTime`, and `status` if successful. You will
         //         // need to update the order accordingly.
-        //         let orderResponse = await order1.execute();
+        //         // let orderResponse = await order1.execute();
 
-        //         // Check order confirmation
-        //         console.log(orderResponse);
-        //     } catch (err) {
-        //         Bot.log(err as string, Log.Err);
+        //         // // Check order confirmation
+        //         // console.log(orderResponse);
+        //     } catch (error) {
+        //         Bot.log(error, Log.Err);
         //     }
         // });
+    
+        it('should validate limit buy order creation', async () => {
+    
+            // Execute limit buy order create on exchange
+            try {
+
+                // Price. For ETHBTC, This would be at the price of BTC
+                order1.price = '0.01';
+
+                // Type of order
+                order1.type = OrderType.Limit;
+
+                // Response will contain the exchange side transaction ID, and a
+                // new `responseTime`, and `status` if successful. You will
+                // need to update the order accordingly.
+                // let orderResponse = await order1.execute();
+
+                // // Check order confirmation
+                // console.log(orderResponse);
+            } catch (error) {
+                Bot.log(error, Log.Err);
+            }
+        });
 
         // it('should validate limit buy order edit', async () => {
 
@@ -152,8 +151,8 @@ if (
         //         // For the purposes of testing, we'll store the response in its own variable
         //         order1EditLimitBuy = await order1OpenLimitBuy.execute(OrderAction.Edit);
         //         console.log(order1EditLimitBuy);
-        //     } catch (err) {
-        //         Bot.log(err as string, Log.Err);
+        //     } catch (error) {
+        //         Bot.log(error, Log.Err);
         //     }
         // });
     
@@ -171,8 +170,8 @@ if (
         //         // For the purposes of testing, we'll store the response in its own variable
         //         order1CloseLimitBuy = await order1OpenLimitBuy.execute(OrderAction.Close);
         //         console.log(order1CloseLimitBuy);
-        //     } catch (err) {
-        //         Bot.log(err as string, Log.Err);
+        //     } catch (error) {
+        //         Bot.log(error, Log.Err);
         //     }
         // });
     });

@@ -39,7 +39,7 @@ export type BotData = {
 	itemIndex: string[],
 	itemNameIndex: string[],
 	log: (
-		string: string,
+		input: unknown,
 		level?: Log,
 	) => void,
 	getItem: (
@@ -70,11 +70,11 @@ export const Bot: BotData = {
 	/**
 	 * Logging interface
 	 * 
-	 * @param string 
+	 * @param input 
 	 * @param level 
 	 */
 	log (
-		string: string,
+		_input: unknown,
 		level?: Log,
 	) {
 		let now = new Date();
@@ -87,12 +87,20 @@ export const Bot: BotData = {
 		)
 			return true;
 
+		// Handle input
+		let input: string = '';
+		if (_input instanceof Error) {
+			input = JSON.stringify(_input);
+		} else {
+			input = JSON.stringify(_input);
+		}
+
 		// Handle console logging
 		if (
 			!process.env.BOT_LOG_STDOUT
 			&& process.env.BOT_LOG_STDOUT !== '1'
 		) {
-			let consoleString = `${now.toISOString()}: ${string}`;
+			let consoleString = `${now.toISOString()}: ${input}`;
 
 			if (level === Log.Err)
 				console.error(`\x1b[31m ${consoleString}\x1b[0m`);
@@ -119,7 +127,7 @@ export const Bot: BotData = {
 			else
 				levelValue = 'I';
 
-			let consoleString = `${now.toISOString()}: ${levelValue}; ${string}`;
+			let consoleString = `${now.toISOString()}: ${levelValue}; ${input}`;
 
 			const pad = (value: number) =>
 				value.toString().length == 1

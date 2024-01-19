@@ -95,7 +95,7 @@ export class ChartItem implements ChartData {
 
 			if (!fs.existsSync(this.datasetFile)) {
 				if (process.env.BOT_CHART_DATAFILE_FAIL_EXIT === '1')
-					throw (`Chart '${this.name}'; Dataset not found '${this.datasetFile}'`);
+					throw new Error(`Chart '${this.name}'; Dataset not found '${this.datasetFile}'`);
 
 				return;
 			}
@@ -116,8 +116,8 @@ export class ChartItem implements ChartData {
 				let responseJson: ChartCandleData = JSON.parse(response);
 				if (responseJson)
 					this.dataset = responseJson;
-			} catch (err) {
-				Bot.log(err as string, Log.Err);
+			} catch (error) {
+				Bot.log(error, Log.Err);
 			}
 		}
 

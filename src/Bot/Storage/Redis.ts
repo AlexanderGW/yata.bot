@@ -52,8 +52,8 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 
 			const valueRaw = await this.client.get(name);
 			returnValue = JSON.parse(valueRaw as string);
-		} catch (err) {
-			Bot.log(err as string, Log.Err);
+		} catch (error) {
+			Bot.log(error, Log.Err);
 		}
 
 		return returnValue;
@@ -89,8 +89,8 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 
 				return name;
 			}
-		} catch (err) {
-			Bot.log(err as string, Log.Err);
+		} catch (error) {
+			Bot.log(error, Log.Err);
 			
 			return '';
 		}

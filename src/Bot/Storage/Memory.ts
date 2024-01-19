@@ -30,7 +30,7 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 			if (index >= 0)
 				returnValue = this.item[index];
 		} catch (error) {
-			Bot.log(error as string, Log.Err);
+			Bot.log(error, Log.Err);
 		}
 
 		return returnValue;
@@ -63,8 +63,8 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 
 				return _.uuid;
 			}
-		} catch (err) {
-			Bot.log(err as string, Log.Err);
+		} catch (error) {
+			Bot.log(error, Log.Err);
 			
 			return '';
 		}

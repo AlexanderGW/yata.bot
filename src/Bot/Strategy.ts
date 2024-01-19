@@ -73,7 +73,7 @@ export class StrategyItem implements StrategyData {
 		_: StrategyExecuteData,
 	) {
 		if (!this.chart.dataset)
-			throw (`Chart '${this.chart.name}' dataset is empty`);
+			throw new Error(`Chart '${this.chart.name}' dataset is empty`);
 			
 		let analysis: AnalysisItem;
 		let i: number;
@@ -94,11 +94,11 @@ export class StrategyItem implements StrategyData {
 			// Source the result of previously executed analysis
 			if (analysis.config?.inRealAnalysis) {
 				if (!inRealField)
-					throw ('Analysis dataset input field is unknown.');
+					throw new Error('Analysis dataset input field is unknown.');
 
 				let analysisResult = this.getResult(analysis.config.inRealAnalysis);
 				if (analysisResult === false)
-					throw ('No result found for provided analysis, make sure it executes before this analysis.');
+					throw new Error('No result found for provided analysis, make sure it executes before this analysis.');
 
 				if (typeof analysisResult === 'object' && analysisResult.result) {
 					let resultValue = analysisResult.result[inRealField as keyof AnalysisExecuteResultData];
@@ -117,7 +117,7 @@ export class StrategyItem implements StrategyData {
 			}
 
 			if (!inReal)
-				throw (`Analysis '${analysis.name}' dataset input '${inReal}' is empty.`);
+				throw new Error(`Analysis '${analysis.name}' dataset input '${inReal}' is empty.`);
 
 			// Prepare talib options
 			let executeOptions = {
@@ -170,8 +170,8 @@ export class StrategyItem implements StrategyData {
 					strategy: action[1],
 					strategyExecuteData: _,
 				});
-			} catch (err) {
-				Bot.log(err as string, Log.Err);
+			} catch (error) {
+				Bot.log(error, Log.Err);
 			}
 		}
 

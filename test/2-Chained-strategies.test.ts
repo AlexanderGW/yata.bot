@@ -23,8 +23,7 @@ import {
 	Rsi14 as analysisRsi14,
 	Sma20 as analysisSma20
 } from '../src/Helper/Analysis';
-import { Position } from '../src/Bot/Position';
-import { Order, OrderAction, OrderSide, OrderStatus, OrderType } from '../src/Bot/Order';
+import { Order, OrderSide, OrderStatus, OrderType } from '../src/Bot/Order';
 import { Exchange } from '../src/Bot/Exchange';
 import { Subscription, SubscriptionData } from '../src/Bot/Subscription';
 
@@ -67,16 +66,10 @@ describe('Backtest dataset 1', () => {
         });
 
         // Create ETH BTC pair of assets, with Kraken
-        let pairEthBtcKraken = Pair.new({
+        let pairEthBtcKraken = await Pair.new({
             a: assetEth,
             b: assetBtc,
             exchange: exchangeDefaultPaper,
-        });
-
-        // Create an existing position on exchange
-        let pos1 = Position.new({
-        	pair: pairEthBtcKraken,
-        	quantity: '10.123456789'
         });
 
         // Create a ETHBTC pair chart, and 1 minute, for exchange data
@@ -122,8 +115,8 @@ describe('Backtest dataset 1', () => {
                 
                 chartEthBtc4h.dataset = responseJson;
             }
-        } catch (err) {
-            Bot.log(err as string, Log.Err);
+        } catch (error) {
+            Bot.log(error, Log.Err);
         }
 
         // RSI crossing upward into 30 range
@@ -193,18 +186,17 @@ describe('Backtest dataset 1', () => {
 
                 // Create and execute an open order on exchange
                 try {
-                    let order1 = Order.new({
+                    let order1 = await Order.new({
                         pair: pairEthBtcKraken,
-                        position: pos1,
-                        price: '0.05',
-                        quantity: '10%', // of provided position,
+                        price: '-10%',
+                        quantity: '10%', // of asset B, when buy side
                         side: OrderSide.Buy,
                         status: OrderStatus.Open,
                         type: OrderType.Limit,
                     });
-                    order1.execute();
-                } catch (err) {
-                    Bot.log(err as string);
+                    await order1.execute();
+                } catch (error) {
+                    Bot.log(error);
                 }
 
                 if (subscribe.timeframeAny?.length) {
@@ -253,7 +245,7 @@ describe('Backtest dataset 1', () => {
                                             
                                             // Output details on all matching scenario conditions
                                             for (let l = 0; l < result[k].length; l++) {
-                                                Bot.log(JSON.stringify(result[k][l]));
+                                                Bot.log((result[k][l]));
                                             }
                                         }
                                     }
@@ -292,8 +284,8 @@ describe('Backtest dataset 1', () => {
             }
         )
         
-        .catch((err) => {
-            console.error(err);
+        .catch((error) => {
+            console.error(error);
         });
 
         // Execute the timeframe

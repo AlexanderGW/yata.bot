@@ -39,8 +39,8 @@ export class FileStorageItem extends StorageBase implements StorageInterface {
 				'utf8',
 			);
 			returnValue = JSON.parse(fileContent);
-		} catch (err) {
-			Bot.log(`FileStorage.getItem; ${JSON.stringify(err)}`, Log.Err);
+		} catch (error) {
+			Bot.log(`FileStorage.getItem; ${JSON.stringify(error)}`, Log.Err);
 		}
 
 		return returnValue;
@@ -74,8 +74,8 @@ export class FileStorageItem extends StorageBase implements StorageInterface {
 					}
 				)
 			}
-		} catch (err) {
-			Bot.log(`FileStorage.setItem; ${JSON.stringify(err)}`, Log.Err);
+		} catch (error) {
+			Bot.log(`FileStorage.setItem; ${JSON.stringify(error)}`, Log.Err);
 			
 			return '';
 		}
@@ -93,8 +93,8 @@ export class FileStorageItem extends StorageBase implements StorageInterface {
 					Bot.log(`FileStorage.setItem; File written: ${storageFile}`, Log.Verbose);
 				}
 			);
-		} catch (err: any) {
-			Bot.log(`FileStorage.setItem; writeFile; ${JSON.stringify(err)}`, Log.Err);
+		} catch (error) {
+			Bot.log(`FileStorage.setItem; writeFile; ${JSON.stringify(error)}`, Log.Err);
 		}
 
 		return _.uuid;

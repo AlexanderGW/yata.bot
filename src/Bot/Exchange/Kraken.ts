@@ -1,6 +1,7 @@
 import { Bot, Log } from '../Bot';
 import { ChartCandleData, ChartItem } from '../Chart';
-import { ExchangeData, ExchangeInterface, ExchangeItem } from '../Exchange';
+import { ExchangeApiBalanceData, ExchangeApiData, ExchangeApiInterface, ExchangeApiTickerData, ExchangeBalanceData, ExchangeData, ExchangeTickerData } from '../Exchange';
+import { countDecimals } from '../Helper';
 import { OrderSide, OrderItem, OrderType, OrderStatus, OrderExchangeData, Order } from '../Order';
 import { PairData, PairItem } from '../Pair';
 
@@ -11,7 +12,25 @@ export type KrakenExchangeResponse = {
 	error?: string[],
 };
 
-export class KrakenItem extends ExchangeItem implements ExchangeInterface {
+export type KrakenExchangeInterface = {
+	symbolToLocal: (
+		symbol: string,
+	) => string;
+
+	symbolToForeign: (
+		symbol: string,
+	) => string;
+
+	refreshChart: (
+		chart: ChartItem,
+		_: object,
+	) => void;
+}
+
+export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInterface {
+	name: string;
+	uuid: string;
+
 	handle?: {
 		api: (type: string, options?: object) => Promise<KrakenExchangeResponse>,
 	};
@@ -39,14 +58,15 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 	];
 
 	constructor (
-		_: ExchangeData,
+		_: ExchangeApiData,
 	) {
-		super(_);
+		this.name = _.name;
+		this.uuid = _.uuid;
 
 		const KrakenClient = require('kraken-api');
 		this.handle = new KrakenClient(
-			_.key,
-			_.secret
+			process.env.KRAKEN_CLIENT_KEY!,
+			process.env.KRAKEN_CLIENT_SECRET!
 		);
 	}
 
@@ -62,6 +82,26 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		if (_.result.status === 'Err') {
 			throw _.result.error_message;
 		}
+	}
+
+	symbolToLocal (
+		symbol: string,
+	) {
+		const index = this.symbolForeign.indexOf(symbol);
+		if (index >= 0)
+			return this.symbolLocal[index];
+
+		return symbol;
+	}
+
+	symbolToForeign (
+		symbol: string,
+	) {
+		const index = this.symbolLocal.indexOf(symbol);
+		if (index >= 0)
+			return this.symbolForeign[index];
+
+		return symbol;
 	}
 
 	async openOrder (
@@ -275,12 +315,90 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		return orderResponse;
 	}
 
+	// SOME KIND OF RACE CONDITON HAPPENING
+	// SEEING CATCH OUTPUT IN LOG, BEFORE RESPONSE...
+	async getBalance () {
+		try {
+
+			// Get balances on exchange
+			let responseJson = await this.handle?.api(
+
+				// Type
+				'BalanceEx',
+			);
+
+			// Log raw response
+			Bot.log(`Exchange '${this.name}' response; getBalance; ` + JSON.stringify(responseJson), Log.Verbose);
+
+			if (!responseJson)
+				throw new Error(`Invalid response`);
+
+			// Handle any errors
+			this._handleError(responseJson);
+
+			let returnData: ExchangeApiBalanceData = {};
+			returnData.balance = [];
+			returnData.balanceIndex = [];
+
+			// Walk all balances
+			for (let resultSymbol in responseJson.result) {
+				const resultBalance: {
+					balance?: string,
+					credit?: string,
+					credit_used?: string,
+					hold_trade?: string,
+				} = responseJson.result[resultSymbol];
+
+				const symbolLocal = this.symbolToLocal(resultSymbol);
+				const balance = Number(resultBalance.balance);
+				const credit = Number(resultBalance.credit);
+				const creditUsed = Number(resultBalance.credit_used);
+				const holdTrade = Number(resultBalance.hold_trade);
+
+				const balanceData: ExchangeBalanceData = {
+					available: balance, // TODO: balance + credit - creditUsed - holdTrade,
+					balance: balance,
+					credit: credit,
+					creditUsed: creditUsed,
+					tradeHeld: holdTrade,
+				};
+
+				const index = returnData?.balanceIndex.indexOf(symbolLocal);
+				if (index < 0) {
+					returnData.balance.push(balanceData);
+					returnData.balanceIndex.push(symbolLocal);
+				} else
+					returnData.balance[index] = balanceData;
+			}
+
+			// console.log(`returnData.balanceIndex`);
+			// console.log(returnData.balanceIndex);
+			// console.log(`returnData.balance`);
+			// console.log(returnData.balance);
+
+			return returnData;
+		} catch (error) {
+			console.error(error);
+			Bot.log(`Exchange '${this.name}'; getBalance; ${JSON.stringify(error)}`, Log.Err);
+			return {};
+		}
+	}
+
+
+
+
+
+
 	async getTicker (
 		_: PairData,
-	) {
+	): Promise<ExchangeApiTickerData> {
 		try {
-			let assetASymbol = _.a.symbol;
-			let assetBSymbol = _.b.symbol;
+			// TODO: fix
+			// if (_.exchange.uuid !== this.uuid)
+			// 	throw new Error(`Exchange '${this.name}'; Pair '${_.name}'; Incompatible exchange pair`);
+
+			let assetASymbolForeign = this.symbolToForeign(_.a.symbol);
+			let assetBSymbolForeign = this.symbolToForeign(_.b.symbol);
 			
 			// Get balances on exchange
 			let responseJson = await this.handle?.api(
@@ -289,89 +407,127 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				'Ticker',
 
 				{
-					pair: `${assetASymbol}/${assetBSymbol}`,
+					pair: `${assetASymbolForeign}${assetBSymbolForeign}`,
 				}
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
+			Bot.log(`Exchange '${this.name}' response; api.getTicker; ` + JSON.stringify(responseJson), Log.Verbose);
 
-			if (responseJson) {
+			if (!responseJson)
+				throw new Error(`Invalid response`);
 
-				// Handle any errors
-				this._handleError(responseJson);
+			// Handle any errors
+			this._handleError(responseJson);
 
-				// Walk all balances
-				for (let resultPair in responseJson.result) {
-					const pairTicker = `${assetASymbol}-${assetBSymbol}`;
-					const ticker = responseJson.result[resultPair];
-					const tickerData = {
-						ask: ticker.a[0],
-						bid: ticker.b[0],
-						open: ticker.o,
-						high: ticker.h[0],
-						low: ticker.l[0],
-						price: ticker.c[0],
-						tradeCount: ticker.t[0],
-						volumeMin: '',
-					};
-					const index = this.tickerIndex.indexOf(pairTicker);
-					if (index < 0) {
-						this.ticker.push(tickerData);
-						this.tickerIndex.push(pairTicker);
-					} else
-						this.ticker[index] = tickerData;
-				}
+			let returnData: ExchangeApiTickerData = {};
+			returnData.ticker = [];
+			returnData.tickerIndex = [];
 
-				console.log(`this.tickerIndex`);
-				console.log(this.tickerIndex);
-				console.log(`this.ticker`);
-				console.log(this.ticker);
+			// Walk all balances
+			for (let resultPair in responseJson.result) {
+				const resultPairASymbolForeign = resultPair.substring(0, 4);
+				const resultPairBSymbolForeign = resultPair.substring(4);
+				const resultPairASymbolLocal = this.symbolToLocal(resultPairASymbolForeign);
+				const resultPairBSymbolLocal = this.symbolToLocal(resultPairBSymbolForeign);
+				const pairTicker = `${resultPairASymbolLocal}-${resultPairBSymbolLocal}`;
+				
+				const ticker: {
+					a: string[],
+					b: string[],
+					c: string[],
+					v: string[],
+					p: string[],
+					t: string[],
+					l: string[],
+					h: string[],
+					o: string,
+				} = responseJson.result[resultPair];
+
+				const tickerData: ExchangeTickerData = {
+					ask: Number(ticker.a[0]),
+					bid: Number(ticker.b[0]),
+					decimals: countDecimals(Number(ticker.c[0])),
+					high: Number(ticker.h[0]),
+					low: Number(ticker.l[0]),
+					open: Number(ticker.o),
+					price: Number(ticker.c[0]),
+					tradeCount: Number(ticker.t[0]),
+					volume: Number(ticker.v[0]),
+					vwap: Number(ticker.p[0]),
+				};
+
+				const index = returnData.tickerIndex.indexOf(pairTicker);
+				if (index < 0) {
+					returnData.ticker.push(tickerData);
+					returnData.tickerIndex.push(pairTicker);
+				} else
+					returnData.ticker[index] = tickerData;
 			}
+
+			// console.log(`returnData.tickerIndex`);
+			// console.log(returnData.tickerIndex);
+			// console.log(`returnData.ticker`);
+			// console.log(returnData.ticker);
+
+			return returnData;
 		} catch (error) {
-			Bot.log(`Exchange '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
+			console.error(error);
+			Bot.log(`Exchange '${this.name}'; api.getTicker; ${JSON.stringify(error)}`, Log.Err);
+			let returnData: ExchangeApiTickerData = {
+				ticker: [],
+				tickerIndex: [],
+			};
+			return returnData;
 		}
 	}
 
-	async getBalances () {
-		try {
+
+
+
+
+
+
+
+	// async getBalances () {
+	// 	try {
 			
-			// Get balances on exchange
-			let responseJson = await this.handle?.api(
+	// 		// Get balances on exchange
+	// 		let responseJson = await this.handle?.api(
 
-				// Type
-				'Balance',
-			);
+	// 			// Type
+	// 			'Balance',
+	// 		);
 
-			// Log raw response
-			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
+	// 		// Log raw response
+	// 		Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
 
-			if (responseJson) {
+	// 		if (responseJson) {
 
-				// Handle any errors
-				this._handleError(responseJson);
+	// 			// Handle any errors
+	// 			this._handleError(responseJson);
 
-				// Walk all balances
-				for (let symbol in responseJson.result) {
-					const symbolLocal = this.symbolToLocal(symbol);
-					const balance = responseJson.result[symbol];
-					const index = this.balanceIndex.indexOf(symbolLocal);
-					if (index < 0) {
-						this.balance.push(balance);
-						this.balanceIndex.push(symbolLocal);
-					} else
-						this.balance[index] = balance;
-				}
+	// 			// Walk all balances
+	// 			for (let symbol in responseJson.result) {
+	// 				const symbolLocal = this.symbolToLocal(symbol);
+	// 				const balance = responseJson.result[symbol];
+	// 				const index = this.balanceIndex.indexOf(symbolLocal);
+	// 				if (index < 0) {
+	// 					this.balance.push(balance);
+	// 					this.balanceIndex.push(symbolLocal);
+	// 				} else
+	// 					this.balance[index] = balance;
+	// 			}
 
-				console.log(`this.balanceIndex`);
-				console.log(this.balanceIndex);
-				console.log(`this.balance`);
-				console.log(this.balance);
-			}
-		} catch (error) {
-			Bot.log(`Exchange '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
-		}
-	}
+	// 			console.log(`this.balanceIndex`);
+	// 			console.log(this.balanceIndex);
+	// 			console.log(`this.balance`);
+	// 			console.log(this.balance);
+	// 		}
+	// 	} catch (error) {
+	// 		Bot.log(`Exchange '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
+	// 	}
+	// }
 
 	async getOrder (
 		_: OrderItem,
@@ -386,7 +542,10 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				lastTransactionIdx = _.transactionId.length - 1;
 
 			// Options
-			let requestOptions: any = {
+			let requestOptions: {
+				txid: string,
+				userref?: number,
+			} = {
 
 				// Transaction ID
 				// txid: _.transactionId.reverse().join(','), // Provide all order transaction, newest first
@@ -525,11 +684,19 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 		return orderResponse;
 	}
 
+	// compat (
+	// 	chart: ChartItem,
+	// ) {
+	// 	if (chart.pair.exchange.uuid === this.uuid)
+	// 		return true;
+	// 	return false;
+	// }
+
 	async syncChart (
 		chart: ChartItem,
 	) {
-		if (!this.compat(chart))
-			throw ('This chart belongs to a different exchange.');
+		// if (!this.compat(chart))
+		// 	throw new Error('This chart belongs to a different exchange.');
 
 		try {
 			let assetASymbol = this.symbolToForeign(chart.pair.a.symbol);
@@ -602,8 +769,8 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 			} else {
 				throw 'Invalid response from Kraken';
 			}
-		} catch (err) {
-			Bot.log(err as string, Log.Err);
+		} catch (error) {
+			Bot.log(error, Log.Err);
 		}
 	}
 
@@ -621,15 +788,123 @@ export class KrakenItem extends ExchangeItem implements ExchangeInterface {
 				return 'market';
 		}
 	}
+
+
+
+	refreshChart (
+		chart: ChartItem,
+		_: ChartCandleData
+	) {
+		chart.updateDataset(_);
+		chart.refreshDataset();
+
+		// Check if datasets need to be stored
+		if (!process.env.BOT_EXCHANGE_STORE_DATASET || process.env.BOT_EXCHANGE_STORE_DATASET !== '1')
+			return true;
+
+		const pad = (value: number) =>
+			value.toString().length == 1
+			? `0${value}`
+			: value;
+
+		const now = new Date();
+
+		const candleTimeMinutes = chart.candleTime / 60000;
+
+		const pathParts = [
+			chart.pair.exchange.name,
+			chart.pair.a.symbol + chart.pair.b.symbol,
+			now.getUTCFullYear(),
+			pad(now.getUTCMonth() + 1),
+			pad(now.getUTCDate()),
+			candleTimeMinutes,
+		];
+		const path = pathParts.join('/');
+		// Bot.log(path);
+
+		const filenameParts = [
+
+			// Exchange
+			chart.pair.exchange.name,
+
+			// Pair
+			[
+				chart.pair.a.symbol,
+				chart.pair.b.symbol,
+			].join(''),
+
+			// Candle size in minutes to save space
+			candleTimeMinutes,
+
+			// Timestamp
+			[
+				now.getUTCFullYear(),
+				pad(now.getUTCMonth() + 1),
+				pad(now.getUTCDate()),
+				pad(now.getUTCHours()),
+				pad(now.getUTCMinutes()),
+				pad(now.getUTCSeconds()),
+			].join(''),
+
+			// Number of candles
+			_.open?.length,
+		];
+
+		const filename = filenameParts.join('-');
+		// Bot.log(filename);
+
+		const responseJson = JSON.stringify(_);
+
+		const storagePath = `./storage/dataset/${path}`;
+		const storageFile = `${storagePath}/${filename}.json`;
+
+		try {
+			if (!fs.existsSync(storagePath)) {
+				fs.mkdirSync(
+					storagePath,
+					{
+						recursive: true
+					},
+					(err: object) => {
+						if (err)
+							throw err;
+
+						Bot.log(`Exchange.refreshChart; Path created: ${storagePath}`, Log.Verbose);
+					}
+				)
+			}
+		} catch (error) {
+			return Bot.log(`Exchange.refreshChart; mkdirSync; ${JSON.stringify(error)}`, Log.Err);
+		}
+
+        try {
+			fs.writeFile(
+				storageFile,
+				responseJson,
+				function (
+					err: object
+				) {
+					if (err)
+						throw err;
+					
+					Bot.log(`Exchange.refreshChart; Dataset written: ${storageFile}`, Log.Verbose);
+				}
+			);
+		} catch (error) {
+			return Bot.log(`Exchange.refreshChart; writeFile; ${JSON.stringify(error)}`, Log.Err);
+		}
+	}
 }
 
-export const Kraken = {
-	new (
-		_: ExchangeData,
-	): KrakenItem {
-		let item = new KrakenItem(_);
-		let uuid = Bot.setItem(item);
+// export const Kraken = {
+// 	async new (
+// 		_: ExchangeData,
+// 	): Promise<KrakenItem> {
+// 		let krakenItem = new KrakenItem(_);
+// 		let uuid = Bot.setItem(krakenItem);
 
-		return Bot.getItem(uuid);
-	}
-};
+// 		let item: KrakenItem = Bot.getItem(uuid);
+
+// 		return item;
+// 	}
+// };

@@ -27,7 +27,7 @@ dotenv.config();
 	// console.log(`playbookPath: ${playbookPath}`);
 
 	if (!fs.existsSync(playbookTemplate))
-		throw (`Playbook '${playbookName}' not found '${playbookTemplate}'`);
+		throw new Error(`Playbook '${playbookName}' not found '${playbookTemplate}'`);
 
 	// Attempt to read YAML file
 	let playbookFile: string = fs.readFileSync(
@@ -37,7 +37,7 @@ dotenv.config();
 	// console.log(`playbookFile: ${playbookFile}`);
 
 	if (!playbookFile.length)
-		throw (`Playbook is empty '${playbookName}'`);
+		throw new Error(`Playbook is empty '${playbookName}'`);
 
 	const allowedConditionOperators = [
 		'<', '<=', '>', '>=', '==', '!='
@@ -190,7 +190,7 @@ dotenv.config();
 								itemLookup = Bot.getItem(playbookCache[key].item[cacheIdx]);
 
 							if (cacheIdx < 0 || itemLookup === false)
-								throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value}' not found`);
+								throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value}' not found`);
 
 							finalItemData[key] = itemLookup;
 						} else {
@@ -208,7 +208,7 @@ dotenv.config();
 										itemLookup = Bot.getItem(playbookCache[key].item[cacheIdx]);
 
 									if (cacheIdx < 0 || itemLookup === false)
-										throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value[valueIdx]}' not found`);
+										throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value[valueIdx]}' not found`);
 									
 									finalValue.push(itemLookup);
 								}
@@ -218,7 +218,7 @@ dotenv.config();
 							}
 							
 							else {
-								throw (`Unsupported: Type '${typeKey}' item '${itemName}' key '${key}' value '${JSON.stringify(value)}'`);
+								throw new Error(`Unsupported: Type '${typeKey}' item '${itemName}' key '${key}' value '${JSON.stringify(value)}'`);
 							}
 						}
 					}
@@ -234,7 +234,7 @@ dotenv.config();
 							itemLookup = Bot.getItem(playbookCache.asset.item[cacheIdx]);
 
 						if (cacheIdx < 0 || itemLookup === false)
-							throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced asset '${value}' not found`);
+							throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced asset '${value}' not found`);
 						
 						finalItemData[key] = itemLookup;
 					}
@@ -256,7 +256,7 @@ dotenv.config();
 								itemLookup = Bot.getItem(playbookCache.scenario.item[cacheIdx]);
 
 							if (cacheIdx < 0 || itemLookup === false)
-								throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced scenario '${value[valueIdx][0]}' not found`);
+								throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced scenario '${value[valueIdx][0]}' not found`);
 							
 							finalValueSet.push(itemLookup);
 	
@@ -268,7 +268,7 @@ dotenv.config();
 									itemLookup = Bot.getItem(playbookCache.strategy.item[cacheIdx]);
 
 								if (cacheIdx < 0 || itemLookup === false)
-									throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced strategy '${value[valueIdx][1]}' not found`);
+									throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced strategy '${value[valueIdx][1]}' not found`);
 								
 								finalValueSet.push(itemLookup);
 							}
@@ -298,7 +298,7 @@ dotenv.config();
 
 							// Import module file with callback
 							if (!fs.existsSync(playbookActions))
-								throw (`Playbook subscription action file not found '${playbookActions}'`);
+								throw new Error(`Playbook subscription action file not found '${playbookActions}'`);
 						}
 					}
 					
@@ -315,7 +315,7 @@ dotenv.config();
 									// console.log(value[valueIdx][setIdx]);
 									// console.log(operator);
 									if (allowedConditionOperators.indexOf(operator) < 0)
-										throw (`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${operator}'`);
+										throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${operator}'`);
 								}
 							}
 						
@@ -326,7 +326,7 @@ dotenv.config();
 								// console.log(value[valueIdx]);
 								// console.log(operator);
 								if (allowedConditionOperators.indexOf(operator) < 0)
-									throw (`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${operator}'`);
+									throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${operator}'`);
 							}
 						}
 					}
@@ -341,7 +341,7 @@ dotenv.config();
 								itemLookup = Bot.getItem(playbookCache.timeframe.item[cacheIdx]);
 
 							if (cacheIdx < 0 || itemLookup === false)
-								throw (`Type '${typeKey}' item '${itemName}' key '${key}' referenced timeframe '${value[valueIdx]}' not found`);
+								throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced timeframe '${value[valueIdx]}' not found`);
 							
 							finalValue.push(itemLookup);
 						}
@@ -376,7 +376,7 @@ dotenv.config();
 								value = integer * 604800000;
 								break;
 							default:
-								throw (`Type '${typeKey}' item '${itemName}' key '${key}' has invalid SHNO value '${shno}'`);
+								throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' has invalid SHNO value '${shno}'`);
 						}
 						finalItemData[key] = value;
 					}
@@ -421,8 +421,8 @@ dotenv.config();
 					try {
 						chart.updateDataset(lastPlaybookState.chart.data[chartIdx]);
 						chart.refreshDataset();
-					} catch (err) {
-						console.log(err);
+					} catch (error) {
+						console.log(error);
 					}
 				}
 			}
@@ -434,10 +434,12 @@ dotenv.config();
 				const order: OrderItem = Bot.getItem(lastPlaybookState.order.dataIndex[orderIdx]);
 				if (order && lastPlaybookState.order.data[orderIdx]) {
 					try {
+						// Bot.log(`lastPlaybookState.order.data[orderIdx]`);
+						// Bot.log(lastPlaybookState.order.data[orderIdx]);
 						order.update(lastPlaybookState.order.data[orderIdx]);
 						await order.execute();
-					} catch (err) {
-						console.log(err);
+					} catch (error) {
+						console.log(error);
 					}
 				}
 			}
@@ -543,8 +545,8 @@ dotenv.config();
 				// Add timeframe results to playbook state
 				nextPlaybookState.timeframe.data.push(timeframeSignal);
 				nextPlaybookState.timeframe.dataIndex.push(timeframe.name ?? timeframe.uuid);
-			} catch (err) {
-				Bot.log(err as string, Log.Err);
+			} catch (error) {
+				Bot.log(error, Log.Err);
 			}
 		}
 	}

@@ -91,7 +91,7 @@ export class TimeframeItem implements TimeframeData {
 		Bot.log(logLine);
 
 		// if ((startTime - this.lastStartTime) < this.intervalTime)
-		// 	throw (`Timeframe '${this.name}'; Interval time has not yet passed`);
+		// 	throw new Error(`Timeframe '${this.name}'; Interval time has not yet passed`);
 
 		// Clear result set for new execution
 		this.result = [];
@@ -118,8 +118,8 @@ export class TimeframeItem implements TimeframeData {
 						strategy.chart
 					);
 					strategy.chart.datasetSyncTime = Date.now();
-				} catch (err) {
-					Bot.log(err as string, Log.Err);
+				} catch (error) {
+					Bot.log(error, Log.Err);
 				}
 			}
 
@@ -131,12 +131,12 @@ export class TimeframeItem implements TimeframeData {
 
 				// Duplicate strategy result set within this timeframe
 				// if (this.getResult(strategy))
-				// 	throw (`Timeframe '${this.name}', strategy '${strategy.name}' result duplication.`);
+				// 	throw new Error(`Timeframe '${this.name}', strategy '${strategy.name}' result duplication.`);
 
 				this.result.push(signal);
 				this.resultIndex.push(strategy.name ?? strategy.uuid);
-			} catch (err) {
-				Bot.log(err as string, Log.Err);
+			} catch (error) {
+				Bot.log(error, Log.Err);
 			}
 		}
 

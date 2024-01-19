@@ -1,15 +1,22 @@
 import { AssetItem } from "./Asset";
-import { Bot, Log } from "./Bot";
+import { Bot, ItemBaseData, Log } from "./Bot";
 import { v4 as uuidv4 } from 'uuid';
 import { ExchangeItem } from "./Exchange";
+
+// export interface PairInterface {
+// 	a: AssetItem;
+// 	b: AssetItem;
+// 	exchange: ExchangeItem;
+// 	name?: string;
+// 	uuid?: string;
+// 	// getTicker: () => string;
+// }
 
 export type PairData = {
 	a: AssetItem,
 	b: AssetItem,
 	exchange: ExchangeItem,
 	name?: string,
-	// priceA?: string,
-	// priceB?: string,
 	uuid?: string,
 }
 
@@ -23,9 +30,8 @@ export class PairItem implements PairData {
 	b: AssetItem;
 	exchange: ExchangeItem;
 	name?: string;
-	// priceA: string = '0'; 
-	// priceB: string = '0'; 
-	uuid: string; 
+	uuid: string;
+	// getTicker: () => string;
 
 	constructor (
 		_: PairData,
@@ -34,9 +40,12 @@ export class PairItem implements PairData {
 		this.a = _.a;
 		this.b = _.b;
 		this.exchange = _.exchange;
-		if (_.name)
-			this.name = _.name;
 		this.uuid = _.uuid ?? uuidv4();
+		this.name = _.name ?? _.uuid;
+
+		// this.getTicker = () => {
+		// 	return `${this.a.symbol}-${this.b.symbol}`;
+		// };
 	}
 }
 
@@ -44,18 +53,6 @@ export const Pair = {
 	async new (
 		_: PairData,
 	): Promise<PairItem> {
-		let assetASymbol = _.a.symbol;
-		let assetBSymbol = _.b.symbol;
-		let pairTicker = `${assetASymbol}-${assetBSymbol}`;
-		
-		let index = _.exchange.tickerIndex.indexOf(pairTicker);
-		if (index < 0) {
-			await _.exchange.getTicker(_);
-			index = _.exchange.tickerIndex.indexOf(pairTicker);
-			if (index < 0)
-				Bot.log(`Exchange '${_.exchange.name}'; No ticker information for '${pairTicker}'`, Log.Warn);
-		}
-		
 		let item = new PairItem(_);
 		let uuid = Bot.setItem(item);
 

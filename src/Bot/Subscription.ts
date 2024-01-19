@@ -317,15 +317,15 @@ export const Subscription: SubscriptionInterface = {
 
 								import(importPath).then((module: SubscriptionActionCallbackModule) => {
 									if (!item.action || !module.hasOwnProperty(item.action))
-										throw (`Subscription action callback not found, or invalid.`);
+										throw new Error(`Subscription action callback not found, or invalid.`);
 
 									// Execute imported subscription callback on module
 									try {
 										module[item.action](
 											item
 										);
-									} catch (err) {
-										throw (`Failed to execute subscription action '${item.action}' callback.`);
+									} catch (error) {
+										throw new Error(`Failed to execute subscription action '${item.action}' callback.`);
 									}
 								}).catch(err => Bot.log(err.message, Log.Err));
 							}
