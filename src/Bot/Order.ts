@@ -255,7 +255,7 @@ export class OrderItem implements OrderData {
 			} else
 				quantityActual = Number.parseFloat(quantity);
 
-			if (quantityActual <= 0)
+			if (!quantityActual || quantityActual <= 0)
 				throw new Error(`Order '${this.name}'; Quantity is zero`);
 
 			// Prune any extraneous decimals
@@ -264,7 +264,7 @@ export class OrderItem implements OrderData {
 				Number(ticker?.decimals),
 			);
 
-			Bot.log(`Order '${this.name}'; Actual quantity: ${this.quantityActual}`);
+			Bot.log(`Order '${this.name}'; Actual quantity: ${quantityActual}`);
 
 			this.quantity = quantity;
 			this.quantityActual = quantityActual;
