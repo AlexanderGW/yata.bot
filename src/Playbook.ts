@@ -532,6 +532,7 @@ dotenv.config();
 
 						const strategy: StrategyItem = Bot.getItem(timeframe.resultIndex[i]);
 
+						// TODO: Type
 						const latestCandle = timeframe.result[i][j].length - 1;
 						const datapoint = timeframe.result[i][j][latestCandle][0].datapoint;
 						const timeField = strategy.chart.datasetTimeField;

@@ -189,7 +189,7 @@ describe('Backtest dataset 1', () => {
                     let order1 = await Order.new({
                         pair: pairEthBtcKraken,
                         price: '-10%',
-                        quantity: '10%', // of asset B, when buy side
+                        quantity: '10%', // of asset B balance, when buy side
                         side: OrderSide.Buy,
                         status: OrderStatus.Open,
                         type: OrderType.Limit,

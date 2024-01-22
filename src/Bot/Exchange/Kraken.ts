@@ -154,7 +154,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.openOrder ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			if (responseJson) {
 
@@ -202,7 +202,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.closeOrder ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			if (responseJson) {
 
@@ -226,7 +226,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			}
 		} catch (error) {
 			orderResponse.status = OrderStatus.Error;
-			Bot.log(`Order '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(`Order '${this.name}'; api.${JSON.stringify(error)}`, Log.Err);
 		}
 
 		return orderResponse;
@@ -288,7 +288,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.editOrder ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			if (responseJson) {
 
@@ -309,14 +309,12 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			}
 		} catch (error) {
 			orderResponse.status = OrderStatus.Error;
-			Bot.log(`Exchange '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(`Exchange '${this.name}'; api.${JSON.stringify(error)}`, Log.Err);
 		}
 
 		return orderResponse;
 	}
 
-	// SOME KIND OF RACE CONDITON HAPPENING
-	// SEEING CATCH OUTPUT IN LOG, BEFORE RESPONSE...
 	async getBalance () {
 		try {
 
@@ -324,11 +322,12 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			let responseJson = await this.handle?.api(
 
 				// Type
+				// TODO: Need to manually add to `kraken-api` for testing
 				'BalanceEx',
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}' response; getBalance; ` + JSON.stringify(responseJson), Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.getBalance ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			if (!responseJson)
 				throw new Error(`Invalid response`);
@@ -371,15 +370,10 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 					returnData.balance[index] = balanceData;
 			}
 
-			// console.log(`returnData.balanceIndex`);
-			// console.log(returnData.balanceIndex);
-			// console.log(`returnData.balance`);
-			// console.log(returnData.balance);
-
 			return returnData;
 		} catch (error) {
 			console.error(error);
-			Bot.log(`Exchange '${this.name}'; getBalance; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(`Exchange '${this.name}'; api.getBalance; ${JSON.stringify(error)}`, Log.Err);
 			return {};
 		}
 	}
@@ -395,7 +389,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		try {
 			// TODO: fix
 			// if (_.exchange.uuid !== this.uuid)
-			// 	throw new Error(`Exchange '${this.name}'; Pair '${_.name}'; Incompatible exchange pair`);
+			// 	throw new Error(`Exchange '${this.name}'; api.Pair '${_.name}'; api.Incompatible exchange pair`);
 
 			let assetASymbolForeign = this.symbolToForeign(_.a.symbol);
 			let assetBSymbolForeign = this.symbolToForeign(_.b.symbol);
@@ -412,7 +406,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}' response; api.getTicker; ` + JSON.stringify(responseJson), Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.getTicker ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			if (!responseJson)
 				throw new Error(`Invalid response`);
@@ -465,15 +459,10 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 					returnData.ticker[index] = tickerData;
 			}
 
-			// console.log(`returnData.tickerIndex`);
-			// console.log(returnData.tickerIndex);
-			// console.log(`returnData.ticker`);
-			// console.log(returnData.ticker);
-
 			return returnData;
 		} catch (error) {
 			console.error(error);
-			Bot.log(`Exchange '${this.name}'; api.getTicker; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(`Exchange '${this.name}'; api.api.getTicker; ${JSON.stringify(error)}`, Log.Err);
 			let returnData: ExchangeApiTickerData = {
 				ticker: [],
 				tickerIndex: [],
@@ -489,45 +478,6 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 
 
 
-	// async getBalances () {
-	// 	try {
-			
-	// 		// Get balances on exchange
-	// 		let responseJson = await this.handle?.api(
-
-	// 			// Type
-	// 			'Balance',
-	// 		);
-
-	// 		// Log raw response
-	// 		Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
-
-	// 		if (responseJson) {
-
-	// 			// Handle any errors
-	// 			this._handleError(responseJson);
-
-	// 			// Walk all balances
-	// 			for (let symbol in responseJson.result) {
-	// 				const symbolLocal = this.symbolToLocal(symbol);
-	// 				const balance = responseJson.result[symbol];
-	// 				const index = this.balanceIndex.indexOf(symbolLocal);
-	// 				if (index < 0) {
-	// 					this.balance.push(balance);
-	// 					this.balanceIndex.push(symbolLocal);
-	// 				} else
-	// 					this.balance[index] = balance;
-	// 			}
-
-	// 			console.log(`this.balanceIndex`);
-	// 			console.log(this.balanceIndex);
-	// 			console.log(`this.balance`);
-	// 			console.log(this.balance);
-	// 		}
-	// 	} catch (error) {
-	// 		Bot.log(`Exchange '${this.name}'; ${JSON.stringify(error)}`, Log.Err);
-	// 	}
-	// }
 
 	async getOrder (
 		_: OrderItem,
@@ -569,7 +519,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.getOrder ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			if (!responseJson)
 				return orderResponse;
@@ -695,16 +645,13 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 	async syncChart (
 		chart: ChartItem,
 	) {
-		// if (!this.compat(chart))
-		// 	throw new Error('This chart belongs to a different exchange.');
-
 		try {
 			let assetASymbol = this.symbolToForeign(chart.pair.a.symbol);
 			let assetBSymbol = this.symbolToForeign(chart.pair.b.symbol);
 			let pair: string = `${assetASymbol}${assetBSymbol}`;
 
 			let nextDate = new Date(chart.datasetNextTime);
-			Bot.log(`Chart '${chart.name}'; Sync from: ${nextDate.toISOString()}`);
+			Bot.log(`Chart '${chart.name}'; api.syncChart; From: ${nextDate.toISOString()}`);
 
 			let responseJson = await this.handle?.api(
 
@@ -721,7 +668,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}' response; ` + JSON.stringify(responseJson), Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.syncChart ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			let etlData: ChartCandleData = {
 				close: [],

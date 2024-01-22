@@ -95,6 +95,10 @@ export type ExchangeApiInterface = {
 	openOrder: (
 		_: OrderItem,
 	) => Promise<OrderExchangeData>;
+
+	syncChart: (
+		chart: ChartItem,
+	) => Promise<void>;
 }
 
 export type ExchangeBaseInterface = {
@@ -203,6 +207,7 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 
 			return this.balance[assetBalanceIndex];
 		} catch(error) {
+			Bot.log(`getBalance`, Log.Err);
 			Bot.log(error, Log.Err);
 			return {};
 		}
@@ -241,6 +246,7 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 
 			return this.ticker[pairTickerIndex];
 		} catch (error) {
+			Bot.log(`getTicker`, Log.Err);
 			Bot.log(error, Log.Err);
 			return {};
 		}
@@ -276,12 +282,12 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 	async syncChart (
 		chart: ChartItem,
 	) {
-		Bot.log(`Chart '${chart.name}' sync`);
+		Bot.log(`Chart '${chart.name}'; syncChart`);
 
 		if (!this.compat(chart))
 			throw new Error('This chart belongs to a different exchange.');
 
-		// 
+		await this.api?.syncChart(chart);
 	}
 }
 
@@ -293,36 +299,29 @@ export const Exchange = {
 	async new (
 		_: ExchangeData,
 	): Promise<ExchangeItem> {
-		let item: any;
 
 		if (!_.class)
 			_.class = 'Paper';
 
 		let exchangeItem: ExchangeItem = new ExchangeItem(_);
 
-
-
-
 		let importPath = `./Exchange/${_.class}`;
-		Bot.log(`Exchange import: ${importPath}`);
+		Bot.log(`Exchange API import: ${importPath}`, Log.Verbose);
 
 		const className = `${_.class}Exchange`;
 
+		// Add API backend
 		await import(importPath).then(module => {
 			let exchangeApi: any = new module[className](_);
 
 			if (exchangeApi.constructor.name !== className)
-				throw new Error(`Failed to instanciate class`);
+				throw new Error(`Failed to instanciate Exchange API class '${className}'`);
 
 			exchangeItem.api = exchangeApi;
 		}).catch(err => Bot.log(err.message, Log.Err));
 
-
-
-
 		let uuid = Bot.setItem(exchangeItem);
-
-		item = Bot.getItem(uuid);
+		const item: ExchangeItem = Bot.getItem(uuid);
 
 		return item;
 	}

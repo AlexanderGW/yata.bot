@@ -238,7 +238,7 @@ export class OrderItem implements OrderData {
 							const balanceB = await this.pair.exchange.getBalance(assetBSymbol);
 
 							if (!balanceB?.available || balanceB.available <= 0)
-								throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Balance is zero`);
+								throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.b.name}'; Balance is zero`);
 
 							quantityActual = (balanceB.available / 100) * quantityPercent;
 							break;
@@ -248,6 +248,11 @@ export class OrderItem implements OrderData {
 
 						break;
 					case OrderSide.Sell:
+						if (!this.quantityActual) {
+							// TODO: Get order
+							const orderResponse = await this.pair.exchange.api?.getOrder(this);
+							
+						}
 						quantityActual = (this.quantityActual / 100) * quantityPercent;
 						
 						break;
@@ -289,6 +294,8 @@ export class OrderItem implements OrderData {
 
 		// Check quantity
 		const resultQuantity = await this.setQuantity(this.quantity);
+		// Bot.log(`resultQuantity`);
+		// Bot.log(resultQuantity);
 		if (!resultQuantity)
 			throw new Error(`Order '${this.name}'; No quantity defined`);
 
