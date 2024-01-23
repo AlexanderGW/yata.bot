@@ -4,7 +4,19 @@ import { ChartCandleData, ChartItem } from './Chart';
 import { StrategyExecuteData, StrategyItem } from './Strategy';
 import { v4 as uuidv4 } from 'uuid';
 
-export type ScenarioConditionData = Array<Array<[string, string, number | string]>>;
+export const scenarioConditionOperators = [
+	'<', '<=', '>', '>=', '==', '!='
+] as const;
+
+export type ScenarioConditionOperator = typeof scenarioConditionOperators[number];
+
+export type ScenarioConditionData = Array<
+	Array<[
+		string,
+		ScenarioConditionOperator,
+		number | string
+	]>
+>;
 
 export type ScenarioData = {
 	analysis: AnalysisItem[],
@@ -64,7 +76,7 @@ export class ScenarioItem implements ScenarioData {
 
 		let conditionMatch: Array<ScenarioConditionMatch> = [];
 		let valueA: string;
-		let operator: string;
+		let operator: ScenarioConditionOperator;
 		let valueB: number | string;
 
 		// Counting condition index
@@ -197,7 +209,7 @@ export class ScenarioItem implements ScenarioData {
 		// Walk through field values, on result dataset
 		let startPoint: number = 0;
 
-		// Offset from the front of the dataset
+		// Offset from the end (moving backwards) of the dataset
 		if (_.strategyExecuteData.timeframe.windowTime) {
 			startPoint = (
 				endPoint

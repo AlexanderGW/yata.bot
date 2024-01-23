@@ -4,7 +4,7 @@ import { Bot, BotStateType, Log } from './Bot/Bot';
 import { Strategy, StrategyItem } from './Bot/Strategy';
 import { Asset, AssetItem } from './Bot/Asset';
 import { Pair, PairItem } from './Bot/Pair';
-import { Scenario, ScenarioItem } from './Bot/Scenario';
+import { Scenario, ScenarioItem, scenarioConditionOperators } from './Bot/Scenario';
 import { Exchange, ExchangeItem } from './Bot/Exchange';
 import { Chart, ChartCandleData, ChartItem } from './Bot/Chart';
 import { Timeframe, TimeframeItem } from './Bot/Timeframe';
@@ -38,10 +38,6 @@ dotenv.config();
 
 	if (!playbookFile.length)
 		throw new Error(`Playbook is empty '${playbookName}'`);
-
-	const allowedConditionOperators = [
-		'<', '<=', '>', '>=', '==', '!='
-	];
 
 	// Types to be processed in order of component dependencies
 	const playbookTypes: {
@@ -314,7 +310,7 @@ dotenv.config();
 									let operator = value[valueIdx][setIdx][1];
 									// console.log(value[valueIdx][setIdx]);
 									// console.log(operator);
-									if (allowedConditionOperators.indexOf(operator) < 0)
+									if (scenarioConditionOperators.indexOf(operator) < 0)
 										throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${operator}'`);
 								}
 							}
@@ -325,7 +321,7 @@ dotenv.config();
 								let operator = value[valueIdx][1];
 								// console.log(value[valueIdx]);
 								// console.log(operator);
-								if (allowedConditionOperators.indexOf(operator) < 0)
+								if (scenarioConditionOperators.indexOf(operator) < 0)
 									throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${operator}'`);
 							}
 						}
