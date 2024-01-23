@@ -4,24 +4,32 @@ import { ChartCandleData, ChartItem } from './Chart';
 import { StrategyExecuteData, StrategyItem } from './Strategy';
 import { v4 as uuidv4 } from 'uuid';
 
+// TODO: Type
+export type ScenarioConditionValueA = string;
+
 export const scenarioConditionOperators = [
 	'<', '<=', '>', '>=', '==', '!='
 ] as const;
 
 export type ScenarioConditionOperator = typeof scenarioConditionOperators[number];
 
-export type ScenarioConditionData = Array<
-	Array<[
-		string,
-		ScenarioConditionOperator,
-		number | string
-	]>
->;
+// TODO: Type
+export type ScenarioConditionValueB = number | string;
+
+export type ScenarioCondition = [
+	ScenarioConditionValueA,
+	ScenarioConditionOperator,
+	ScenarioConditionValueB
+]
+
+export type ScenarioConditionSet = ScenarioCondition[]
+
+export type ScenarioConditionCandle = ScenarioConditionSet[];
 
 export type ScenarioData = {
 	analysis: AnalysisItem[],
 	name: string,
-	condition: ScenarioConditionData,
+	condition: ScenarioConditionCandle,
 	uuid?: string,
 }
 
@@ -54,7 +62,7 @@ export type ScenarioConditionMatch = {
 
 export class ScenarioItem implements ScenarioData {
 	analysis: AnalysisItem[];
-	condition: ScenarioConditionData;
+	condition: ScenarioConditionCandle;
 	name: string;
 	uuid: string;
 
@@ -75,9 +83,9 @@ export class ScenarioItem implements ScenarioData {
 		let scenarioMatch: Array<Array<Array<ScenarioConditionMatch>>> = [];
 
 		let conditionMatch: Array<ScenarioConditionMatch> = [];
-		let valueA: string;
+		let valueA: ScenarioConditionValueA;
 		let operator: ScenarioConditionOperator;
-		let valueB: number | string;
+		let valueB: ScenarioConditionValueB;
 
 		// Counting condition index
 		let conditionSetIdx: number = 0;
@@ -88,7 +96,7 @@ export class ScenarioItem implements ScenarioData {
 			conditionSetIdx < this.condition.length;
 			conditionSetIdx++
 		) {
-			let condition = this.condition[conditionSetIdx];
+			let condition: ScenarioConditionSet = this.condition[conditionSetIdx];
 			let conditionIdx: number = 0;
 
 			// Walk conditions within the set, and validate fields exists 
