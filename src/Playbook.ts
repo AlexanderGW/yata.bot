@@ -40,6 +40,7 @@ dotenv.config();
 		throw new Error(`Playbook is empty '${playbookName}'`);
 
 	// Types to be processed in order of component dependencies
+	// TODO: Type
 	const playbookTypes: {
 		[index: string]: any,
 	} = {
@@ -55,6 +56,7 @@ dotenv.config();
 		timeframe: Timeframe,
 		subscription: Subscription,
 	};
+	// TODO: Type
 	const playbookTypeKeys = Object.keys(playbookTypes);
 
 	type ItemIndexType = {
@@ -63,6 +65,7 @@ dotenv.config();
 	};
 
 	// Cache table of all playbook item, to facilitate referencing
+	// TODO: Type
 	let playbookCache: {
 		[index: string]: ItemIndexType,
 		storage: ItemIndexType,
@@ -138,6 +141,11 @@ dotenv.config();
 	else if (process.env.BOT_DRYRUN === '0')
 		dryrun = false;
 
+	// Set backtest state
+	let backtest = true;
+	if (playbookObject.hasOwnProperty('backtest'))
+		backtest = playbookObject.backtest;
+
 	// Default to `Memory` storage interface, if none are defined
 	if (
 		!playbookObject.hasOwnProperty('storage')
@@ -149,6 +157,12 @@ dotenv.config();
 			}
 		};
 	}
+
+	// Initialize bot
+	Bot.init({
+		backtest,
+		dryrun
+	});
 
 	// Process YAML components
 	for (let typeKey in playbookTypes) {

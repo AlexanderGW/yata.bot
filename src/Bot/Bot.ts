@@ -29,15 +29,26 @@ export type BotStateType = {
 /**
  * Basic item structure, everything must have its own UUID
  */
- export type ItemBaseData = {
+ export type 	ItemBaseData = {
 	name?: string,
 	uuid: string,
 }
 
+export type BotInitData = {
+	dryrun?: boolean,
+	backtest?: boolean,
+};
+
 export type BotData = {
+	backtest: boolean,
+	dryrun: boolean,
+	initialized: boolean,
 	item: object[],
 	itemIndex: string[],
 	itemNameIndex: string[],
+	init: (
+		_: BotInitData
+	) => void,
 	log: (
 		input: unknown,
 		level?: Log,
@@ -51,6 +62,9 @@ export type BotData = {
 };
 
 export const Bot: BotData = {
+	backtest: false,
+	dryrun: true,
+	initialized: false,
 
 	/**
 	 * Legacy item storage
@@ -66,6 +80,22 @@ export const Bot: BotData = {
 	 * Legacy item storage name
 	 */
 	itemNameIndex: [],
+
+	/**
+	 * 
+	 * @param _ 
+	 * @returns 
+	 */
+	init (
+		_: BotInitData,
+	): void {
+		if (this.initialized)
+			return;
+
+		this.backtest = _.backtest ?? false;
+		this.dryrun = _.dryrun ?? true;
+		this.initialized = true;
+	},
 
 	/**
 	 * Logging interface

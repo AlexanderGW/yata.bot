@@ -75,7 +75,8 @@ if (
 
                 // NOTE: Ensure we are only testing orders
                 // `BOT_DRYRUN=1` environment (will set all orders to default dry-run)
-                dryrun: true,
+                // For playbooks, use `dryrun: true` at the top for everything, or individual orders.
+                // dryrun: true,
 
                 // The trading pair, i.e. ETH/BTC on Kraken
                 pair: pairEthGbpKraken,

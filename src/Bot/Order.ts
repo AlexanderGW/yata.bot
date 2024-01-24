@@ -410,8 +410,7 @@ export class OrderItem implements OrderData {
 	update (
 		_: OrderData
 	) {
-		if (_.dryrun)
-			this.dryrun = _.dryrun;
+		this.dryrun = _.dryrun ?? Bot.dryrun;
 		if (_.name)
 			this.name = _.name;
 		if (_.pair)
