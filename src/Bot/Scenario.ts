@@ -31,6 +31,7 @@ export type ScenarioData = {
 	name: string,
 	condition: ScenarioConditionCandle,
 	uuid?: string,
+	windowTime?: number,
 }
 
 export type ScenarioSignalData = {
@@ -65,6 +66,7 @@ export class ScenarioItem implements ScenarioData {
 	condition: ScenarioConditionCandle;
 	name: string;
 	uuid: string;
+	windowTime?: number;
 
 	constructor (
 		_: ScenarioData,
@@ -73,6 +75,8 @@ export class ScenarioItem implements ScenarioData {
 		this.condition = _.condition;
 		this.name = _.name;
 		this.uuid = _.uuid ?? uuidv4();
+		if (_.windowTime)
+			this.windowTime = _.windowTime;
 	}
 
 	test (
@@ -210,22 +214,27 @@ export class ScenarioItem implements ScenarioData {
 		if (conditionMatch.length < this.condition.length)
 			throw new Error('Scenario conditions are not compatible with dataset.');
 
+		// Walk through field values, on result dataset
+		let offset: number = 0;
+		let startPoint: number = 0;
 		let endPoint: number = 0;
 		if (_?.chart.dataset?.open?.length)
 			endPoint = _.chart.dataset.open.length;
 
-		// Walk through field values, on result dataset
-		let startPoint: number = 0;
+		// Bot is in `backtest`, use the the whole `windowTime`
+		if (Bot.backtest)
+			offset = Math.ceil((_.strategyExecuteData.timeframe.windowTime) / _.chart.candleTime);
+
+		// Custom window time within which this scenario can be triggered
+		else if (this.windowTime)
+			offset = Math.ceil(this.windowTime / _.chart.candleTime);
+
+		// If too low, default to the number of scenario condition candle sets (leading edge of dataset)
+		if (offset < this.condition.length)
+			offset = this.condition.length
 
 		// Offset from the end (moving backwards) of the dataset
-		if (_.strategyExecuteData.timeframe.windowTime) {
-			startPoint = (
-				endPoint
-				- Math.ceil((_.strategyExecuteData.timeframe.windowTime) / _.chart.candleTime)
-			);
-		}
-
-		// Ensure `startPoint` is at least positive
+		startPoint = endPoint - offset;
 		if (startPoint < 0)
 			startPoint = 0;
 
