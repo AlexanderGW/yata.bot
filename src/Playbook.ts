@@ -128,23 +128,11 @@ dotenv.config();
 
 	let playbookObject: any = parse(playbookFile);
 	
+	// Check playbook version
 	if (!playbookObject.hasOwnProperty('version'))
 		throw(`Missing required 'version' key`);
-	
 	if (playbookObject.version > 1)
 		throw(`Unsupported schema version`);
-	
-	// Set dryrun state
-	let dryrun = true;
-	if (playbookObject.hasOwnProperty('dryrun'))
-		dryrun = playbookObject.dryrun;
-	else if (process.env.BOT_DRYRUN === '0')
-		dryrun = false;
-
-	// Set backtest state
-	let backtest = true;
-	if (playbookObject.hasOwnProperty('backtest'))
-		backtest = playbookObject.backtest;
 
 	// Default to `Memory` storage interface, if none are defined
 	if (
@@ -160,8 +148,26 @@ dotenv.config();
 
 	// Initialize bot
 	Bot.init({
-		backtest,
-		dryrun
+
+		// Backtesting
+		backtest:
+			playbookObject.hasOwnProperty('backtest')
+
+				// Defined in playbook
+				? playbookObject.backtest
+
+				// Default to FALSE, if not defined
+				: (process.env.BOT_BACKTEST === '1' ? true : false),
+		
+		// Dry-run
+		dryrun:
+			playbookObject.hasOwnProperty('dryrun')
+
+				// Defined in playbook
+				? playbookObject.dryrun
+
+				// Default to TRUE, if not defined
+				: (process.env?.BOT_DRYRUN === '0' ? false : true),
 	});
 
 	// Process YAML components
