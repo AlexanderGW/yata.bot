@@ -1,20 +1,106 @@
 import { parse, stringify } from 'yaml'
 
 import { Bot, BotStateType, Log } from './Bot/Bot';
-import { Strategy, StrategyItem } from './Bot/Strategy';
-import { Asset, AssetItem } from './Bot/Asset';
-import { Pair, PairItem } from './Bot/Pair';
-import { Scenario, ScenarioItem, scenarioConditionOperators } from './Bot/Scenario';
-import { Exchange, ExchangeItem } from './Bot/Exchange';
-import { Chart, ChartCandleData, ChartItem } from './Bot/Chart';
-import { Timeframe, TimeframeItem } from './Bot/Timeframe';
-import { Order, OrderExchangeData, OrderItem } from './Bot/Order';
-import { Analysis, AnalysisItem } from './Bot/Analysis';
-import { Storage } from './Bot/Storage';
-import { Subscription, SubscriptionActionCallbackModule, SubscriptionEvent, SubscriptionItem } from './Bot/Subscription';
+import { Strategy, StrategyData, StrategyItem } from './Bot/Strategy';
+import { Asset, AssetData, AssetItem } from './Bot/Asset';
+import { Pair, PairData, PairItem } from './Bot/Pair';
+import { Scenario, ScenarioData, ScenarioItem, scenarioConditionOperators } from './Bot/Scenario';
+import { Exchange, ExchangeData, ExchangeItem } from './Bot/Exchange';
+import { Chart, ChartCandleData, ChartData, ChartItem } from './Bot/Chart';
+import { Timeframe, TimeframeData, TimeframeItem } from './Bot/Timeframe';
+import { Order, OrderData, OrderExchangeData, OrderItem } from './Bot/Order';
+import { Analysis, AnalysisConfigData, AnalysisData, AnalysisItem, AnalysisTypes } from './Bot/Analysis';
+import { Storage, StorageData } from './Bot/Storage';
+import { Subscription, SubscriptionActionCallbackModule, SubscriptionData, SubscriptionEvent, SubscriptionItem } from './Bot/Subscription';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
+
+export interface PlaybookItemData {
+	storage?: {
+		[index: string]: StorageData,
+	},
+	exchange?: {
+		[index: string]: ExchangeData,
+	},
+	pair?: {
+		[index: string]: PairData,
+	},
+	asset?: {
+		[index: string]: AssetData,
+	},
+	order?: {
+		[index: string]: OrderData,
+	},
+	chart?: {
+		[index: string]: ChartData,
+	},
+	analysis?: {
+		[index: string]: AnalysisData,
+	},
+	scenario?: {
+		[index: string]: ScenarioData,
+	},
+	strategy?: {
+		[index: string]: StrategyData,
+	},
+	timeframe?: {
+		[index: string]: TimeframeData,
+	},
+	subscription?: {
+		[index: string]: SubscriptionData,
+	},
+};
+
+export type PlaybookCacheData = {
+	[index: string]: ItemIndexType,
+	storage: ItemIndexType,
+	exchange: ItemIndexType,
+	pair: ItemIndexType,
+	asset: ItemIndexType,
+	order: ItemIndexType,
+	chart: ItemIndexType,
+	analysis: ItemIndexType,
+	scenario: ItemIndexType,
+	strategy: ItemIndexType,
+	timeframe: ItemIndexType,
+	subscription: ItemIndexType,
+};
+
+export interface PlaybookItemInterface {
+	[index: string]: any,
+	storage: typeof Storage,
+	exchange: typeof Exchange,
+	asset: typeof Asset,
+	pair: typeof Pair,
+	order: typeof Order,
+	chart: typeof Chart,
+	analysis: typeof Analysis,
+	scenario: typeof Scenario,
+	strategy: typeof Strategy,
+	timeframe: typeof Timeframe,
+	subscription: typeof Subscription,
+};
+
+export type PlaybookItemKeys = keyof PlaybookItemData;
+
+export type PlaybookItems = {
+	[key in PlaybookItemKeys]?: PlaybookItemData[key];
+};
+
+export type PlaybookStructure = {
+	[index: string]: any,
+	backtest?: boolean;
+	dryrun?: boolean;
+	version: number;
+} & PlaybookItems;
+
+export type ItemIndexType = {
+	itemIndex: string[],
+	item: string[],
+};
+
+
 
 (async () => {
 	const fs = require('fs');
@@ -41,9 +127,7 @@ dotenv.config();
 
 	// Types to be processed in order of component dependencies
 	// TODO: Type
-	const playbookTypes: {
-		[index: string]: any,
-	} = {
+	const playbookTypes: PlaybookItemInterface = {
 		storage: Storage,
 		exchange: Exchange,
 		asset: Asset,
@@ -59,27 +143,9 @@ dotenv.config();
 	// TODO: Type
 	const playbookTypeKeys = Object.keys(playbookTypes);
 
-	type ItemIndexType = {
-		itemIndex: string[],
-		item: string[],
-	};
-
 	// Cache table of all playbook item, to facilitate referencing
 	// TODO: Type
-	let playbookCache: {
-		[index: string]: ItemIndexType,
-		storage: ItemIndexType,
-		exchange: ItemIndexType,
-		pair: ItemIndexType,
-		asset: ItemIndexType,
-		order: ItemIndexType,
-		chart: ItemIndexType,
-		analysis: ItemIndexType,
-		scenario: ItemIndexType,
-		strategy: ItemIndexType,
-		timeframe: ItemIndexType,
-		subscription: ItemIndexType,
-	} = {
+	let playbookCache: PlaybookCacheData = {
 		storage: {
 			itemIndex: [],
 			item: [],
@@ -126,7 +192,7 @@ dotenv.config();
 		},
 	};
 
-	let playbookObject: any = parse(playbookFile);
+	let playbookObject: PlaybookStructure = parse(playbookFile);
 	
 	// Check playbook version
 	if (!playbookObject.hasOwnProperty('version'))
