@@ -41,6 +41,7 @@ export class TimeframeItem implements TimeframeData {
 			this.pollTime = _.pollTime;
 		this.strategy = _.strategy;
 		this.uuid = _.uuid ?? uuidv4();
+		// TODO: Support empty value - number of candles based on strategy analysis input lengths + scenario condition length, etc.
 		if (_.windowTime && _.windowTime >= 1000)
 			this.windowTime = _.windowTime;
 	}

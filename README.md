@@ -46,7 +46,7 @@ Items are listed in order of dependency.
 | `Order` | Provides actionable context on a `Pair` and `Position` |
 | `Chart` | Holds dataset information for a `Pair` |
 | `Analysis` | Provides contexts of configured technical analysis |
-| `Scenario` | A set of conditions, for `Chart` and/or `Analysis` |
+| `Scenario` | A set of conditions, against `Chart` and/or `Analysis` data |
 | `Strategy` | Collection of `Scenario` against a `Chart` |
 | `Timeframe` | Collection of `Strategy` within time constraints |
 | `Subscription` | Collection of `Timeframe`, awaiting a set of signal conditions, to do actions (callbacks) |

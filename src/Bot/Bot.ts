@@ -1,6 +1,8 @@
-import { ChartCandleData, ChartItem } from "./Chart";
-import { Subscription, SubscriptionActionCallbackModule, SubscriptionCallbackData, SubscriptionData } from "./Subscription";
-import { TimeframeItem } from "./Timeframe";
+/**
+ * @name Tradebot (can't think of a name)
+ * @author Alexander Gailey-White
+ * @date 2024
+ */
 
 const fs = require('fs');
 

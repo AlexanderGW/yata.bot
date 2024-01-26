@@ -3,6 +3,13 @@ import { Bot } from './Bot';
 
 const talib = require('talib');
 
+// export const analysisTypeList = [
+// 	'RSI', 'MACD', 'EMA', 'SMA', 'BBANDS', ''
+// ] as const;
+
+// export type AnalysisTypes = typeof analysisTypeList[number];
+export type AnalysisTypes = string;
+
 export type AnalysisConfigData = {
 	startIndex?: number,
 	inReal?: string[],
@@ -51,7 +58,7 @@ export type AnalysisExplainData = {
 export type AnalysisData = {
 	config?: AnalysisConfigData,
 	name: string,
-	type: string,
+	type: AnalysisTypes,
 	uuid?: string,
 }
 
@@ -59,7 +66,7 @@ export class AnalysisItem implements AnalysisData {
 	config?: AnalysisConfigData;
 	explain: AnalysisExplainData;
 	name: string;
-	type: string;
+	type: AnalysisTypes;
 	uuid: string;
 
 	constructor (

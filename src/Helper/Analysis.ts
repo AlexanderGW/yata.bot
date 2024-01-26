@@ -1,6 +1,8 @@
 import { Analysis } from "../Bot/Analysis";
 import { Bot } from "../Bot/Bot";
 
+// TODO: BullmarketSupportBand; above, within, below
+
 // Relative Strength Index (RSI) 14
 export const Rsi14 = Analysis.new({
 	name: 'RSI',
