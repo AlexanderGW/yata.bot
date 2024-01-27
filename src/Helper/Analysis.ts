@@ -24,7 +24,18 @@ export const Ema20 = Analysis.new({
 	},
 	type: 'EMA',
 });
-// Bot.log(analysisEma20.explain);
+// Bot.log(Ema20.explain);
+
+// Exponential Moving Average (SMA) 21
+export const Ema21 = Analysis.new({
+	name: 'EMA21',
+	config: {
+		inRealField: 'close',
+		optInTimePeriod: 21,
+	},
+	type: 'EMA',
+});
+// Bot.log(Ema21.explain);
 
 // Exponential Moving Average (SMA) 100
 export const Ema100 = Analysis.new({
@@ -81,7 +92,7 @@ export const Bollinger20 = Analysis.new({
 
 // Moving Average Convergence/Divergence (MACD) with defaults
 export const Macd12_26_9 = Analysis.new({
-	name: 'MACDDefault12_26_9',
+	name: 'MACD12_26_9',
 	config: {
 		inRealField: 'close',
 	},
