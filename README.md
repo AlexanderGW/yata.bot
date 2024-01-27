@@ -282,4 +282,6 @@ All created items (i.e. `Pair.new()`) are kept in a simple global storage system
 ## Caveats
 
 ### `Scenario.test()`
-Currrently doesn't care how many result datasets have the same output field names. If you run conditions on field names that happen to exist in more that one of the provided datasets, it will skew your `conditionMatch` count, thus invalidating your scenario. Changing all dataset output field names, would mitigate this.
+If you define conditions without prefixes (i.e `rsi14.outReal` for analysis named `rsi14`), the condition will be evaluated on all datasets, that contain that field.
+
+Use the `chart.` prefix to target only chart data.
