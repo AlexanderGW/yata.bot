@@ -97,6 +97,7 @@ export const Bot: BotData = {
 		this.backtest = _.backtest ?? false;
 		this.dryrun = _.dryrun ?? true;
 		this.initialized = true;
+		Bot.log(`Y:A:TA:B; Backtest: ${this.backtest ? `1` : `0`}; Dryrun: ${this.dryrun ? `1` : `0`}`, Log.Verbose);
 	},
 
 	/**

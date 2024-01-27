@@ -59,7 +59,6 @@ export const Storage = {
 			_.class = 'Memory';
 		
 		let importPath = `./Storage/${_.class}`;
-		Bot.log(`Storage import: ${importPath}`);
 
 		const className = `${_.class}StorageItem`;
 			
@@ -71,6 +70,8 @@ export const Storage = {
 				let uuid = Bot.setItem(newItem);
 
 				item = Bot.getItem(uuid);
+				
+				Bot.log(`Storage '${item.name}'; API initialised`, Log.Verbose);
 			}
 		}).catch(err => Bot.log(err.message, Log.Err));
 

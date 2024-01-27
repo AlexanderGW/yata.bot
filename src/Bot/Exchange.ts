@@ -306,7 +306,6 @@ export const Exchange = {
 		let exchangeItem: ExchangeItem = new ExchangeItem(_);
 
 		let importPath = `./Exchange/${_.class}`;
-		Bot.log(`Exchange API import: ${importPath}`, Log.Verbose);
 
 		const className = `${_.class}Exchange`;
 
@@ -322,6 +321,8 @@ export const Exchange = {
 
 		let uuid = Bot.setItem(exchangeItem);
 		const item: ExchangeItem = Bot.getItem(uuid);
+
+		Bot.log(`Exchange '${item.name}'; API initialised`, Log.Verbose);
 
 		return item;
 	}
