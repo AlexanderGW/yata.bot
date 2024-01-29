@@ -1,6 +1,7 @@
 import { AnalysisData, AnalysisResultData, AnalysisItem, AnalysisExecuteResultData } from './Analysis';
 import { Bot, Log } from './Bot';
 import { ChartCandleData, ChartItem } from './Chart';
+import { toFixedNumber } from './Helper';
 import { StrategyExecuteData, StrategyItem } from './Strategy';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,7 +17,7 @@ export const scenarioConditionOperators = [
 export type ScenarioConditionOperator = typeof scenarioConditionOperators[number];
 
 // TODO: Type
-export type ScenarioConditionValueB = number | string;
+export type ScenarioConditionValueB = number | string | undefined;
 
 export type ScenarioCondition = [
 	ScenarioConditionValueA,
@@ -58,7 +59,7 @@ export type ScenarioConditionMatch = {
 	datapoint?: number,
 	operator?: string,
 	valueA?: string,
-	valueAReal?: string,
+	valueAReal?: string | number,
 	valueB?: string | number,
 	valueBReal?: string | number,
 }
@@ -124,8 +125,6 @@ export class ScenarioItem implements ScenarioData {
 					valueAClass = valueA.substring(0, valueAPos);
 					valueAName = valueA.substring(valueAPos + 1);
 				}
-				// Bot.log(`valueAClass: ${valueAClass}`, Log.Warn);
-				// Bot.log(`valueAName: ${valueAName}`, Log.Warn);
 				
 				// Check Value A in chart
 				if (
@@ -159,14 +158,11 @@ export class ScenarioItem implements ScenarioData {
 						i++
 					) {
 						analysis = _.analysisData[i][0];
-						// Bot.log(`${analysis.name} === ${valueAClass}`);
 						if (valueAClass && valueAClass !== analysis.name) continue;
 
 						dataset = _.analysisData[i][1];
-						// Bot.log(dataset);
 
 						// Check field exists within result dataset
-						// if (dataset.result?.hasOwnProperty(valueA)) {
 						if (
 							(
 								!valueAClass?.length
@@ -186,74 +182,70 @@ export class ScenarioItem implements ScenarioData {
 					}
 				}
 
-				let valueBClass: ScenarioConditionValueClass;
-				let valueBName: ScenarioConditionValueName;
 				if (typeof valueB === 'string') {
+					let valueBClass: ScenarioConditionValueClass;
+					let valueBName: ScenarioConditionValueName;
 					const valueBPos = valueB.lastIndexOf('.');
 					valueBClass = valueB.substring(0, valueBPos);
 					valueBName = valueB.substring(valueBPos + 1);
-				}
-				// Bot.log(`valueBClass: ${valueBClass}`, Log.Warn);
-				// Bot.log(`valueBName: ${valueBName}`, Log.Warn);
 
-				if (
-					(
-						!valueBClass?.length
-						&& _.chart.dataset?.hasOwnProperty(valueB)
-					)
-					|| (
-						valueBClass === 'chart'
-						&& valueBName
-						&& _.chart.dataset?.hasOwnProperty(valueBName)
-					)
-				) {
-					conditionMatch.push({
-						valueB: valueB,
-					});
-				}
-				
-				if (
-					(!valueBClass?.length || valueBClass !== 'chart')
-					&& _.analysisData
-				) {
+					// Bot.log(`valueBClass: ${valueBClass}`, Log.Warn);
+					// Bot.log(`valueBName: ${valueBName}`, Log.Warn);
 
-					// Walk through datasets
-					let analysis: AnalysisData;
-					let dataset: AnalysisResultData;
-					for (
-						let i: number = 0;
-						i < _.analysisData.length;
-						i++
+					if (
+						(
+							!valueBClass?.length
+							&& _.chart.dataset?.hasOwnProperty(valueB)
+						)
+						|| (
+							valueBClass === 'chart'
+							&& valueBName
+							&& _.chart.dataset?.hasOwnProperty(valueBName)
+						)
 					) {
-						analysis = _.analysisData[i][0];
-						// Bot.log(`${analysis.name} === ${valueBClass}`);
-						if (valueBClass && valueBClass !== analysis.name) continue;
+						conditionMatch.push({
+							valueB: valueB,
+						});
+					}
+					
+					if (
+						(!valueBClass?.length || valueBClass !== 'chart')
+						&& _.analysisData
+					) {
 
-						dataset = _.analysisData[i][1];
-
-						// Check field exists within result dataset
-						// if (dataset?.result?.hasOwnProperty(valueB)) {
-						if (
-							(
-								!valueBClass?.length
-								&& dataset.result?.hasOwnProperty(valueB)
-							)
-							|| (
-								valueBName
-								&& dataset.result?.hasOwnProperty(valueBName)
-							)
+						// Walk through datasets
+						let analysis: AnalysisData;
+						let dataset: AnalysisResultData;
+						for (
+							let i: number = 0;
+							i < _.analysisData.length;
+							i++
 						) {
-							conditionMatch.push({
-								valueB: valueB, // TODO: Was `valueA` - fairly sure that was an error?
-							});
+							analysis = _.analysisData[i][0];
+							if (valueBClass && valueBClass !== analysis.name) continue;
+
+							dataset = _.analysisData[i][1];
+
+							// Check field exists within result dataset
+							if (
+								(
+									!valueBClass?.length
+									&& dataset.result?.hasOwnProperty(valueB)
+								)
+								|| (
+									valueBName
+									&& dataset.result?.hasOwnProperty(valueBName)
+								)
+							) {
+								conditionMatch.push({
+									valueB: valueB,
+								});
+							}
 						}
 					}
 				}
 			}
 		}
-
-		// Bot.log(`conditionMatch`);
-		// Bot.log(conditionMatch);
 
 		if (conditionMatch.length < this.condition.length)
 			throw new Error('Scenario conditions are not compatible with dataset.');
@@ -305,7 +297,7 @@ export class ScenarioItem implements ScenarioData {
 			conditionSetIdx = 0;
 
 			// Increments if all conditions are met, on a dataset
-			let conditionSetMatch: any = [];
+			let conditionSetMatch: ScenarioConditionMatch[][] = [];
 
 			// Step through data points, looking for a full set of condition matches
 			for (
@@ -313,7 +305,7 @@ export class ScenarioItem implements ScenarioData {
 				k <= j;
 				k++
 			) {
-				let condition = this.condition[conditionSetIdx];
+				let condition: ScenarioConditionSet = this.condition[conditionSetIdx];
 				let conditionIdx: number = 0;
 
 				let lastConditionMatchCount: number = 0;
@@ -334,7 +326,6 @@ export class ScenarioItem implements ScenarioData {
 					operator = condition[conditionIdx][1];
 					valueB = condition[conditionIdx][2];
 
-					// TODO: CLass/Name scoping support for scenario conditons
 					let valueAClass: ScenarioConditionValueClass;
 					let valueAName: ScenarioConditionValueName;
 					const valueAPos = valueA.lastIndexOf('.');
@@ -342,11 +333,9 @@ export class ScenarioItem implements ScenarioData {
 						valueAClass = valueA.substring(0, valueAPos);
 						valueAName = valueA.substring(valueAPos + 1);
 					}
-					// Bot.log(`valueAClass: ${valueAClass}`, Log.Warn);
-					// Bot.log(`valueAName: ${valueAName}`, Log.Warn);
 					
-					let valueAReal;
-					let valueBReal = valueB;
+					let valueAReal: number | undefined;
+					let valueBReal: number = 0;
 
 					let valueBClass: ScenarioConditionValueClass;
 					let valueBName: ScenarioConditionValueName;
@@ -355,10 +344,7 @@ export class ScenarioItem implements ScenarioData {
 						valueBClass = valueB.substring(0, valueBPos);
 						valueBName = valueB.substring(valueBPos + 1);
 					}
-					// Bot.log(`valueBClass: ${valueBClass}`, Log.Warn);
-					// Bot.log(`valueBName: ${valueBName}`, Log.Warn);
 					
-					// Walk through datasets
 					if (_.analysisData.length) {
 						let analysis: AnalysisData;
 						let dataset: AnalysisResultData;
@@ -379,9 +365,8 @@ export class ScenarioItem implements ScenarioData {
 
 							// `valueA` is an analysis result data field
 							if (
-								// dataset.result?.hasOwnProperty(valueA)
 								(
-									!valueAClass?.length
+									!valueAClass
 									&& dataset.result?.hasOwnProperty(valueA)
 								)
 								|| (
@@ -405,25 +390,41 @@ export class ScenarioItem implements ScenarioData {
 
 								let datasetResultField: string[] | number[] | undefined;
 								if (valueAClass) {
-									if (valueAClass === 'chart') continue;
+									if (valueAClass === 'chart' || valueAClass !== analysis.name) continue;
+
 									datasetResultField = dataset.result[valueAName as keyof AnalysisExecuteResultData];
 								} else
 									datasetResultField = dataset.result[valueA as keyof AnalysisExecuteResultData];
 
 								if (datasetResultField) {
-									valueAReal = Number.parseFloat(
-										datasetResultField[analysisOffset] as string
-									).toFixed(10);
+									valueAReal = toFixedNumber(
+										Number.parseFloat(
+											datasetResultField[analysisOffset] as string
+										),
+										10
+									);
 								}
 							}
-							
-							if (typeof valueB === 'string') {
-								
+						}
+
+						if (typeof valueB === 'string') {
+							for (
+								let i: number = 0;
+								i < _.analysisData.length;
+								i++
+							) {
+								analysis = _.analysisData[i][0];
+								dataset = _.analysisData[i][1];
+	
+								// Establish the analysis result offset from the dataset
+								let startIndex: number = dataset.begIndex;
+								if (analysis?.config?.startIndex)
+									startIndex = analysis.config.startIndex;
+	
 								// `valueB` is an analysis result data field
 								if (
-									// dataset.result?.hasOwnProperty(valueB)
 									(
-										!valueBClass?.length
+										!valueBClass
 										&& dataset.result?.hasOwnProperty(valueB)
 									)
 									|| (
@@ -432,7 +433,7 @@ export class ScenarioItem implements ScenarioData {
 									)
 								) {
 									if (
-
+	
 										// Skip while the data point range is out-of-scope (not enough data points)
 										k < startIndex + conditionDepth
 	
@@ -442,199 +443,121 @@ export class ScenarioItem implements ScenarioData {
 										analysisOffset = -1;
 										continue;
 									}
-
+	
 									analysisOffset = (k - startIndex);
-									// console.log(`analysisOffset: ${analysisOffset}`);
-									
-									// const datasetResultField = dataset.result[valueB as keyof AnalysisExecuteResultData];
-									// if (datasetResultField) {
-									// 	valueBReal = Number.parseFloat(
-									// 		datasetResultField[analysisOffset] as string
-									// 	).toFixed(10);
-									// }
-									
+
 									let datasetResultField: string[] | number[] | undefined;
 									if (valueBClass) {
-										if (valueBClass === 'chart') continue;
+										if (valueBClass === 'chart' || valueBClass !== analysis.name) continue;
+
 										datasetResultField = dataset.result[valueBName as keyof AnalysisExecuteResultData];
 									} else
 										datasetResultField = dataset.result[valueB as keyof AnalysisExecuteResultData];
-
+	
 									if (datasetResultField) {
-										valueBReal = Number.parseFloat(
-											datasetResultField[analysisOffset] as string
-										).toFixed(10);
+										valueBReal = toFixedNumber(
+											Number.parseFloat(
+												datasetResultField[analysisOffset] as string
+											),
+											10
+										);
 									}
 								}
 							}
+						} else {
+							valueBReal = toFixedNumber(
+								Number(valueB),
+								10
+							);
 						}
 					}
 
 					// Offset will be `-1`, if the data set is out of range of the analysis results
 					// If a scenario doesn't specify a field found within any analysis results, value is `undefined`
-					if (typeof analysisOffset === 'number' && analysisOffset < 0)
-						break;
-
-					// console.log(`k: ${k}`);
+					if (typeof analysisOffset === 'number' && analysisOffset < 0) break;
 
 					if (typeof valueAReal === 'undefined') {
-						// if (_.chart.dataset?.hasOwnProperty(valueA)) {
-						// 	let datasetResultField = _.chart.dataset[valueA as keyof ChartCandleData];
-
-						// 	if (datasetResultField?.length) {
-						// 		valueAReal = Number.parseFloat(
-						// 			datasetResultField[k] as string
-						// 		).toFixed(10);
-						// 	}
-							
-						// } else {
-						// 	continue;
-						// }
-						if (!_.chart.dataset?.hasOwnProperty(valueA)) continue;
-
 						let datasetResultField: string[] | number[] | undefined;
-						if (valueAClass) {
-							if (valueAClass === 'chart') continue;
+						if (valueAClass && valueAName) {
+							if (valueAClass === 'chart' || !_.chart.dataset?.hasOwnProperty(valueAName)) continue;
+
 							datasetResultField = _.chart.dataset[valueAName as keyof ChartCandleData];
-						} else
+						} else {
+							if (!_.chart.dataset?.hasOwnProperty(valueA)) continue;
+
 							datasetResultField = _.chart.dataset[valueA as keyof ChartCandleData];
+						}
 
 						if (datasetResultField?.length) {
-							valueAReal = Number.parseFloat(
-								datasetResultField[k] as string
-							).toFixed(10);
+							valueAReal = toFixedNumber(
+								Number.parseFloat(
+									datasetResultField[k] as string
+								),
+								10
+							);
 						}
 					}
 
-					// if (
-					// 	typeof valueBReal === 'undefined'
-					// 	&& typeof valueB === 'string'
-					// ) {
-					// 	if(_.chart.dataset?.hasOwnProperty(valueB)) {
-					// 		let datasetResultField = _.chart.dataset[valueB as keyof ChartCandleData];
-
-					// 		if (datasetResultField?.length) {
-					// 			valueBReal = Number.parseFloat(
-					// 				datasetResultField[k] as string
-					// 			).toFixed(10);
-					// 		}
-					// 	} else {
-					// 		continue;
-					// 	}
-					// }
 					if (
 						typeof valueBReal === 'undefined'
 						&& typeof valueB === 'string'
 					) {
-						if(!_.chart.dataset?.hasOwnProperty(valueB)) continue;
-						
 						let datasetResultField: string[] | number[] | undefined;
-						if (valueBClass) {
-							if (valueBClass === 'chart') continue;
+						if (valueBClass && valueBName) {
+							if (valueBClass === 'chart' || !_.chart.dataset?.hasOwnProperty(valueBName)) continue;
+
 							datasetResultField = _.chart.dataset[valueBName as keyof ChartCandleData];
-						} else
+						} else {
+							if (!_.chart.dataset?.hasOwnProperty(valueB)) continue;
+
 							datasetResultField = _.chart.dataset[valueB as keyof ChartCandleData];
+						}
 
 						if (datasetResultField?.length) {
-							valueBReal = Number.parseFloat(
-								datasetResultField[k] as string
-							).toFixed(10);
+							valueBReal = toFixedNumber(
+								Number.parseFloat(
+									datasetResultField[k] as string
+								),
+								10
+							);
 						}
 					}
 
-					// Bot.log(`valueAReal: ${valueAReal}`);
-					// Bot.log(`valueBReal: ${valueBReal}`);
-
 					if (valueAReal) {
+						let matched = false;
+
 						switch (operator) {
-							case '<': {
-								if (valueAReal < valueBReal) {
-									conditionMatch.push({
-										analysisOffset: analysisOffset,
-										datapoint: k,
-										operator: operator,
-										valueA: valueA,
-										valueAReal: valueAReal,
-										valueB: valueB,
-										valueBReal: valueBReal,
-									});
-								}
+							case '<':
+								matched = (valueAReal < valueBReal);
 								break;
-							}
-							case '<=': {
-								if (valueAReal <= valueBReal) {
-									conditionMatch.push({
-										analysisOffset: analysisOffset,
-										datapoint: k,
-										operator: operator,
-										valueA: valueA,
-										valueAReal: valueAReal,
-										valueB: valueB,
-										valueBReal: valueBReal,
-									});
-								}
+							case '<=':
+								matched = (valueAReal <= valueBReal)
 								break;
-							}
+							case '>':
+								matched = (valueAReal > valueBReal)
+								break;
+							case '>=':
+								matched = (valueAReal >= valueBReal)
+								break;
+							case '==':
+								matched = (valueAReal == valueBReal)
+								break;
+							case '!=':
+								matched = (valueAReal != valueBReal)
+								break;
+						}
 
-							case '>': {
-								if (valueAReal > valueBReal) {
-									conditionMatch.push({
-										analysisOffset: analysisOffset,
-										datapoint: k,
-										operator: operator,
-										valueA: valueA,
-										valueAReal: valueAReal,
-										valueB: valueB,
-										valueBReal: valueBReal,
-									});
-								}
-								break;
-							}
-
-							case '>=': {
-								if (valueAReal >= valueBReal) {
-									conditionMatch.push({
-										analysisOffset: analysisOffset,
-										datapoint: k,
-										operator: operator,
-										valueA: valueA,
-										valueAReal: valueAReal,
-										valueB: valueB,
-										valueBReal: valueBReal,
-									});
-								}
-								break;
-							}
-
-							case '==': {
-								if (valueAReal == valueBReal) {
-									conditionMatch.push({
-										analysisOffset: analysisOffset,
-										datapoint: k,
-										operator: operator,
-										valueA: valueA,
-										valueAReal: valueAReal,
-										valueB: valueB,
-										valueBReal: valueBReal,
-									});
-								}
-								break;
-							}
-
-							case '!=': {
-								if (valueAReal != valueBReal) {
-									conditionMatch.push({
-										analysisOffset: analysisOffset,
-										datapoint: k,
-										operator: operator,
-										valueA: valueA,
-										valueAReal: valueAReal,
-										valueB: valueB,
-										valueBReal: valueBReal,
-									});
-								}
-								break;
-							}
+						if (matched) {
+							const matchData: ScenarioConditionMatch = {
+								analysisOffset: analysisOffset,
+								datapoint: k,
+								operator: operator,
+								valueA: valueA,
+								valueAReal: valueAReal,
+								valueB: valueB,
+								valueBReal: valueBReal,
+							};
+							conditionMatch.push(matchData);
 						}
 					}
 
@@ -654,6 +577,7 @@ export class ScenarioItem implements ScenarioData {
 
 			// All scenario condition sets, match on this data frame range
 			if (conditionSetMatch.length === this.condition.length) {
+				Bot.log(conditionSetMatch, Log.Verbose);
 				scenarioMatch.push(conditionSetMatch);
 
 				// Execute chained strategy, if provided
@@ -692,7 +616,6 @@ export class ScenarioItem implements ScenarioData {
 					const milliseconds = _.chart.dataset[timeField][idx] * 1000;
 					let date = new Date(milliseconds);
 					Bot.log(`Scenario '${this.name}'; Match '${date.toISOString()}'; Datapoint '${candle.datapoint}'`);
-					// console.log(conditionMatch);
 				}
 			}
 			
