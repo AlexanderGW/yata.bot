@@ -254,7 +254,7 @@ export type ItemIndexType = {
 					...playbookObject[typeKey][itemName] as object,
 
 					// Allow custom `name` values, or default to type scope prefixed names
-					name: playbookObject[typeKey][itemName].name ?? `${typeKey}.${itemName}`
+					name: playbookObject[typeKey][itemName].name ?? `${typeKey}:${itemName}`
 				};
 
 				for (let key in finalItemData) {
@@ -399,17 +399,17 @@ export type ItemIndexType = {
 									// If `valueA` condition field contains a full-stop (.), and isn't prefixed `chart.`, add the `analysis` prefix, for Playbook name prefixing compatibility.
 									if (
 										value[valueIdx][setIdx][0].lastIndexOf('.') > 0
-										&& value[valueIdx][setIdx][0].indexOf('chart.') !== 0
+										&& value[valueIdx][setIdx][0].indexOf('chart:') !== 0
 									) {
-										value[valueIdx][setIdx][0] = `analysis.${value[valueIdx][setIdx][0]}`;
+										value[valueIdx][setIdx][0] = `analysis:${value[valueIdx][setIdx][0]}`;
 									}
 									// If `valueB` condition field contains a full-stop (.), and isn't prefixed `chart.`, add the `analysis` prefix, for Playbook name prefixing compatibility.
 									if (
 										typeof value[valueIdx][setIdx][2] === 'string'
 										&& value[valueIdx][setIdx][2].lastIndexOf('.') > 0
-										&& value[valueIdx][setIdx][2].indexOf('chart.') !== 0
+										&& value[valueIdx][setIdx][2].indexOf('chart:') !== 0
 									) {
-										value[valueIdx][setIdx][2] = `analysis.${value[valueIdx][setIdx][0]}`;
+										value[valueIdx][setIdx][2] = `analysis:${value[valueIdx][setIdx][2]}`;
 									}
 
 									let operator = value[valueIdx][setIdx][1];
