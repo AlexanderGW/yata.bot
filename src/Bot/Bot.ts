@@ -133,7 +133,7 @@ export const Bot: BotData = {
 			!process.env.BOT_LOG_STDOUT
 			&& process.env.BOT_LOG_STDOUT !== '1'
 		) {
-			let consoleString = `${now.toISOString()}: ${input}`;
+			let consoleString = `${now.toISOString()} ${input}`;
 
 			if (level === Log.Err)
 				console.error(`\x1b[31m ${consoleString}\x1b[0m`);
@@ -160,7 +160,7 @@ export const Bot: BotData = {
 			else
 				levelValue = 'I';
 
-			let consoleString = `${now.toISOString()}: ${levelValue}; ${input}`;
+			let consoleString = `${now.toISOString()} ${levelValue}; ${input}`;
 
 			const pad = (value: number) =>
 				value.toString().length == 1
