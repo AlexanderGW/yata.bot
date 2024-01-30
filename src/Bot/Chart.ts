@@ -3,7 +3,6 @@ import { Bot, Log } from "./Bot";
 import { PairItem } from "./Pair";
 
 export const chartCandleFields = [
-	'change',
 	'close',
 	'closeTime',
 	'high',
@@ -33,7 +32,6 @@ export type ChartData = {
 
 export type ChartCandleData = {
 	[index: string]: any,
-	change?: string[],
 	close?: string[],
 	closeTime?: number[],
 	high?: string[],
