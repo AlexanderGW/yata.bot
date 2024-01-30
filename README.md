@@ -39,10 +39,9 @@ Items are listed in order of dependency.
 
 | Item | Description |
 | ---- | ----------- |
+| `Asset` | Identifies individual assets across the ecosystem |
 | `Exchange` | Interface with external exchanges (i.e. `Kraken`, `Uniswap`, etc.) |
-| `Asset` | Identifies individual assets, tokens, across the ecosystem |
-| `Pair` | Two `Asset` items, tied to an `Exchange` |
-| `Position` | Information such as price, associated with a `Pair` |
+| `Pair` | Two `Asset` items, tied to an `Exchange`, trcking balances, prices |
 | `Order` | Provides actionable context on a `Pair` and `Position` |
 | `Chart` | Holds dataset information for a `Pair` |
 | `Analysis` | Provides contexts of configured technical analysis |
