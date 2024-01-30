@@ -133,7 +133,7 @@ export class ScenarioItem implements ScenarioData {
 						&& _.chart.dataset?.hasOwnProperty(valueA)
 					)
 					|| (
-						valueAClass === 'chart'
+						valueAClass === 'candle'
 						&& valueAName
 						&& _.chart.dataset?.hasOwnProperty(valueAName)
 					)
@@ -145,7 +145,7 @@ export class ScenarioItem implements ScenarioData {
 
 				// Check Value A in analysis
 				if (
-					(!valueAClass?.length || valueAClass !== 'chart')
+					(!valueAClass?.length || valueAClass !== 'candle')
 					&& _.analysisData
 				) {
 
@@ -198,7 +198,7 @@ export class ScenarioItem implements ScenarioData {
 							&& _.chart.dataset?.hasOwnProperty(valueB)
 						)
 						|| (
-							valueBClass === 'chart'
+							valueBClass === 'candle'
 							&& valueBName
 							&& _.chart.dataset?.hasOwnProperty(valueBName)
 						)
@@ -209,7 +209,7 @@ export class ScenarioItem implements ScenarioData {
 					}
 					
 					if (
-						(!valueBClass?.length || valueBClass !== 'chart')
+						(!valueBClass?.length || valueBClass !== 'candle')
 						&& _.analysisData
 					) {
 
@@ -391,7 +391,7 @@ export class ScenarioItem implements ScenarioData {
 
 								let datasetResultField: string[] | number[] | undefined;
 								if (valueAClass) {
-									if (valueAClass === 'chart' || valueAClass !== analysis.name) continue;
+									if (valueAClass === 'candle' || valueAClass !== analysis.name) continue;
 
 									datasetResultField = dataset.result[valueAName as keyof AnalysisExecuteResultData];
 								} else
@@ -431,7 +431,7 @@ export class ScenarioItem implements ScenarioData {
 								// `valueB` is a percentage change of `valueA`
 								if (valueBIsPercentage) {
 									if (valueAClass && valueAName) {
-										if (valueAClass === 'chart' || valueAClass !== analysis.name) continue;
+										if (valueAClass === 'candle' || valueAClass !== analysis.name) continue;
 
 										datasetResultField = dataset.result[valueAName as keyof AnalysisExecuteResultData];
 									} else
@@ -465,7 +465,7 @@ export class ScenarioItem implements ScenarioData {
 
 									// Value is a reference to specific chart or analysis data
 									if (valueBClass && valueBName) {
-										if (valueBClass === 'chart' || valueBClass !== analysis.name) continue;
+										if (valueBClass === 'candle' || valueBClass !== analysis.name) continue;
 
 										datasetResultField = dataset.result[valueBName as keyof AnalysisExecuteResultData];
 									}
@@ -518,7 +518,7 @@ export class ScenarioItem implements ScenarioData {
 					if (typeof valueAReal === 'undefined') {
 						let datasetResultField: string[] | number[] | undefined;
 						if (valueAClass && valueAName) {
-							if (valueAClass === 'chart' || !_.chart.dataset?.hasOwnProperty(valueAName)) continue;
+							if (valueAClass === 'candle' || !_.chart.dataset?.hasOwnProperty(valueAName)) continue;
 
 							datasetResultField = _.chart.dataset[valueAName as keyof ChartCandleData];
 						} else {
@@ -546,7 +546,7 @@ export class ScenarioItem implements ScenarioData {
 						// Value is a percentage change of `valueA`
 						if (valueBIsPercentage) {
 							if (valueAClass && valueAName) {
-								if (valueAClass === 'chart' || !_.chart.dataset?.hasOwnProperty(valueAName)) continue;
+								if (valueAClass === 'candle' || !_.chart.dataset?.hasOwnProperty(valueAName)) continue;
 
 								datasetResultField = _.chart.dataset[valueAName as keyof AnalysisExecuteResultData];
 							} else if (_.chart.dataset)
@@ -558,7 +558,7 @@ export class ScenarioItem implements ScenarioData {
 						
 						// Value is a reference to specific chart or analysis data
 						else if (valueBClass && valueBName) {
-							if (valueBClass === 'chart' || !_.chart.dataset?.hasOwnProperty(valueBName)) continue;
+							if (valueBClass === 'candle' || !_.chart.dataset?.hasOwnProperty(valueBName)) continue;
 
 							datasetResultField = _.chart.dataset[valueBName as keyof ChartCandleData];
 						}

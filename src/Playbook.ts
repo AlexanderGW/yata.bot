@@ -396,18 +396,18 @@ export type ItemIndexType = {
 									// console.log(`value[valueIdx][setIdx]`);
 									// console.log(value[valueIdx][setIdx]);
 
-									// If `valueA` condition field contains a full-stop (.), and isn't prefixed `chart.`, add the `analysis` prefix, for Playbook name prefixing compatibility.
+									// If `valueA` condition field contains a full-stop (.), and isn't prefixed `candle.`, add the `analysis` prefix, for Playbook name prefixing compatibility.
 									if (
 										value[valueIdx][setIdx][0].lastIndexOf('.') > 0
-										&& value[valueIdx][setIdx][0].indexOf('chart:') !== 0
+										&& value[valueIdx][setIdx][0].indexOf('candle.') !== 0
 									) {
 										value[valueIdx][setIdx][0] = `analysis:${value[valueIdx][setIdx][0]}`;
 									}
-									// If `valueB` condition field contains a full-stop (.), and isn't prefixed `chart.`, add the `analysis` prefix, for Playbook name prefixing compatibility.
+									// If `valueB` condition field contains a full-stop (.), and isn't prefixed `candle.`, add the `analysis` prefix, for Playbook name prefixing compatibility.
 									if (
 										typeof value[valueIdx][setIdx][2] === 'string'
 										&& value[valueIdx][setIdx][2].lastIndexOf('.') > 0
-										&& value[valueIdx][setIdx][2].indexOf('chart:') !== 0
+										&& value[valueIdx][setIdx][2].indexOf('candle.') !== 0
 									) {
 										value[valueIdx][setIdx][2] = `analysis:${value[valueIdx][setIdx][2]}`;
 									}
