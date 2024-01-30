@@ -1,7 +1,5 @@
 import { Analysis } from "../Bot/Analysis";
-import { Bot } from "../Bot/Bot";
-
-// TODO: BullmarketSupportBand; above, within, below
+import { Bot, Log } from "../Bot/Bot";
 
 // Relative Strength Index (RSI) 14
 export const Rsi14 = Analysis.new({
@@ -13,9 +11,9 @@ export const Rsi14 = Analysis.new({
 	},
 	type: 'RSI',
 });
-// Bot.log(analysisanalysisRsi14.explain);
+// Bot.log(Rsi14.explain, Log.Verbose);
 
-// Exponential Moving Average (SMA) 20
+// Exponential Moving Average (EMA) 20
 export const Ema20 = Analysis.new({
 	name: 'EMA20',
 	config: {
@@ -24,9 +22,9 @@ export const Ema20 = Analysis.new({
 	},
 	type: 'EMA',
 });
-// Bot.log(Ema20.explain);
+// Bot.log(Ema20.explain, Log.Verbose);
 
-// Exponential Moving Average (SMA) 21
+// Exponential Moving Average (EMA) 21
 export const Ema21 = Analysis.new({
 	name: 'EMA21',
 	config: {
@@ -35,9 +33,9 @@ export const Ema21 = Analysis.new({
 	},
 	type: 'EMA',
 });
-// Bot.log(Ema21.explain);
+// Bot.log(Ema21.explain, Log.Verbose);
 
-// Exponential Moving Average (SMA) 100
+// Exponential Moving Average (EMA) 100
 export const Ema100 = Analysis.new({
 	name: 'EMA100',
 	config: {
@@ -46,6 +44,7 @@ export const Ema100 = Analysis.new({
 	},
 	type: 'EMA',
 });
+// Bot.log(Ema100.explain, Log.Verbose);
 
 // Simple Moving Average (SMA) 20
 export const Sma20 = Analysis.new({
@@ -56,7 +55,7 @@ export const Sma20 = Analysis.new({
 	},
 	type: 'SMA',
 });
-// Bot.log(Sma20.explain);
+// Bot.log(Sma20.explain, Log.Verbose);
 
 // Simple Moving Average (SMA) 50
 export const Sma50 = Analysis.new({
@@ -67,6 +66,7 @@ export const Sma50 = Analysis.new({
 	},
 	type: 'SMA',
 });
+// Bot.log(Sma50.explain, Log.Verbose);
 
 // Simple Moving Average (SMA) 200
 export const Sma200 = Analysis.new({
@@ -77,6 +77,7 @@ export const Sma200 = Analysis.new({
 	},
 	type: 'SMA',
 });
+// Bot.log(Sma200.explain, Log.Verbose);
 
 // Bollinger Bands (dependent on SMA20 result)
 export const Bollinger20 = Analysis.new({
@@ -88,7 +89,7 @@ export const Bollinger20 = Analysis.new({
 	},
 	type: 'BBANDS',
 });
-// console.log(Bollinger20.explain);
+// console.log(Bollinger20.explain, Log.Verbose);
 
 // Moving Average Convergence/Divergence (MACD) with defaults
 export const Macd12_26_9 = Analysis.new({
@@ -98,4 +99,4 @@ export const Macd12_26_9 = Analysis.new({
 	},
 	type: 'MACD',
 });
-// Bot.log(Macd12_26_9.explain);
+// Bot.log(Macd12_26_9.explain, Log.Verbose);
