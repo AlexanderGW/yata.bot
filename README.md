@@ -116,7 +116,7 @@ In the example below, we're looking for the scenario where the RSI is moving to 
 
 Alternatively, you can also use fixed values, instead of percentages. 
 
-For more examples for your YAML templates, have a look at [`~/playbook/eth-btc-mockup/eth-btc-mockup.yml`](playbook/eth-btc-mockup/eth-btc-mockup.yml)
+Example YAML templates can be found (more to be added) in: [`~/playbook/`](playbook/)
 
 ```yaml
 analysis:
@@ -152,6 +152,11 @@ scenario:
         # Or a fixed price, when the price is 42K or higher
         # - [candle.close, '>=', 42000]
 ```
+
+### Scenario condition field names
+If you define condition fields without prefixes (i.e `outReal` instead of `rsi14.outReal` for analysis named `rsi14`), the condition will be evaluated on all datasets that use that field name.
+
+Use the `candle.` prefix to target only chart candle metrics. Available fields; `close`, `closeTime`, `high`, `low`, `open`, `openTime`, `tradeCount`, `volume`, `vwap`
 
 ## Environment
 See `.env.example` for bot configuration options, and exchange API keys
@@ -324,7 +329,7 @@ Support for web3 RPC nodes, will be added.
 
 ```js
 const exchangeKraken = Exchange.new({
-  class: 'Kraken', // Defaults to `Paper` class, `Kraken` in development
+  class: 'Kraken',
   key: process.env.KRAKEN_CLIENT_KEY,
   secret: process.env.KRAKEN_CLIENT_SECRET,
 });
@@ -332,10 +337,3 @@ const exchangeKraken = Exchange.new({
 
 ## Storage
 All created items (i.e. `Pair.new()`) are kept in a simple global storage system, identified by their own UUID. Using `Bot.setItem(object): uuid` and `Bot.getItem(uuid): object`
-
-## Caveats
-
-### `Scenario.test()`
-If you define conditions without prefixes (i.e `rsi14.outReal` for analysis named `rsi14`), the condition will be evaluated on all datasets, that contain that field.
-
-Use the `chart.` prefix to target only chart data.
