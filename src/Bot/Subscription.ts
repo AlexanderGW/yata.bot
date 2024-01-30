@@ -242,60 +242,37 @@ export const Subscription: SubscriptionInterface = {
 						valueBReal = signalResult[valueB as keyof SubscriptionSignalData] ?? valueB;
 
 						if (valueAReal) {
-							let match = false;
+							let matched = false;
+
 							switch (operator) {
-								case '<': {
-									if (valueAReal < valueBReal)
-										match = true;
+								case '<':
+									matched = (valueAReal < valueBReal)
+								case '<=':
+									matched = (valueAReal <= valueBReal)
 									break;
-								}
-								case '<=': {
-									if (valueAReal <= valueBReal)
-										match = true;
+								case '>':
+									matched = (valueAReal > valueBReal)
 									break;
-								}
-
-								case '>': {
-									if (valueAReal > valueBReal)
-										match = true;
+								case '>=':
+									matched = (valueAReal >= valueBReal)
 									break;
-								}
-
-								case '>=': {
-									if (valueAReal >= valueBReal)
-										match = true;
+								case '==':
+									matched = (valueAReal == valueBReal)
 									break;
-								}
-
-								case '==': {
-									if (valueAReal == valueBReal)
-										match = true;
+								case '!=':
+									matched = (valueAReal != valueBReal)
 									break;
-								}
-
-								case '!=': {
-									if (valueAReal != valueBReal)
-										match = true;
-									break;
-								}
 							}
 
-							if (match) {
-								// Bot.log({
-								// 	valueA: valueA,
-								// 	valueAReal: valueAReal,
-								// 	operator: operator,
-								// 	valueB: valueB,
-								// 	valueBReal: valueBReal,
-								// });
-
-								conditionMatch.push({
+							if (matched) {
+								const matchData: SubscriptionConditionData = {
 									valueA: valueA,
 									valueAReal: valueAReal,
 									operator: operator,
 									valueB: valueB,
 									valueBReal: valueBReal,
-								});
+								};
+								conditionMatch.push(matchData);
 							}
 						}
 					}
@@ -306,7 +283,9 @@ export const Subscription: SubscriptionInterface = {
 						&& item.timeframeAny?.[index]
 					) {
 						Bot.log(`Timeframe '${item.timeframeAny?.[index].name}'; Triggered subscription '${item.name}'`);
+						Bot.log(conditionMatch, Log.Verbose);
 
+						// TODO: Refactor into `Playbook`?
 						if (item.playbook) {
 
 							// Playbook action module callback
