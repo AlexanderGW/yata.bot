@@ -4,7 +4,6 @@ import { PairItem } from "./Pair";
 
 export const chartCandleFields = [
 	'change',
-	'changePercent',
 	'close',
 	'closeTime',
 	'high',
@@ -35,7 +34,6 @@ export type ChartData = {
 export type ChartCandleData = {
 	[index: string]: any,
 	change?: string[],
-	changePercent?: string[],
 	close?: string[],
 	closeTime?: number[],
 	high?: string[],
