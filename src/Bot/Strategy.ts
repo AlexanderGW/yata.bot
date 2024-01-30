@@ -146,12 +146,14 @@ export class StrategyItem implements StrategyData {
 			let analysis: AnalysisItem;
 			let result;
 			let analysisData: Array<[AnalysisItem, AnalysisResultData]> = [];
-			for (let i = 0; i < action[0].analysis.length; i++) {
-				analysis = this.analysis[i];
-
-				result = this.getResult(analysis);
-				if (typeof result !== 'boolean')
-					analysisData.push([analysis, result]);
+			if (action[0].analysis) {
+				for (let i = 0; i < action[0].analysis.length; i++) {
+					analysis = this.analysis[i];
+	
+					result = this.getResult(analysis);
+					if (typeof result !== 'boolean')
+						analysisData.push([analysis, result]);
+				}
 			}
 
 			let timeField: string = '';
