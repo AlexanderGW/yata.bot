@@ -1,7 +1,7 @@
 import { AnalysisData, AnalysisResultData, AnalysisItem, AnalysisExecuteResultData } from './Analysis';
 import { Bot, Log } from './Bot';
 import { ChartCandleData, ChartItem } from './Chart';
-import { toFixedNumber } from './Helper';
+import { isPercentage, toFixedNumber } from './Helper';
 import { StrategyExecuteData, StrategyItem } from './Strategy';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -290,8 +290,7 @@ export class ScenarioItem implements ScenarioData {
 		) {
 			// Skip data point range depths that are lower than the number of conditions
 			// (not enough data points for backward looking conditions)
-			if (j < conditionDepth)
-				continue;
+			if (j < conditionDepth) continue;
 
 			// Reset, reuse connection index variable.
 			conditionSetIdx = 0;
@@ -339,7 +338,9 @@ export class ScenarioItem implements ScenarioData {
 
 					let valueBClass: ScenarioConditionValueClass;
 					let valueBName: ScenarioConditionValueName;
+					let valueBIsPercentage = false;
 					if (typeof valueB === 'string') {
+						valueBIsPercentage = isPercentage(valueB);
 						const valueBPos = valueB.lastIndexOf('.');
 						valueBClass = valueB.substring(0, valueBPos);
 						valueBName = valueB.substring(valueBPos + 1);
@@ -407,6 +408,7 @@ export class ScenarioItem implements ScenarioData {
 							}
 						}
 
+						// TODO: Check is analysis or not-chart etc
 						if (typeof valueB === 'string') {
 							for (
 								let i: number = 0;
@@ -415,14 +417,29 @@ export class ScenarioItem implements ScenarioData {
 							) {
 								analysis = _.analysisData[i][0];
 								dataset = _.analysisData[i][1];
+
+								if (!dataset.result) //continue;
+									throw new Error(`No data available on scenario`);
 	
 								// Establish the analysis result offset from the dataset
 								let startIndex: number = dataset.begIndex;
 								if (analysis?.config?.startIndex)
 									startIndex = analysis.config.startIndex;
 	
+								let datasetResultField: string[] | number[] | undefined;
+
+								// `valueB` is a percentage change of `valueA`
+								if (valueBIsPercentage) {
+									if (valueAClass && valueAName) {
+										if (valueAClass === 'chart' || valueAClass !== analysis.name) continue;
+
+										datasetResultField = dataset.result[valueAName as keyof AnalysisExecuteResultData];
+									} else
+										datasetResultField = dataset.result[valueA as keyof AnalysisExecuteResultData];
+								}
+
 								// `valueB` is an analysis result data field
-								if (
+								else if (
 									(
 										!valueBClass
 										&& dataset.result?.hasOwnProperty(valueB)
@@ -446,22 +463,44 @@ export class ScenarioItem implements ScenarioData {
 	
 									analysisOffset = (k - startIndex);
 
-									let datasetResultField: string[] | number[] | undefined;
-									if (valueBClass) {
+									// Value is a reference to specific chart or analysis data
+									if (valueBClass && valueBName) {
 										if (valueBClass === 'chart' || valueBClass !== analysis.name) continue;
 
 										datasetResultField = dataset.result[valueBName as keyof AnalysisExecuteResultData];
-									} else
-										datasetResultField = dataset.result[valueB as keyof AnalysisExecuteResultData];
-	
-									if (datasetResultField) {
-										valueBReal = toFixedNumber(
-											Number.parseFloat(
-												datasetResultField[analysisOffset] as string
-											),
-											10
-										);
 									}
+									
+									// Value is generic; chart and/or analysis fields
+									else
+										datasetResultField = dataset.result[valueB as keyof AnalysisExecuteResultData];
+								}
+
+								if (!datasetResultField) //continue;
+									throw new Error(`Condition field not found in scenario data`);
+
+								if (valueBIsPercentage) {
+									if (analysisOffset <= 0) continue;
+
+									const valueBPercentage = Number.parseFloat(
+										valueB.substring(0, valueB.length - 1)
+									);
+									// Bot.log(`valueBPercentage: ${valueBPercentage}`, Log.Verbose);
+									const valueARealLastCandle = Number.parseFloat(
+										datasetResultField[analysisOffset - 1] as string
+									);
+									// Bot.log(`valueARealLastCandle: ${valueARealLastCandle}`, Log.Verbose);
+									valueBReal = toFixedNumber(
+										valueARealLastCandle + ((valueARealLastCandle / 100) * valueBPercentage),
+										10
+									);
+									// Bot.log(`valueBReal: ${valueBReal}`, Log.Verbose);
+								} else {
+									valueBReal = toFixedNumber(
+										Number.parseFloat(
+											datasetResultField[analysisOffset] as string
+										),
+										10
+									);
 								}
 							}
 						} else {
@@ -499,21 +538,58 @@ export class ScenarioItem implements ScenarioData {
 					}
 
 					if (
-						typeof valueBReal === 'undefined'
+						!valueBReal
 						&& typeof valueB === 'string'
 					) {
 						let datasetResultField: string[] | number[] | undefined;
-						if (valueBClass && valueBName) {
+
+						// Value is a percentage change of `valueA`
+						if (valueBIsPercentage) {
+							if (valueAClass && valueAName) {
+								if (valueAClass === 'chart' || !_.chart.dataset?.hasOwnProperty(valueAName)) continue;
+
+								datasetResultField = _.chart.dataset[valueAName as keyof AnalysisExecuteResultData];
+							} else if (_.chart.dataset)
+								datasetResultField = _.chart.dataset[valueA as keyof AnalysisExecuteResultData];
+
+							if (!datasetResultField) //continue;
+								throw new Error(`Condition field '${valueA}' not found on scenario chart data`);
+						}
+						
+						// Value is a reference to specific chart or analysis data
+						else if (valueBClass && valueBName) {
 							if (valueBClass === 'chart' || !_.chart.dataset?.hasOwnProperty(valueBName)) continue;
 
 							datasetResultField = _.chart.dataset[valueBName as keyof ChartCandleData];
-						} else {
+						}
+						
+						// Value is a generic field reference in chart and/or analysis
+						else {
 							if (!_.chart.dataset?.hasOwnProperty(valueB)) continue;
 
 							datasetResultField = _.chart.dataset[valueB as keyof ChartCandleData];
 						}
 
-						if (datasetResultField?.length) {
+						if (!datasetResultField) //continue;
+							throw new Error(`Condition field '${valueB}' not found on scenario chart data`);
+
+						if (valueBIsPercentage) {
+							if (k <= 0) continue;
+
+							const valueBPercentage = Number.parseFloat(
+								valueB.substring(0, valueB.length - 1)
+							);
+							// Bot.log(`valueBPercentage: ${valueBPercentage}`, Log.Verbose);
+							const valueARealLastCandle = Number.parseFloat(
+								datasetResultField[k - 1] as string
+							);
+							// Bot.log(`valueARealLastCandle: ${valueARealLastCandle}`, Log.Verbose);
+							valueBReal = toFixedNumber(
+								valueARealLastCandle + ((valueARealLastCandle / 100) * valueBPercentage),
+								10
+							);
+							// Bot.log(`valueBReal: ${valueBReal}`, Log.Verbose);
+						} else {
 							valueBReal = toFixedNumber(
 								Number.parseFloat(
 									datasetResultField[k] as string
