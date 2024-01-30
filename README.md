@@ -41,9 +41,9 @@ Items are listed in order of dependency.
 | ---- | ----------- |
 | `Asset` | Identifies individual assets across the ecosystem |
 | `Exchange` | Interface with external exchanges (i.e. `Kraken`, `Uniswap`, etc.) |
-| `Pair` | Two `Asset` items, tied to an `Exchange`, trcking balances, prices |
-| `Order` | Provides actionable context on a `Pair` and `Position` |
-| `Chart` | Holds dataset information for a `Pair` |
+| `Pair` | Two `Asset` items, tied to an `Exchange`, tracking balances, prices |
+| `Order` | Provides actionable context on a `Pair` |
+| `Chart` | Manage dataset information for a `Pair` |
 | `Analysis` | Provides contexts of configured technical analysis |
 | `Scenario` | A set of conditions, against `Chart` and/or `Analysis` data |
 | `Strategy` | Collection of `Scenario` against a `Chart` |
