@@ -11,10 +11,10 @@ Following a concept of timeframes with strategies, which look for scenarios (def
 ## Todo
 - In-progress
   - JSON/YAML support for configurations
+  - Refactor `Storage` interfacing, as per `Exchange`
   - Expand storage interfacing (File, Memory, Redis, MongoDB, etc)
   - State persistence: Timeframe results, chart datasets, orders, asset positions, etc.
 - Support for web3 exchanges
-- Scenario condition percentage values (changes from previous datapoints)
 - Unify log formatting for better data ingestion
 - D3 UI
 - Cleanup `Helper` structure
@@ -85,18 +85,72 @@ Finally, `Chart.candleTime` is deducted from the time to ensure integrity of any
 ### Item referencing
 All items are identified in playbooks with a `name` (names are only unique to item type), which is then used to link items together.
 
-An example `Scenario` called `rsi14BearishOverbought`, referencing `Analysis` called `rsi14`
+The example below defines two assets; `BTC` and `USD`, the exchange `Kraken`, and a `Pair`, which consists of both assets, on the exchange. This is to allow price tracking, for these assets, specific to Kraken.
+
+See the [Items](#Items) table above for more details on how items are related.
+
+```yaml
+asset:
+  btc:
+    symbol: BTC
+  usd:
+    symbol: USD
+
+exchange:
+  kraken:
+    # More exchanges are in development; Binance, Coinbase, including decentralised options, such as Uniswap
+    class: Kraken
+
+pair:
+  btcUsdKraken:
+    a: btc
+    b: usd
+    exchange: kraken
+```
+
+### Scenarios in playbooks
+When defining scenarios, we're looking for at least one condition (you can define as many as you need), across one or more candles.
+Each condition can target either `Chart` candle metrics, or any associated `Analytic`.
+
+In the example below, we're looking for the scenario where the RSI is moving to the upside, from at or below a value of `30` (oversold) on the previous candle, to the latest (current) candle, with an RSI value above `30`, where the candles current price (we use close, as it's the latest reading, until the candle closes) is `5%` higher than the previous candle close.
+
+Alternatively, you can also use fixed values, instead of percentages. 
+
+For more examples for your YAML templates, have a look at [`~/playbook/eth-btc-mockup/eth-btc-mockup.yml`](playbook/eth-btc-mockup/eth-btc-mockup.yml)
 
 ```yaml
 analysis:
   rsi14:
-    ...
+    config:
+      inRealField: close
+      optInTimePeriod: 14
+    type: RSI
 
 scenario:
-  rsi14BearishOverbought:
+
+  # This is the name of the scenario, and would be used as a reference in strategies
+  rsi14BullishOversold:
+
+    # You'll need to define, and include any analysis below, if you're using it in the conditions below
     analysis:
       - rsi14
-    ...
+    condition:
+
+      # Previous candle
+      -
+        # Condition 1 - RSI was below 30
+        - [rsi14.outReal, '<', 30]
+
+      # Latest candle
+      -
+        # Condition 1 - RSI is now 30 or higher
+        - [rsi14.outReal, '>=', 30]
+
+        # Condition 2 - price is also 5% higher than the previous candle close
+        - [candle.close, '>=', 5%]
+
+        # Or a fixed price, when the price is 42K or higher
+        # - [candle.close, '>=', 42000]
 ```
 
 ## Environment
