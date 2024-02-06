@@ -40,7 +40,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		'XETH',
 		'XEUR',
 		'ZEUR',
-		'XGBP',
+		// 'XGBP',
 		'ZGBP',
 		'ZUSD',
 		'XXDG',
@@ -51,7 +51,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		'ETH',
 		'EUR',
 		'EUR',
-		'GBP',
+		// 'GBP',
 		'GBP',
 		'USD',
 		'DOGE',
@@ -128,7 +128,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				pair: pair,
 
 				// Order price
-				price: _.price,
+				price: _.priceActual,
 
 				// Order direction (buy/sell)
 				type: _.side === OrderSide.Buy ? 'buy' : 'sell',
@@ -140,7 +140,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				validate: _.dryrun,
 
 				// Order quantity in terms of the base asset
-				volume: _.quantity,
+				volume: _.quantityActual,
 			};
 			console.log(requestOptions);
 
@@ -154,7 +154,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}'; api.openOrder ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.openOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			if (responseJson) {
 
@@ -202,7 +202,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}'; api.closeOrder ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.closeOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			if (responseJson) {
 
@@ -268,7 +268,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 					pair: pair,
 
 					// Order price
-					price: _.price,
+					price: _.priceActual,
 
 					// Transaction ID
 					txid: _.transactionId[lastTransactionIdx],
@@ -283,12 +283,12 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 					validate: _.dryrun,
 
 					// Order quantity in terms of the base asset
-					volume: _.quantity,
+					volume: _.quantityActual,
 				}
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}'; api.editOrder ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.editOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			if (responseJson) {
 
@@ -394,6 +394,11 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			let assetASymbolForeign = this.symbolToForeign(_.a.symbol);
 			let assetBSymbolForeign = this.symbolToForeign(_.b.symbol);
 			
+			const pair = `${_.a.symbol}-${_.b.symbol}`;
+			const pairForeign = `${assetASymbolForeign}${assetBSymbolForeign}`;
+
+			Bot.log(`Exchange '${this.name}'; api.getTicker; Pair: '${pair}'; Foreign: '${pairForeign}'`, Log.Verbose);
+
 			// Get balances on exchange
 			let responseJson = await this.handle?.api(
 
@@ -401,12 +406,12 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				'Ticker',
 
 				{
-					pair: `${assetASymbolForeign}${assetBSymbolForeign}`,
+					pair: pairForeign,
 				}
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}'; api.getTicker ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			if (!responseJson)
 				throw new Error(`Invalid response`);
@@ -441,7 +446,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				const tickerData: ExchangeTickerData = {
 					ask: Number(ticker.a[0]),
 					bid: Number(ticker.b[0]),
-					decimals: countDecimals(Number(ticker.c[0])),
+					decimals: countDecimals(ticker.c[0]),
 					high: Number(ticker.h[0]),
 					low: Number(ticker.l[0]),
 					open: Number(ticker.o),
@@ -462,7 +467,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			return returnData;
 		} catch (error) {
 			console.error(error);
-			Bot.log(`Exchange '${this.name}'; api.api.getTicker; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(`Exchange '${this.name}'; api.getTicker; ${JSON.stringify(error)}`, Log.Err);
 			let returnData: ExchangeApiTickerData = {
 				ticker: [],
 				tickerIndex: [],
@@ -488,8 +493,10 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 
 			// Get latest order transaction ID index
 			let lastTransactionIdx = 0;
-			if (_.transactionId?.length)
-				lastTransactionIdx = _.transactionId.length - 1;
+			if (!_.transactionId?.length)
+				throw new Error(`Unknown transaction ID`);
+
+			lastTransactionIdx = _.transactionId.length - 1;
 
 			// Options
 			let requestOptions: {
@@ -668,7 +675,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}'; api.syncChart ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+			Bot.log(`Exchange '${this.name}'; api.syncChart; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 			let etlData: ChartCandleData = {
 				close: [],
@@ -731,8 +738,10 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				return 'stop-loss';
 			case OrderType.TakeProfit:
 				return 'take-profit';
-			default:
+			case OrderType.Market:
 				return 'market';
+			default:
+				throw new Error(`Unknown order type '${order.type}'`);
 		}
 	}
 
@@ -816,15 +825,17 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 						if (err)
 							throw err;
 
-						Bot.log(`Exchange.refreshChart; Path created: ${storagePath}`, Log.Verbose);
+						Bot.log(`Exchange '${this.name}'; api.refreshChart; Path created: ${storagePath}`, Log.Verbose);
 					}
 				)
 			}
 		} catch (error) {
-			return Bot.log(`Exchange.refreshChart; mkdirSync; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(`Exchange '${this.name}'; api.refreshChart; mkdirSync; ${JSON.stringify(error)}`, Log.Err);
 		}
 
-        try {
+		try {
+			const exchangeName = this.name;
+
 			fs.writeFile(
 				storageFile,
 				responseJson,
@@ -834,11 +845,11 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 					if (err)
 						throw err;
 					
-					Bot.log(`Exchange.refreshChart; Dataset written: ${storageFile}`, Log.Verbose);
+					Bot.log(`Exchange '${exchangeName}'; api.refreshChart; Output: ${storageFile}`, Log.Verbose);
 				}
 			);
 		} catch (error) {
-			return Bot.log(`Exchange.refreshChart; writeFile; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(`Exchange '${this.name}'; api.refreshChart; writeFile; ${JSON.stringify(error)}`, Log.Err);
 		}
 	}
 }
