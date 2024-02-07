@@ -177,79 +177,67 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 	async getBalance (
 		symbol: string
 	) {
-		try {
-			let assetBalanceIndex = this.balanceIndex.indexOf(symbol);
-			if (assetBalanceIndex < 0) {
-				// Bot.log(`Do api.getBalance`);
-				const response = await this.api?.getBalance();
-				// Bot.log(`RESPONSE api.getBalance`);
-				// Bot.log(response);
+		let assetBalanceIndex = this.balanceIndex.indexOf(symbol);
+		if (assetBalanceIndex < 0) {
+			// Bot.log(`Do api.getBalance`);
+			const response = await this.api?.getBalance();
+			// Bot.log(`RESPONSE api.getBalance`);
+			// Bot.log(response);
 
-				if (response?.balance && response?.balanceIndex) {
-					this.balance = [
-						...this.balance,
-						...response.balance
-					];
-					this.balanceIndex = [
-						...this.balanceIndex,
-						...response.balanceIndex
-					];
-					// Bot.log(`this.balance`);
-					// Bot.log(this.balance);
-					// Bot.log(`this.balanceIndex`);
-					// Bot.log(this.balanceIndex);
-				}
-
-				assetBalanceIndex = this.balanceIndex.indexOf(symbol);
-				if (assetBalanceIndex < 0)
-					throw new Error(`Exchange '${this.name}'; Symbol '${symbol}' not found.`);
+			if (response?.balance && response?.balanceIndex) {
+				this.balance = [
+					...this.balance,
+					...response.balance
+				];
+				this.balanceIndex = [
+					...this.balanceIndex,
+					...response.balanceIndex
+				];
+				// Bot.log(`this.balance`);
+				// Bot.log(this.balance);
+				// Bot.log(`this.balanceIndex`);
+				// Bot.log(this.balanceIndex);
 			}
 
-			return this.balance[assetBalanceIndex];
-		} catch(error) {
-			Bot.log(`getBalance`, Log.Err);
-			Bot.log(error, Log.Err);
-			return {};
+			assetBalanceIndex = this.balanceIndex.indexOf(symbol);
+			if (assetBalanceIndex < 0)
+				throw new Error(`Exchange '${this.name}'; Symbol '${symbol}' not found.`);
 		}
+
+		return this.balance[assetBalanceIndex];
 	}
 
 	async getTicker (
 		_: PairData,
 	) {
-		try {
-			if (_.exchange.uuid !== this.uuid)
-				throw new Error(`Exchange '${this.name}'; Pair '${_.name}'; Incompatible exchange pair`);
+		if (_.exchange.uuid !== this.uuid)
+			throw new Error(`Exchange '${this.name}'; Pair '${_.name}'; Incompatible exchange pair`);
 
-			const pairTicker = `${_.a.symbol}-${_.b.symbol}`;
+		const pairTicker = `${_.a.symbol}-${_.b.symbol}`;
+		
+		let pairTickerIndex = this.tickerIndex.indexOf(pairTicker);
+		if (pairTickerIndex < 0) {
 			
-			let pairTickerIndex = this.tickerIndex.indexOf(pairTicker);
-			if (pairTickerIndex < 0) {
-				
-				// TODO: Check and sync ticker data - track last poll?
-				const response = await this.api?.getTicker(_);
-				
-				if (response?.ticker && response?.tickerIndex) {
-					this.ticker = [
-						...this.ticker,
-						...response.ticker
-					];
-					this.tickerIndex = [
-						...this.tickerIndex,
-						...response.tickerIndex
-					];
-				}
-
-				pairTickerIndex = this.tickerIndex.indexOf(pairTicker);
-				if (pairTickerIndex < 0)
-					throw new Error(`Exchange '${this.name}'; No ticker information for '${pairTicker}'`);
+			// TODO: Check and sync ticker data - track last poll?
+			const response = await this.api?.getTicker(_);
+			
+			if (response?.ticker && response?.tickerIndex) {
+				this.ticker = [
+					...this.ticker,
+					...response.ticker
+				];
+				this.tickerIndex = [
+					...this.tickerIndex,
+					...response.tickerIndex
+				];
 			}
 
-			return this.ticker[pairTickerIndex];
-		} catch (error) {
-			Bot.log(`getTicker`, Log.Err);
-			Bot.log(error, Log.Err);
-			return {};
+			pairTickerIndex = this.tickerIndex.indexOf(pairTicker);
+			if (pairTickerIndex < 0)
+				throw new Error(`Exchange '${this.name}'; No ticker information for '${pairTicker}'`);
 		}
+
+		return this.ticker[pairTickerIndex];
 	}
 
 	// async getTicker (

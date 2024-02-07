@@ -226,19 +226,47 @@ export class OrderItem implements OrderData {
 		}
 	}
 
+	async getTicker () {
+		try {
+			return await this.pair.exchange.getTicker(this.pair);
+		} catch (error) {
+			Bot.log(error, Log.Err);
+		}
+	}
+
+	async getBalanceA () {
+		try {
+			return await this.pair.exchange.getBalance(this.pair.a.symbol);
+		} catch (error) {
+			Bot.log(error, Log.Err);
+		}
+	}
+
+	async getBalanceB () {
+		try {
+			return await this.pair.exchange.getBalance(this.pair.b.symbol);
+		} catch (error) {
+			Bot.log(error, Log.Err);
+		}
+	}
+
 	async setQuantity (
 		quantity: string,
 	) {
 		try {
 			let quantityActual: number = 0;
 
-			const ticker = await this.pair.exchange.getTicker(this.pair);
+			const ticker = await this.getTicker();
+			if (!ticker)
+				throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Failed to get ticker data`);
 
-			const assetASymbol = this.pair.a.symbol;
-			const balanceA = await this.pair.exchange.getBalance(assetASymbol);
+			const balanceA = await this.getBalanceA();
+			if (!balanceA)
+				throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.a.name}'; Failed to get balance`);
 
-			const assetBSymbol = this.pair.b.symbol;
-			const balanceB = await this.pair.exchange.getBalance(assetBSymbol);
+			const balanceB = await this.getBalanceB();
+			if (!balanceB)
+				throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.b.name}'; Failed to get balance`);
 
 			if (isPercentage(quantity)) {
 				const quantityPercent = Number.parseFloat(
