@@ -137,7 +137,6 @@ export class TimeframeItem implements TimeframeData {
 				this.result.push(signal);
 				this.resultIndex.push(strategy.name ?? strategy.uuid);
 			} catch (error) {
-				// TODO: SOme errors are coming through as empty objects? No information on the actual error -such as an empty chart.
 				Bot.log(error, Log.Err);
 			}
 		}

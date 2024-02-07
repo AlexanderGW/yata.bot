@@ -273,8 +273,6 @@ export class OrderItem implements OrderData {
 					quantity.substring(0, quantity.length - 1)
 				);
 
-				// console.log(`this.side: '${this.side}'`, Log.Warn);
-
 				switch (this.side) {
 
 					// Buy order
@@ -316,7 +314,7 @@ export class OrderItem implements OrderData {
 								throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Price unknown`);
 
 							quantityActual = ((balanceB.available / 100) * quantityPercent) / targetPrice;
-							Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.pair.b.name}' balance '${balanceB.available}', for '${quantityActual}'`, Log.Verbose);
+							Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.pair.b.name}' balance '${balanceB.available}', for '${quantityActual}', at '${targetPrice}'`, Log.Verbose);
 							break;
 						}
 
@@ -363,22 +361,13 @@ export class OrderItem implements OrderData {
 							if (!targetPrice)
 								throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Price unknown`);
 
-							// quantityActual = (balanceA.available / 100) * quantityPercent;
-							// Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.pair.a.name}' balance '${balanceA.available}', for '${quantityActual}'`, Log.Verbose);
 							quantityActual = ((balanceA.available / 100) * quantityPercent) / targetPrice;
-							Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.pair.a.name}' balance '${balanceA.available}', for '${quantityActual}'`, Log.Verbose);
+							Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.pair.a.name}' balance '${balanceA.available}', for '${quantityActual}', at '${targetPrice}'`, Log.Verbose);
 							break;
-
-							// TODO: Check sell side balance, if new order
-
-							// throw new Error(`Sell side quntities not implemented`);
-							// const orderResponse = await this.pair.exchange.api?.getOrder(this);
-							// console.log(orderResponse);
 						}
 
 						// Percentage of the current quantity
 						quantityActual = this.quantityActual + (this.quantityActual / 100) * quantityPercent;
-						// Bot.log(`perc-actual-sell-quantityActual: ${quantityActual}`);
 						Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.quantityActual}', for '${quantityActual}'`, Log.Verbose);
 						break;
 				}
