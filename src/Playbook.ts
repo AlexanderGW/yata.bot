@@ -8,7 +8,7 @@ import { Scenario, ScenarioData, ScenarioItem, scenarioConditionOperators } from
 import { Exchange, ExchangeData } from './Bot/Exchange';
 import { Chart, ChartData, ChartItem } from './Bot/Chart';
 import { Timeframe, TimeframeData, TimeframeItem } from './Bot/Timeframe';
-import { Order, OrderData, OrderExchangeData, OrderItem } from './Bot/Order';
+import { Order, OrderData, OrderExchangeData, OrderItem, OrderSide } from './Bot/Order';
 import { Analysis, AnalysisData, AnalysisItem } from './Bot/Analysis';
 import { Storage, StorageData } from './Bot/Storage';
 import { Subscription, SubscriptionData, SubscriptionEvent } from './Bot/Subscription';
@@ -518,6 +518,7 @@ export type ItemIndexType = {
 				const chart: ChartItem = Bot.getItem(lastPlaybookState.chart.dataIndex[chartIdx]);
 				if (chart && lastPlaybookState.chart.data[chartIdx]) {
 					try {
+						// TODO: Set `datasetNextTime` based on tiemframe etc - currently falls back to default `BOT_CHART_DEFAULT_TOTAL_CANDLE`
 						chart.updateDataset(lastPlaybookState.chart.data[chartIdx]);
 						chart.refreshDataset();
 					} catch (error) {
@@ -531,12 +532,44 @@ export type ItemIndexType = {
 		if (lastPlaybookState.order?.dataIndex?.length) {
 			for (let orderIdx in lastPlaybookState.order.dataIndex) {
 				const order: OrderItem = Bot.getItem(lastPlaybookState.order.dataIndex[orderIdx]);
-				if (order && lastPlaybookState.order.data[orderIdx]) {
+				let orderData = lastPlaybookState.order.data[orderIdx];
+				if (order && orderData) {
 					try {
 						// Bot.log(`lastPlaybookState.order.data[orderIdx]`);
-						// Bot.log(lastPlaybookState.order.data[orderIdx]);
-						order.update(lastPlaybookState.order.data[orderIdx]);
-						await order.execute();
+						// Bot.log(orderData);
+						// if (orderData?.setup) {
+						// 	const [side, type] = orderData.setup.toLowerCase().split('.');
+						// 	if (!side || !type)
+						// 		throw new Error(`Invalid order 'setup'`);
+
+						// 	console.log(`side: ${side}`);
+						// 	switch (side) {
+						// 		case 'buy':
+						// 			orderData.side = OrderSide.Buy;
+						// 			break;
+						// 		case 'sell':
+						// 			orderData.side = OrderSide.Buy;
+						// 			break;
+						// 		default:
+						// 			throw new Error(`Invalid order side`);
+						// 	}
+
+
+						// 	console.log(`type: ${type}`);
+						// 	switch (type) {
+						// 		case 'buy':
+						// 			orderData.side = OrderSide.Buy;
+						// 			break;
+						// 		case 'sell':
+						// 			orderData.side = OrderSide.Buy;
+						// 			break;
+						// 		default:
+						// 			throw new Error(`Invalid order side`);
+						// 	}
+						// }
+						// Bot.log(orderData, Log.Warn);
+						order.update(orderData);
+						// await order.execute();
 					} catch (error) {
 						console.log(error);
 					}
@@ -665,6 +698,7 @@ export type ItemIndexType = {
 	}
 
 	// Persist order data
+	// TODO: Noticed inconsistencies with order data in the cache - check all data fields are persisting
 	if (playbookCache.order.item.length) {
 		for (let orderIdx in playbookCache.order.itemIndex) {
 			const order: OrderItem = Bot.getItem(playbookCache.order.item[orderIdx]);
