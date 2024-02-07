@@ -46,7 +46,7 @@ export type OrderData = {
 	limitPrice?: string, // for stop limit triggers?
 	name?: string,
 	openTime?: number,
-	pair: PairItem,
+	pair?: PairItem,
 	price?: string,
 	priceActual?: number,
 	quantity?: string,
@@ -99,6 +99,7 @@ export class OrderItem implements OrderData {
 	price: string = '0';
 	priceActual?: number = 0;
 	quantity: string = '0';
+	quantityActual: number = 0;
 	quantityFilled: number = 0;
 	referenceId: number = 0;
 	related?: OrderItem;
@@ -109,19 +110,23 @@ export class OrderItem implements OrderData {
 	status: OrderStatus = OrderStatus.Unknown;
 	stopPrice: string = '0';
 	transactionId: string[] = [];
-	type?: OrderType = OrderType.Market;
+	type?: OrderType = OrderType.Unknown;
 	updateTime: number = 0;
 	uuid: string;
 
 	constructor (
 		_: OrderData,
 	) {
+		if (!_.pair)
+			throw new Error(`Pair information is required.`);
+
 		this.update(_);
+
 		this.pair = _.pair;
 		this.uuid = _.uuid ?? uuidv4();
 
 		// TODO: Get exchange order, position etc
-		
+		// TODO: `getBalance` WRAPPER FOR EXCHANGE PAIR SYMBOL
 	}
 
 	isFilled() {
@@ -175,6 +180,14 @@ export class OrderItem implements OrderData {
 		try {
 			let priceActual: number = 0;
 
+			// Check price against type
+			// switch (this.type) {
+			// 	case OrderType.Limit:
+			// 	case OrderType.StopLoss:
+			// 	case OrderType.TakeProfit:
+					
+			// }
+
 			const ticker = await this.pair.exchange.getTicker(this.pair);
 
 			if (isPercentage(price)) {
@@ -221,53 +234,166 @@ export class OrderItem implements OrderData {
 
 			const ticker = await this.pair.exchange.getTicker(this.pair);
 
+			const assetASymbol = this.pair.a.symbol;
+			const balanceA = await this.pair.exchange.getBalance(assetASymbol);
+
+			const assetBSymbol = this.pair.b.symbol;
+			const balanceB = await this.pair.exchange.getBalance(assetBSymbol);
+
 			if (isPercentage(quantity)) {
 				const quantityPercent = Number.parseFloat(
 					quantity.substring(0, quantity.length - 1)
 				);
 
+				// console.log(`this.side: '${this.side}'`, Log.Warn);
+
 				switch (this.side) {
+
+					// Buy order
 					case OrderSide.Buy:
-						const assetASymbol = this.pair.a.symbol;
-						const balanceA = await this.pair.exchange.getBalance(assetASymbol);
 
-						// Balance is zero
-						if (!balanceA?.available || balanceA.available <= 0) {
-							// throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.a.name}'; Balance is zero`);
-							const assetBSymbol = this.pair.b.symbol;
-							const balanceB = await this.pair.exchange.getBalance(assetBSymbol);
-
+						// Percentage of balance B
+						if (!this.quantityActual) {Bot.log(balanceB, Log.Warn);
 							if (!balanceB?.available || balanceB.available <= 0)
 								throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.b.name}'; Balance is zero`);
 
-							quantityActual = (balanceB.available / 100) * quantityPercent;
+							if (quantityPercent < 0) {
+								quantityActual = 0;
+								break;
+							}
+
+							if (quantityPercent > 100) {
+								quantityActual = balanceB.available;
+								break;
+							}
+
+							let targetPrice = 0;
+							switch (this.type) {
+								case OrderType.Market:
+									targetPrice = Number(ticker.price);
+									break;
+								// case OrderType.Limit:
+								// case OrderType.StopLoss:
+								// case OrderType.TakeProfit:
+								// 	targetPrice = Number(this.priceActual);
+								// 	break;
+								// default:
+								// 	throw new Error(`Order type unknown`);
+								default:
+									targetPrice = Number(this.priceActual);
+							}
+							Bot.log(`Order '${this.name}'; targetPrice: ${targetPrice}`, Log.Verbose);
+
+							if (!targetPrice)
+								throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Price unknown`);
+
+							quantityActual = ((balanceB.available / 100) * quantityPercent) / targetPrice;
+							Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.pair.b.name}' balance '${balanceB.available}', for '${quantityActual}'`, Log.Verbose);
 							break;
 						}
 
-						quantityActual = (balanceA.available / 100) * quantityPercent;
-
+						// Percentage of the current quantity
+						quantityActual = this.quantityActual + (this.quantityActual / 100) * quantityPercent;
+						Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.quantityActual}', for '${quantityActual}'`, Log.Verbose);
 						break;
+
+					// Sell order
 					case OrderSide.Sell:
+
+						// Percentage of balance A
 						if (!this.quantityActual) {
-							// TODO: Get order
-							const orderResponse = await this.pair.exchange.api?.getOrder(this);
+							if (!balanceA?.available || balanceA.available <= 0)
+								throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.a.name}'; Balance is zero`);
+
+							if (quantityPercent < 0) {
+								quantityActual = 0;
+								break;
+							}
 							
+							if (quantityPercent > 100) {
+								quantityActual = balanceA.available;
+								break;
+							}
+
+							let targetPrice = 0;
+							switch (this.type) {
+								case OrderType.Market:
+									targetPrice = Number(ticker.price);
+									break;
+								// case OrderType.Limit:
+								// case OrderType.StopLoss:
+								// case OrderType.TakeProfit:
+								// 	targetPrice = Number(this.priceActual);
+								// 	break;
+								// default:
+								// 	throw new Error(`Order type unknown`);
+								default:
+									targetPrice = Number(this.priceActual);
+							}
+							Bot.log(`Order '${this.name}'; targetPrice: ${targetPrice}`, Log.Verbose);
+
+							if (!targetPrice)
+								throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Price unknown`);
+
+							// quantityActual = (balanceA.available / 100) * quantityPercent;
+							// Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.pair.a.name}' balance '${balanceA.available}', for '${quantityActual}'`, Log.Verbose);
+							quantityActual = ((balanceA.available / 100) * quantityPercent) / targetPrice;
+							Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.pair.a.name}' balance '${balanceA.available}', for '${quantityActual}'`, Log.Verbose);
+							break;
+
+							// TODO: Check sell side balance, if new order
+
+							// throw new Error(`Sell side quntities not implemented`);
+							// const orderResponse = await this.pair.exchange.api?.getOrder(this);
+							// console.log(orderResponse);
 						}
-						quantityActual = (this.quantityActual / 100) * quantityPercent;
-						
+
+						// Percentage of the current quantity
+						quantityActual = this.quantityActual + (this.quantityActual / 100) * quantityPercent;
+						// Bot.log(`perc-actual-sell-quantityActual: ${quantityActual}`);
+						Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.quantityActual}', for '${quantityActual}'`, Log.Verbose);
 						break;
 				}
-			} else
+			} else {
 				quantityActual = Number.parseFloat(quantity);
+
+				switch (this.side) {
+					case OrderSide.Buy:
+						if (!balanceB?.available || balanceB.available <= 0)
+							throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.b.name}'; Balance is zero`);
+
+						if (!ticker?.price)
+							throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.a.name}'; Price unknown`);
+
+						if (balanceB.available < quantityActual * ticker.price)
+							throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.a.name}'; Not enough balance`);
+
+						break;
+
+					case OrderSide.Sell:
+						if (!balanceA?.available || balanceA.available <= 0)
+							throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.a.name}'; Balance is zero`);
+
+						if (balanceA.available < quantityActual)
+							throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.a.name}'; Not enough balance`);
+
+						break;
+
+					default:
+						throw new Error(`Order '${this.name}'; Unknown side`);
+				}
+			}
 
 			if (!quantityActual || quantityActual <= 0)
 				throw new Error(`Order '${this.name}'; Quantity is zero`);
 
 			// Prune any extraneous decimals
-			quantityActual = toFixedNumber(
-				quantityActual,
-				Number(ticker?.decimals),
-			);
+			if (ticker?.decimals) {
+				quantityActual = toFixedNumber(
+					quantityActual,
+					Number(ticker?.decimals),
+				);
+			}
 
 			Bot.log(`Order '${this.name}'; Actual quantity: ${quantityActual}`);
 
@@ -292,22 +418,16 @@ export class OrderItem implements OrderData {
 		_?: OrderAction
 	) {
 
+		const priceResult = await this.setPrice(this.price);
+		if (!priceResult)
+			throw new Error(`Order '${this.name}'; Price required for this type`);
+
 		// Check quantity
 		const resultQuantity = await this.setQuantity(this.quantity);
-		// Bot.log(`resultQuantity`);
-		// Bot.log(resultQuantity);
+		Bot.log(`resultQuantity`);
+		Bot.log(resultQuantity);
 		if (!resultQuantity)
 			throw new Error(`Order '${this.name}'; No quantity defined`);
-
-		// Check price against type
-		switch (this.type) {
-			case OrderType.Limit:
-			case OrderType.StopLoss:
-			case OrderType.TakeProfit:
-				const priceResult = await this.setPrice(this.price);
-				if (!priceResult)
-					throw new Error(`Order '${this.name}'; Price required for this type`);
-		}
 
 
 
@@ -433,7 +553,7 @@ export class OrderItem implements OrderData {
 			this.stopPrice = _.stopPrice;
 		if (_.transactionId)
 			this.transactionId = _.transactionId;
-		if (this.type)
+		if (_.type)
 			this.type = _.type;
 		if (_.updateTime)
 			this.updateTime = _.updateTime;
