@@ -522,7 +522,7 @@ export type ItemIndexType = {
 						chart.updateDataset(lastPlaybookState.chart.data[chartIdx]);
 						chart.refreshDataset();
 					} catch (error) {
-						console.log(error);
+						Bot.log(error, Log.Err);
 					}
 				}
 			}
@@ -535,43 +535,9 @@ export type ItemIndexType = {
 				let orderData = lastPlaybookState.order.data[orderIdx];
 				if (order && orderData) {
 					try {
-						// Bot.log(`lastPlaybookState.order.data[orderIdx]`);
-						// Bot.log(orderData);
-						// if (orderData?.setup) {
-						// 	const [side, type] = orderData.setup.toLowerCase().split('.');
-						// 	if (!side || !type)
-						// 		throw new Error(`Invalid order 'setup'`);
-
-						// 	console.log(`side: ${side}`);
-						// 	switch (side) {
-						// 		case 'buy':
-						// 			orderData.side = OrderSide.Buy;
-						// 			break;
-						// 		case 'sell':
-						// 			orderData.side = OrderSide.Buy;
-						// 			break;
-						// 		default:
-						// 			throw new Error(`Invalid order side`);
-						// 	}
-
-
-						// 	console.log(`type: ${type}`);
-						// 	switch (type) {
-						// 		case 'buy':
-						// 			orderData.side = OrderSide.Buy;
-						// 			break;
-						// 		case 'sell':
-						// 			orderData.side = OrderSide.Buy;
-						// 			break;
-						// 		default:
-						// 			throw new Error(`Invalid order side`);
-						// 	}
-						// }
-						// Bot.log(orderData, Log.Warn);
 						order.update(orderData);
-						// await order.execute();
 					} catch (error) {
-						console.log(error);
+						Bot.log(error, Log.Err);
 					}
 				}
 			}
