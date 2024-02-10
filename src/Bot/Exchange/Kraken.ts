@@ -5,7 +5,7 @@ import { countDecimals } from '../Helper';
 import { OrderSide, OrderItem, OrderType, OrderStatus, OrderExchangeData } from '../Order';
 import { PairData } from '../Pair';
 
-const fs = require('fs');
+import { existsSync, mkdirSync, writeFile } from 'node:fs';
 
 export type KrakenExchangeResponse = {
 	result: any,
@@ -778,18 +778,18 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		const storageFile = `${storagePath}/${filename}.json`;
 
 		try {
-			if (!fs.existsSync(storagePath)) {
-				fs.mkdirSync(
+			if (!existsSync(storagePath)) {
+				mkdirSync(
 					storagePath,
 					{
 						recursive: true
 					},
-					(err: object) => {
-						if (err)
-							throw new Error(JSON.stringify(err));
+					// (err: object) => {
+					// 	if (err)
+					// 		throw new Error(JSON.stringify(err));
 
-						Bot.log(`Exchange '${this.name}'; api.refreshChart; Path created: ${storagePath}`, Log.Verbose);
-					}
+					// 	Bot.log(`Exchange '${this.name}'; api.refreshChart; Path created: ${storagePath}`, Log.Verbose);
+					// }
 				)
 			}
 		} catch (error) {
@@ -799,14 +799,12 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		try {
 			const exchangeName = this.name;
 
-			fs.writeFile(
+			writeFile(
 				storageFile,
 				responseJson,
-				function (
-					err: object
-				) {
-					if (err)
-						throw new Error(JSON.stringify(err));
+				(error) => {
+					if (error)
+						throw new Error(JSON.stringify(error));
 					
 					Bot.log(`Exchange '${exchangeName}'; api.refreshChart; Output: ${storageFile}`, Log.Verbose);
 				}

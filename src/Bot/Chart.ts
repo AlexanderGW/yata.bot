@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { Bot, Log } from "./Bot";
 import { PairItem } from "./Pair";
 
+import { existsSync, readFileSync } from 'node:fs';
+
 export const chartCandleFields = [
 	'close',
 	'closeTime',
@@ -87,9 +89,7 @@ export class ChartItem implements ChartData {
 		this.name = _.name ?? this.uuid;
 
 		if (this.datasetFile) {
-			const fs = require('fs');
-
-			if (!fs.existsSync(this.datasetFile)) {
+			if (!existsSync(this.datasetFile)) {
 				if (process.env.BOT_CHART_DATAFILE_FAIL_EXIT === '1')
 					throw new Error(`Chart '${this.name}'; Dataset not found '${this.datasetFile}'`);
 
@@ -97,16 +97,16 @@ export class ChartItem implements ChartData {
 			}
 
 			try {
-				let response: any = fs.readFileSync(
+				let response: any = readFileSync(
 					this.datasetFile,
 					'utf8',
-					function (
-						err: object,
-						_: object
-					) {
-						if (err)
-							console.error(err);
-					}
+					// function (
+					// 	err: object,
+					// 	_: object
+					// ) {
+					// 	if (err)
+					// 		console.error(err);
+					// }
 				);
 	
 				let responseJson: ChartCandleData = JSON.parse(response);

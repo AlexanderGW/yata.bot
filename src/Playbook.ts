@@ -8,10 +8,12 @@ import { Scenario, ScenarioData, ScenarioItem, scenarioConditionOperators } from
 import { Exchange, ExchangeData } from './Bot/Exchange';
 import { Chart, ChartData, ChartItem } from './Bot/Chart';
 import { Timeframe, TimeframeData, TimeframeItem } from './Bot/Timeframe';
-import { Order, OrderData, OrderExchangeData, OrderItem, OrderSide } from './Bot/Order';
+import { Order, OrderData, OrderExchangeData, OrderItem } from './Bot/Order';
 import { Analysis, AnalysisData, AnalysisItem } from './Bot/Analysis';
 import { Storage, StorageData, StorageItem } from './Bot/Storage';
 import { Subscription, SubscriptionData, SubscriptionEvent } from './Bot/Subscription';
+
+import { existsSync, readFileSync } from 'node:fs';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -103,8 +105,6 @@ export type ItemIndexType = {
 
 
 (async () => {
-	const fs = require('fs');
-
 	const playbookName = process.argv[2];
 	const playbookPath = `./playbook/${playbookName}`;
 	const playbookActions = `${playbookPath}/${playbookName}.ts`;
@@ -112,11 +112,11 @@ export type ItemIndexType = {
 	const playbookTemplate = `${playbookPath}/${playbookName}.yml`;
 	// console.log(`playbookPath: ${playbookPath}`);
 
-	if (!fs.existsSync(playbookTemplate))
+	if (!existsSync(playbookTemplate))
 		throw new Error(`Playbook '${playbookName}' not found '${playbookTemplate}'`);
 
 	// Attempt to read YAML file
-	let playbookFile: string = fs.readFileSync(
+	let playbookFile: string = readFileSync(
 		playbookTemplate,
 		'utf8',
 	);
@@ -379,7 +379,7 @@ export type ItemIndexType = {
 							// let line = finalItemData[key][i];
 
 							// Import module file with callback
-							if (!fs.existsSync(playbookActions))
+							if (!existsSync(playbookActions))
 								throw new Error(`Playbook subscription action file not found '${playbookActions}'`);
 						}
 					}

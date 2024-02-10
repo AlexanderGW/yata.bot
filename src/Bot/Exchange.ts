@@ -1,10 +1,8 @@
-import { ChartCandleData, ChartItem } from "./Chart";
+import { ChartItem } from "./Chart";
 import { v4 as uuidv4 } from 'uuid';
 import { Bot, Log } from "./Bot";
-import { OrderExchangeData, OrderItem, OrderStatus } from "./Order";
-import { PairData, PairItem } from "./Pair";
-
-const fs = require('fs');
+import { OrderExchangeData, OrderItem } from "./Order";
+import { PairData } from "./Pair";
 
 export type ExchangeBalanceData = {
 	[index: string]: any,

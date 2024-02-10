@@ -4,7 +4,7 @@
  * @date 2024
  */
 
-const fs = require('fs');
+import { appendFileSync } from 'node:fs';
 
 /**
  * Logging levels
@@ -176,13 +176,13 @@ export const Bot: BotData = {
 			let filename = filenameParts.join('-');
 			
 			const logPath = `./storage/log/${filename}.log`;
-			fs.appendFile(
+			appendFileSync(
 				logPath,
 				`${consoleString}\n`,
-				() => {
-					// if (process.env.BOT_VERBOSE === '1')
-					// 	console.debug(`\x1b[36m APPEND LOG FILE: ${logPath}\x1b[0m`)
-				}
+				// () => {
+				// 	// if (process.env.BOT_VERBOSE === '1')
+				// 	// 	console.debug(`\x1b[36m APPEND LOG FILE: ${logPath}\x1b[0m`)
+				// }
 			);
 		}
 	},
