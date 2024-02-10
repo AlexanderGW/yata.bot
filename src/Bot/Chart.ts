@@ -135,7 +135,7 @@ export class ChartItem implements ChartData {
 			
 			// Get a default number of candles
 			else {
-				let totalCandles: number = 50;
+				let totalCandles: number = 100;
 				if (process.env.BOT_CHART_DEFAULT_TOTAL_CANDLE)
 					totalCandles = parseInt(process.env.BOT_CHART_DEFAULT_TOTAL_CANDLE);
 
@@ -218,6 +218,7 @@ export class ChartItem implements ChartData {
 		let finalData: ChartCandleData | undefined = this.dataset;
 
 		// Require OHLC
+		// TODO: try/catch
 		if (!_.open || !_.high || !_.low || !_.close)
 			return Bot.log(`Incomplete OHLC dataset`, Log.Warn);
 

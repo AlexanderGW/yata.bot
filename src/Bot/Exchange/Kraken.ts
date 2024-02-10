@@ -1,9 +1,9 @@
 import { Bot, Log } from '../Bot';
 import { ChartCandleData, ChartItem } from '../Chart';
-import { ExchangeApiBalanceData, ExchangeApiData, ExchangeApiInterface, ExchangeApiTickerData, ExchangeBalanceData, ExchangeData, ExchangeTickerData } from '../Exchange';
+import { ExchangeApiBalanceData, ExchangeApiData, ExchangeApiInterface, ExchangeApiTickerData, ExchangeBalanceData, ExchangeTickerData } from '../Exchange';
 import { countDecimals } from '../Helper';
-import { OrderSide, OrderItem, OrderType, OrderStatus, OrderExchangeData, Order } from '../Order';
-import { PairData, PairItem } from '../Pair';
+import { OrderSide, OrderItem, OrderType, OrderStatus, OrderExchangeData } from '../Order';
+import { PairData } from '../Pair';
 
 const fs = require('fs');
 
@@ -36,14 +36,17 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 	};
 
 	symbolForeign = [
+		'BTC',
+		'ETH',
+		'EUR',
+		'EUR',
+		// 'XGBP',
+		'GBP',
+		'USD',
+		'XDG',
+		'XBT',
 		'XXBT',
 		'XETH',
-		'XEUR',
-		'ZEUR',
-		// 'XGBP',
-		'ZGBP',
-		'ZUSD',
-		'XXDG',
 	];
 
 	symbolLocal = [
@@ -55,6 +58,9 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		'GBP',
 		'USD',
 		'DOGE',
+		'BTC',
+		'BTC',
+		'ETH',
 	];
 
 	constructor (
@@ -110,7 +116,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 
 		let assetASymbol = this.symbolToForeign(_.pair.a.symbol);
 		let assetBSymbol = this.symbolToForeign(_.pair.b.symbol);
-		let pair = `${assetASymbol}${assetBSymbol}`;
+		let pair = `${assetASymbol}/${assetBSymbol}`;
 
 		// Set empty `referenceId` as current time
 		if (_.referenceId === 0) {
@@ -140,7 +146,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			// Order quantity in terms of the base asset
 			volume: _.quantityActual,
 		};
-		console.log(requestOptions);
+		Bot.log(requestOptions, Log.Verbose);
 
 		let responseJson = await this.handle?.api(
 
@@ -232,7 +238,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 
 		let assetASymbol = this.symbolToForeign(_.pair.a.symbol);
 		let assetBSymbol = this.symbolToForeign(_.pair.b.symbol);
-		let pair = `${assetASymbol}${assetBSymbol}`;
+		let pair = `${assetASymbol}/${assetBSymbol}`;
 
 		// Set empty `referenceId` as current time
 		if (_.referenceId === 0) {
@@ -476,7 +482,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		if (_.referenceId)
 			requestOptions.userref = _.referenceId;
 
-		// console.log(requestOptions);
+		Bot.log(requestOptions, Log.Verbose);
 		// return orderResponse;
 
 		let responseJson = await this.handle?.api(
@@ -613,23 +619,26 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 	) {
 		let assetASymbol = this.symbolToForeign(chart.pair.a.symbol);
 		let assetBSymbol = this.symbolToForeign(chart.pair.b.symbol);
-		let pair: string = `${assetASymbol}${assetBSymbol}`;
+		let pair: string = `${assetASymbol}/${assetBSymbol}`;
 
 		let nextDate = new Date(chart.datasetNextTime);
 		Bot.log(`Chart '${chart.name}'; api.syncChart; From: ${nextDate.toISOString()}`);
 
+		const requestOptions = {
+			interval: chart.candleTime / 60000,
+			pair: pair,
+			since: Math.floor(chart.datasetNextTime / 1000),
+		};
+		// Bot.log(requestOptions, Log.Warn);
+		
+		// Kraken times are in minutes
 		let responseJson = await this.handle?.api(
 
 			// Type
 			'OHLC',
 
 			// Options
-			// Kraken times are in minutes
-			{
-				interval: chart.candleTime / 60000,
-				pair: pair,
-				since: chart.datasetNextTime / 1000,
-			}
+			requestOptions
 		);
 
 		// Log raw response

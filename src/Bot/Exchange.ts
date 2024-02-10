@@ -143,19 +143,6 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 	constructor (
 		_: ExchangeData,
 	) {
-		// Import exchange extension
-		// await import(importPath).then(module => {
-		// 	let newItem: any = new module[className](_);
-
-		// 	if (newItem.constructor.name === className) {
-		// 		let uuid = Bot.setItem(newItem);
-
-		// 		item = Bot.getItem(uuid);
-		// 	}
-		// }).catch(err => Bot.log(err.message, Log.Err));
-		
-		// if (_.hasOwnProperty('api'))
-		// 	this.api = await this.doApi(_);
 		this.class = _.class as string;
 		if (_.hasOwnProperty('name'))
 			this.name = _.name as string;
@@ -179,10 +166,7 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 	) {
 		let assetBalanceIndex = this.balanceIndex.indexOf(symbol);
 		if (assetBalanceIndex < 0) {
-			// Bot.log(`Do api.getBalance`);
 			const response = await this.api?.getBalance();
-			// Bot.log(`RESPONSE api.getBalance`);
-			// Bot.log(response);
 
 			if (response?.balance && response?.balanceIndex) {
 				this.balance = [
@@ -193,10 +177,6 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 					...this.balanceIndex,
 					...response.balanceIndex
 				];
-				// Bot.log(`this.balance`);
-				// Bot.log(this.balance);
-				// Bot.log(`this.balanceIndex`);
-				// Bot.log(this.balanceIndex);
 			}
 
 			assetBalanceIndex = this.balanceIndex.indexOf(symbol);
@@ -240,23 +220,6 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 		return this.ticker[pairTickerIndex];
 	}
 
-	// async getTicker (
-	// 	_: PairData,
-	// ) {
-	// 	if (_.exchange.uuid !== this.uuid)
-	// 		throw new Error(`Exchange '${this.name}'; Pair '${_.name}'; Incompatible exchange pair`);
-
-	// 	const assetASymbol = _.a.symbol;
-	// 	const assetBSymbol = _.b.symbol;
-	// 	const pairTicker = `${assetASymbol}-${assetBSymbol}`;
-
-	// 	const pairTickerIndex = this.tickerIndex.indexOf(pairTicker);
-	// 	if (pairTickerIndex < 0)
-	// 		throw new Error(`Exchange '${this.name}'; No ticker information for '${pairTicker}'`);
-		
-	// 	return this.ticker[pairTickerIndex];
-	// }
-
 	compat (
 		chart: ChartItem,
 	) {
@@ -279,15 +242,11 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 	}
 }
 
-// IDEA: Implement exchanges as a drop in interface? Or as an instance defiend within the `Exchange` item? - this will avoid having to redefine/implment all functions - instead allows calling `Exchange`, with underlying sub-class instance for ticket/balance lookups.?
-
-// OR - Define all within `Exchange` such as `getBalance` - exchange backend classes then either call the default `getBalance` - or implmement something else
 
 export const Exchange = {
 	async new (
 		_: ExchangeData,
 	): Promise<ExchangeItem> {
-
 		if (!_.class)
 			_.class = 'Paper';
 
@@ -300,7 +259,6 @@ export const Exchange = {
 		// Add API backend
 		await import(importPath).then(module => {
 			let exchangeApi: any = new module[className](_);
-
 			if (exchangeApi.constructor.name !== className)
 				throw new Error(`Failed to instanciate Exchange API class '${className}'`);
 

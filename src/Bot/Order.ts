@@ -202,7 +202,7 @@ export class OrderItem implements OrderData {
 				Number(ticker?.decimals)
 			);
 
-			Bot.log(`Order '${this.name}'; Actual price: ${priceActual}`);
+			// Bot.log(`Order '${this.name}'; Actual price: ${priceActual}`);
 
 			this.price = price;
 			this.priceActual = priceActual;
@@ -392,7 +392,7 @@ export class OrderItem implements OrderData {
 			);
 		}
 
-		Bot.log(`Order '${this.name}'; Actual quantity: ${quantityActual}`);
+		// Bot.log(`Order '${this.name}'; Actual quantity: ${quantityActual}`);
 
 		this.quantity = quantity;
 		this.quantityActual = quantityActual;
@@ -421,8 +421,7 @@ export class OrderItem implements OrderData {
 		// Determine next action with exchange
 		const action = _ ?? this.nextAction();
 
-		console.log(`action`);
-		console.log(action);
+		logParts.push(`Action '${action}'`);
 
 		switch (action) {
 			case OrderAction.Close:
