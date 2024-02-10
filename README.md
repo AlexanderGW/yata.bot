@@ -17,6 +17,7 @@ Following a concept of timeframes with strategies, which look for scenarios (def
 - Support for web3 exchanges
 - Unify log formatting for better data ingestion
 - D3 UI
+- Testing: Mock JSON
 - Cleanup `Helper` structure
 
 ## Playbooks (YAML templates)
@@ -39,12 +40,12 @@ Items are listed in order of dependency.
 
 | Item | Description |
 | ---- | ----------- |
+| `Analysis` | Provides contexts of configured technical analysis |
 | `Asset` | Identifies individual assets across the ecosystem |
 | `Exchange` | Interface with external exchanges (i.e. `Kraken`, `Uniswap`, etc.) |
 | `Pair` | Two `Asset` items, tied to an `Exchange`, tracking balances, prices |
 | `Order` | Provides actionable context on a `Pair` |
 | `Chart` | Manage dataset information for a `Pair` |
-| `Analysis` | Provides contexts of configured technical analysis |
 | `Scenario` | A set of conditions, against `Chart` and/or `Analysis` data |
 | `Strategy` | Collection of `Scenario` against a `Chart` |
 | `Timeframe` | Collection of `Strategy` within time constraints |
@@ -69,6 +70,16 @@ chart:
     pollTime: 5m          # five minutes; 300000 milliseconds
     candleTime: 4h        # four hours; 14400000 milliseconds
 ```
+
+### `Order.setQuantity()`
+Quantities will always be stored as literal values, unless the quantity is a percentage value. In which case, it will operate under the follow conditions;
+
+| Side | Last Qty. | Operation |
+| ---- | --------- | ----------- |
+| `Buy` | `0` | Percentage of Balance B |
+| `Buy` | `> 0` | Change current order quantity, by this percentage |
+| `Sell` | `0` | Percentage of Balance A |
+| `Sell` | `> 0` | Change current order quantity, by this percentage |
 
 ### `Chart.datasetNextTime`
 Is defined in order of what information is available.
