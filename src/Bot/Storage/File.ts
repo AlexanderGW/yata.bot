@@ -1,20 +1,17 @@
 import { Bot, ItemBaseData, Log } from "../Bot";
-import { StorageBase, StorageData, StorageInterface } from "../Storage";
+import { StorageApiData, StorageApiInterface } from "../Storage";
 
-const fs = require('fs');
+import { existsSync, readFileSync, mkdirSync, writeFile } from 'node:fs';
 
-export class FileStorageItem extends StorageBase implements StorageInterface {
+export class FileStorage implements StorageApiInterface {
+	name: string;
+	uuid: string;
+
 	constructor (
-		_: StorageData,
+		_: StorageApiData,
 	) {
-		super(_);
-	}
-
-	/**
-	 * 
-	 */
-	async close() {
-		return true;
+		this.name = _.name;
+		this.uuid = _.uuid;
 	}
 	
 	/**
@@ -31,10 +28,10 @@ export class FileStorageItem extends StorageBase implements StorageInterface {
 			const storagePath = `./storage/json`;
 			const storageFile = `${storagePath}/${name}.json`;
 
-			if (!fs.existsSync(storagePath))
+			if (!existsSync(storagePath))
 				return false;
 
-			const fileContent = await fs.readFileSync(
+			const fileContent = readFileSync(
 				storageFile,
 				'utf8',
 			);
@@ -53,50 +50,44 @@ export class FileStorageItem extends StorageBase implements StorageInterface {
 	 * @returns {string} The items UUID
 	 */
 	async setItem (
-		name: string,
-		_: ItemBaseData,
-	): Promise<any> {
+		id: string,
+		value: any,
+	): Promise<boolean> {
 		const storagePath = `./storage/json`;
-		const storageFile = `${storagePath}/${name}.json`;
+		const storageFile = `${storagePath}/${id}.json`;
 		
 		// Create path
 		try {
-			if (!fs.existsSync(storagePath)) {
-				fs.mkdirSync(
+			if (!existsSync(storagePath)) {
+				mkdirSync(
 					storagePath,
 					{
 						recursive: true
-					},
-					(err: object) => {
-						if (err) throw err;
-
-						Bot.log(`FileStorage.setItem; Path created: ${storagePath}`, Log.Verbose);
 					}
 				)
 			}
 		} catch (error) {
-			Bot.log(`FileStorage.setItem; ${JSON.stringify(error)}`, Log.Err);
-			
-			return '';
+			Bot.log(`Failed to create path '${storagePath}'`, Log.Err);
+			return false;
 		}
 
 		// Write data
 		try {
-			fs.writeFile(
+			writeFile(
 				storageFile,
-				JSON.stringify(_),
-				function (
-					err: object
-				) {
-					if (err) throw err;
+				JSON.stringify(value),
+				(error) => {
+					if (error)
+						throw new Error(error.message);
 					
 					Bot.log(`FileStorage.setItem; File written: ${storageFile}`, Log.Verbose);
 				}
 			);
 		} catch (error) {
 			Bot.log(`FileStorage.setItem; writeFile; ${JSON.stringify(error)}`, Log.Err);
+			return false;
 		}
 
-		return _.uuid;
+		return true;
 	}
 }

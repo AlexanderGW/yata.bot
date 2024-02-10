@@ -1,18 +1,22 @@
-import { Bot, ItemBaseData, Log } from "../Bot";
-import { StorageBase, StorageData, StorageInterface } from "../Storage";
+import { Bot, Log } from "../Bot";
+import { StorageApiData, StorageApiInterface, StorageItemOptionData } from "../Storage";
 
-export class MemoryStorageItem extends StorageBase implements StorageInterface {
+export type ParallelArrayStorageData = {
+	item?: any[],
+	itemIndex?: string[],
+};
+
+export class MemoryStorage implements ParallelArrayStorageData, StorageApiInterface {
+	name: string;
+	uuid: string;
+	item: any[] = [];
+	itemIndex: string[] = [];
+
 	constructor (
-		_: StorageData,
+		_: StorageApiData,
 	) {
-		super(_);
-	}
-
-	/**
-	 * 
-	 */
-	async close() {
-		return true;
+		this.name = _.name;
+		this.uuid = _.uuid;
 	}
 	
 	/**
@@ -22,11 +26,11 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 	 * @returns {object}
 	 */
 	async getItem (
-		name: string,
+		key: string,
 	): Promise<any> {
-		let returnValue: any = false;
+		let returnValue = null;
 		try {
-			let index = this.itemIndex.indexOf(name);
+			let index = this.itemIndex.indexOf(key);
 			if (index >= 0)
 				returnValue = this.item[index];
 		} catch (error) {
@@ -43,30 +47,34 @@ export class MemoryStorageItem extends StorageBase implements StorageInterface {
 	 * @returns {string} The items UUID
 	 */
 	async setItem (
-		name: string,
-		_: ItemBaseData,
-	): Promise<string> {
+		key: string,
+		value: any,
+		option?: StorageItemOptionData,
+	): Promise<boolean> {
 		try {
 			// Reset existing item
-			let index = this.itemIndex.findIndex((_uuid: string) => _uuid === _.uuid);
+			let index = this.itemIndex.findIndex((uuid: string) => uuid === key);
 			if (index >= 0) {
-				this.item[index] = _;
-				
-				return this.itemIndex[index];
+				if (option?.merge && typeof this.item[index] === 'object')
+					this.item[index] = {
+						...this.item[index],
+						...value
+					};
+				if (!option?.merge)
+					this.item[index] = value;
 			}
 
 			// Store new item
 			else {
-				// let newIndex = this.item.length;
-				this.item.push(_);
-				this.itemIndex.push(_.uuid);	
-
-				return _.uuid;
+				this.item.push(value);
+				this.itemIndex.push(key);
 			}
+
+			return true;
 		} catch (error) {
 			Bot.log(error, Log.Err);
-			
-			return '';
 		}
+
+		return false;
 	}
 }

@@ -10,7 +10,7 @@ import { Chart, ChartData, ChartItem } from './Bot/Chart';
 import { Timeframe, TimeframeData, TimeframeItem } from './Bot/Timeframe';
 import { Order, OrderData, OrderExchangeData, OrderItem, OrderSide } from './Bot/Order';
 import { Analysis, AnalysisData, AnalysisItem } from './Bot/Analysis';
-import { Storage, StorageData } from './Bot/Storage';
+import { Storage, StorageData, StorageItem } from './Bot/Storage';
 import { Subscription, SubscriptionData, SubscriptionEvent } from './Bot/Subscription';
 
 import * as dotenv from 'dotenv';
@@ -501,7 +501,7 @@ export type ItemIndexType = {
 	// console.log(Bot.itemNameIndex);
 
 	// TEMP: Use first defined storage
-	const playbookStore = Bot.getItem(playbookCache.storage.item[0]);
+	const playbookStore: StorageItem = Bot.getItem(playbookCache.storage.item[0]);
 	// console.log(playbookStore);
 
 	// Load the playbook state
@@ -697,7 +697,7 @@ export type ItemIndexType = {
 	nextPlaybookState.updateTime = Date.now();
 	// console.log(nextPlaybookState);
 	await playbookStore.setItem(playbookStateName, nextPlaybookState);
-	await playbookStore.close();
+	await playbookStore.disconnect();
 
 	// const used = process.memoryUsage().heapUsed / 1024 / 1024;
 	// console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`)

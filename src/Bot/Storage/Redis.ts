@@ -1,22 +1,28 @@
-import { Bot, ItemBaseData, Log } from "../Bot";
-import { StorageBase, StorageData, StorageInterface } from "../Storage";
-
+import { Bot, Log } from "../Bot";
+import { StorageApiData, StorageApiInterface } from "../Storage";
 import { createClient, RedisClientType } from 'redis';
 
-
-export class RedisStorageItem extends StorageBase implements StorageInterface {
-	client: RedisClientType;
+export class RedisStorage implements StorageApiInterface {
+	handle: RedisClientType;
+	name: string;
+	uuid: string;
 
 	constructor (
-		_: StorageData,
+		_: StorageApiData,
 	) {
-		super(_);
+		this.name = _.name;
+		this.uuid = _.uuid;
 
-		this.client = createClient({
+		this.handle = createClient({
 			url: 'redis://127.0.0.1:6379'
 		});
 
-		this.client.on('error', (err: string) => Bot.log(`RedisStorageItem '${this.name}'; ${JSON.stringify(err)}`, Log.Err));
+		this.handle.on(
+			'error',
+			(err: string) => Bot.log(
+				`RedisStorage '${this.name}'; ${JSON.stringify(err)}`
+			, Log.Err)
+		);
 
 		this.connect();
 	}
@@ -25,14 +31,14 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 	 * 
 	 */
 	async connect() {
-		await this.client.connect();
+		await this.handle.connect();
 	}
 
 	/**
 	 * 
 	 */
-	async close() {
-		await this.client.disconnect();
+	async disconnect() {
+		await this.handle.disconnect();
 	}
 	
 	/**
@@ -42,15 +48,11 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 	 * @returns {object}
 	 */
 	async getItem (
-		name: string,
+		id: string,
 	): Promise<any> {
 		let returnValue: any = false;
 		try {
-			let index = this.itemIndex.indexOf(name);
-			if (index >= 0)
-				return this.item[index];
-
-			const valueRaw = await this.client.get(name);
+			const valueRaw = await this.handle.get(id);
 			returnValue = JSON.parse(valueRaw as string);
 		} catch (error) {
 			Bot.log(error, Log.Err);
@@ -66,33 +68,17 @@ export class RedisStorageItem extends StorageBase implements StorageInterface {
 	 * @returns {string} The items UUID
 	 */
 	async setItem (
-		name: string,
-		_: ItemBaseData,
-	): Promise<string> {
+		id: string,
+		value: any,
+	): Promise<boolean> {
 		try {
-			// Reset existing item
-			let index = this.itemIndex.indexOf(name);
-			if (index >= 0) {
-				this.item[index] = _;
-				
-				return this.itemIndex[index];
-			}
-
-			// Store new item
-			else {
-				// let newIndex = this.item.length;
-				this.item.push(_);
-				this.itemIndex.push(name);	
-
-				const value = JSON.stringify(_);
-				await this.client.set(name, value);
-
-				return name;
-			}
+			const json = JSON.stringify(value);
+			await this.handle.set(id, json);
+			return true;
 		} catch (error) {
 			Bot.log(error, Log.Err);
-			
-			return '';
 		}
+			
+		return false;
 	}
 }
