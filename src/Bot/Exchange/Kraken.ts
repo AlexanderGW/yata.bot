@@ -166,10 +166,15 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			this._handleError(responseJson);
 			
 			// Confirmed
-			if (responseJson.result.count > 0) {
+			if (responseJson.result.txid) {
 				orderResponse.status = OrderStatus.Open;
 				orderResponse.responseTime = Date.now();
-				orderResponse.transactionId?.push(responseJson.result.txid);
+				orderResponse.transactionId = orderResponse.transactionId
+					? [
+						...orderResponse.transactionId,
+						responseJson.result.txid[0]
+					]
+					: [responseJson.result.txid[0]];
 			}
 		}
 
@@ -296,7 +301,12 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			) {
 				orderResponse.status = OrderStatus.Edit;
 				orderResponse.responseTime = Date.now();
-				orderResponse.transactionId?.push(responseJson.result.txid);
+				orderResponse.transactionId = orderResponse.transactionId
+					? [
+						...orderResponse.transactionId,
+						responseJson.result.txid[0]
+					]
+					: [responseJson.result.txid[0]];
 			}
 		}
 
