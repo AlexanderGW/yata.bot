@@ -180,7 +180,7 @@ export class OrderItem implements OrderData {
 			const ticker = await this.pair.exchange.getTicker(this.pair);
 
 			if (isPercentage(price)) {
-				const pricePercent = Number.parseFloat(
+				const pricePercent = Number(
 					price.substring(0, price.length - 1)
 				);
 
@@ -191,7 +191,7 @@ export class OrderItem implements OrderData {
 				const priceChange = (tickerPrice / 100) * pricePercent;
 				priceActual = tickerPrice + priceChange;
 			} else
-				priceActual = Number.parseFloat(price);
+				priceActual = Number(price);
 
 			if (priceActual <= 0)
 				throw new Error(`Order '${this.name}'; Price is zero`);
@@ -257,7 +257,7 @@ export class OrderItem implements OrderData {
 			throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.b.name}'; Failed to get balance`);
 
 		if (isPercentage(quantity)) {
-			const quantityPercent = Number.parseFloat(
+			const quantityPercent = Number(
 				quantity.substring(0, quantity.length - 1)
 			);
 
@@ -352,7 +352,7 @@ export class OrderItem implements OrderData {
 					break;
 			}
 		} else {
-			quantityActual = Number.parseFloat(quantity);
+			quantityActual = Number(quantity);
 
 			switch (this.side) {
 				case OrderSide.Buy:
@@ -385,6 +385,8 @@ export class OrderItem implements OrderData {
 			throw new Error(`Order '${this.name}'; Quantity is zero`);
 
 		// Prune any extraneous decimals
+		Bot.log(`ticker`, Log.Verbose);
+		Bot.log(ticker, Log.Verbose);
 		if (ticker?.decimals) {
 			quantityActual = toFixedNumber(
 				quantityActual,
@@ -464,13 +466,13 @@ export class OrderItem implements OrderData {
 			logParts.push(`Type '${this.type}'`);
 			if (
 				orderResponse.price
-				&& Number.parseFloat(orderResponse.price) > 0
+				&& Number(orderResponse.price) > 0
 			)
 				logParts.push(`Price '${orderResponse.price}'`);
 			logParts.push(`Side '${this.side}'`);
 			if (
 				orderResponse.stopPrice
-				&& Number.parseFloat(orderResponse.stopPrice) > 0
+				&& Number(orderResponse.stopPrice) > 0
 			)
 				logParts.push(`Stop '${orderResponse.stopPrice}'`);
 			logParts.push(`Qty '${orderResponse.quantity ?? this.quantity}'`);
