@@ -380,7 +380,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		Bot.log(`Exchange '${this.name}'; api.getTicker; Pair: '${pair}'; Foreign: '${pairForeign}'`, Log.Verbose);
 
 		// Get balances on exchange
-		let responseJson = await this.handle?.api(
+		let responseTickerJson = await this.handle?.api(
 
 			// Type
 			'Ticker',
@@ -391,20 +391,41 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+		Bot.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseTickerJson)}'`, Log.Verbose);
 
-		if (!responseJson)
-			throw new Error(`Invalid response`);
+		if (!responseTickerJson)
+			throw new Error(`Invalid 'Ticker' response`);
 
-		// Handle any errors
-		this._handleError(responseJson);
+		// Handle any ticker errors
+		this._handleError(responseTickerJson);
 
 		let returnData: ExchangeApiTickerData = {};
 		returnData.ticker = [];
 		returnData.tickerIndex = [];
 
 		// Walk all balances
-		for (let resultPair in responseJson.result) {
+		for (let resultPair in responseTickerJson.result) {
+			// Get asset pair information on exchange
+			// TODO: Refactor for batch `pair` calls, and possible caching?
+			let responseAssetPairsJson = await this.handle?.api(
+
+				// Type
+				'AssetPairs',
+
+				{
+					pair: resultPair,
+				}
+			);
+
+			// Log raw response
+			Bot.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseAssetPairsJson)}'`, Log.Verbose);
+
+			if (!responseAssetPairsJson)
+				throw new Error(`Invalid 'AssetPairs' response`);
+
+			// Handle any errors
+			this._handleError(responseAssetPairsJson);
+
 			const resultPairASymbolForeign = resultPair.substring(0, 4);
 			const resultPairBSymbolForeign = resultPair.substring(4);
 			const resultPairASymbolLocal = this.symbolToLocal(resultPairASymbolForeign);
@@ -421,12 +442,13 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				l: string[],
 				h: string[],
 				o: string,
-			} = responseJson.result[resultPair];
+			} = responseTickerJson.result[resultPair];
 
 			const tickerData: ExchangeTickerData = {
 				ask: Number(ticker.a[0]),
 				bid: Number(ticker.b[0]),
-				decimals: countDecimals(ticker.c[0]),
+				// decimals: countDecimals(ticker.c[0]),
+				decimals: Number(responseAssetPairsJson.result[resultPair].pair_decimals ?? 5),
 				high: Number(ticker.h[0]),
 				low: Number(ticker.l[0]),
 				open: Number(ticker.o),
