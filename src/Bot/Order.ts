@@ -460,6 +460,11 @@ export class OrderItem implements OrderData {
 				logParts.push(`Confirmed '${orderResponse.status},${orderResponse.responseTime}'`);
 			}
 
+			if (orderResponse.transactionId?.length) {
+				const lastTransactionIdx = orderResponse.transactionId.length - 1;
+				logParts.push(`Transaction ID '${orderResponse.transactionId[lastTransactionIdx]}'`);
+			}
+
 			// Log order response values
 			logParts.push(`Type '${this.type}'`);
 			if (
