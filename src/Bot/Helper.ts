@@ -7,7 +7,7 @@ export const isPercentage = (
 
 export const countDecimals = (
 	value: unknown
-) => {
+): number => {
 	const string = String(value);
 	const number = Number(value);
 	if (Math.floor(number) == number)
