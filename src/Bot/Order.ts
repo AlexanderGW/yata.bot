@@ -295,7 +295,7 @@ export class OrderItem implements OrderData {
 
 						quantityActual = ((balanceB.available / 100) * quantityPercent) / targetPrice;
 
-						Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.pair.b.name}' balance '${balanceB.available}', for '${quantityActual}', at '${targetPrice}'`, Log.Verbose);
+						Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of pair '${this.pair.b.name}' balance '${balanceB.available}', for '${quantityActual}', at '${targetPrice}'`, Log.Verbose);
 
 						break;
 					}
@@ -303,7 +303,7 @@ export class OrderItem implements OrderData {
 					// Percentage of the current quantity
 					quantityActual = this.quantityActual + ((this.quantityActual / 100) * quantityPercent);
 
-					Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.quantityActual}', for '${quantityActual}'`, Log.Verbose);
+					Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of quantity '${this.quantityActual}', for '${quantityActual}'`, Log.Verbose);
 
 					break;
 
@@ -339,7 +339,7 @@ export class OrderItem implements OrderData {
 
 						quantityActual = ((balanceA.available / 100) * quantityPercent);
 
-						Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.pair.a.name}' balance '${balanceA.available}', for '${quantityActual}', at '${targetPrice}'`, Log.Verbose);
+						Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of pair '${this.pair.a.name}' balance '${balanceA.available}', for '${quantityActual}', at '${targetPrice}'`, Log.Verbose);
 
 						break;
 					}
@@ -347,7 +347,7 @@ export class OrderItem implements OrderData {
 					// Percentage of the current quantity
 					quantityActual = this.quantityActual + ((this.quantityActual / 100) * quantityPercent);
 
-					Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of '${this.quantityActual}', for '${quantityActual}'`, Log.Verbose);
+					Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of quantity '${this.quantityActual}', for '${quantityActual}'`, Log.Verbose);
 
 					break;
 			}

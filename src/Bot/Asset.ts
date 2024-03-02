@@ -17,8 +17,7 @@ export class AssetItem implements AssetData {
 	constructor (
 		_: AssetData,
 	) {
-		if (_.name)
-			this.name = _.name;
+		this.name = _.name ?? _.symbol;
 		if (_.price)
 			this.price = _.price;
 		this.symbol = _.symbol;
