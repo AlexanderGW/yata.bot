@@ -385,8 +385,6 @@ export class OrderItem implements OrderData {
 			throw new Error(`Order '${this.name}'; Quantity is zero`);
 
 		// Prune any extraneous decimals
-		Bot.log(`ticker`, Log.Verbose);
-		Bot.log(ticker, Log.Verbose);
 		if (ticker?.decimals) {
 			quantityActual = toFixedNumber(
 				quantityActual,
