@@ -30,7 +30,6 @@ export type SubscriptionSignalData = {
 
 export type SubscriptionDespatchData = {
 	event: SubscriptionEvent,
-	lastState?: BotStateDataIndexType,
 	timeframe: TimeframeItem,
 };
 
@@ -60,7 +59,7 @@ export type SubscriptionInterface = {
 	itemIndex: string[],
 	despatch: (
 		_: SubscriptionDespatchData,
-	) => void,
+	) => Promise<void>,
 	new: (
 		_: SubscriptionData,
 	) => void,
@@ -113,9 +112,9 @@ export const Subscription: SubscriptionInterface = {
 	 */
 	itemIndex: [],
 
-	despatch (
+	async despatch (
 		_: SubscriptionDespatchData,
-	): void {
+	): Promise<void> {
 		switch (_.event) {
 
 			/**
@@ -183,14 +182,14 @@ export const Subscription: SubscriptionInterface = {
 						// Test for new results
 						if (
 							timeframeSignal.length
-							&& _.lastState?.dataIndex
+							&& Bot.playbook?.lastState?.timeframeIndex
 						) {
-							let index = _.lastState.dataIndex.findIndex(_name => _name === timeframe.name);
+							let index = Bot.playbook.lastState.timeframeIndex.findIndex(_name => _name === timeframe.name);
 							if (index >= 0) {
 
 								// Count number of current state results, not in last state
 								for (let k = 0; k < timeframeSignal.length; k++) {
-									if (_.lastState.data[index].indexOf(timeframeSignal[k]) < 0)
+									if (Bot.playbook.lastState.timeframe[index].indexOf(timeframeSignal[k]) < 0)
 										newSignal++;
 								}
 							}
@@ -294,7 +293,7 @@ export const Subscription: SubscriptionInterface = {
 								// Import module
 								let importPath = `../../playbook/${item.playbook}/${item.playbook}.ts`;
 
-								import(importPath).then((module: SubscriptionActionCallbackModule) => {
+								await import(importPath).then((module: SubscriptionActionCallbackModule) => {
 									if (!item.action || !module.hasOwnProperty(item.action))
 										throw new Error(`Subscription action callback not found, or invalid.`);
 

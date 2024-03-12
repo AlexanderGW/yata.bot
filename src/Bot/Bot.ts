@@ -5,6 +5,9 @@
  */
 
 import { appendFileSync } from 'node:fs';
+import { StorageItem } from './Storage';
+import { ChartCandleData } from './Chart';
+import { OrderData } from './Order';
 
 /**
  * Logging levels
@@ -22,16 +25,19 @@ export type BotStateDataIndexType = {
 };
 
 export type BotStateType = {
-	timeframe: BotStateDataIndexType,
-	chart: BotStateDataIndexType,
-	order: BotStateDataIndexType,
+	candle: Array<ChartCandleData>,
+	candleIndex: Array<string>,
+	order: Array<OrderData>,
+	orderIndex: Array<string>,
+	timeframe: Array<Array<number>>,
+	timeframeIndex: Array<string>,
 	updateTime: number,
 };
 
 /**
  * Basic item structure, everything must have its own UUID
  */
- export type 	ItemBaseData = {
+ export type ItemBaseData = {
 	name?: string,
 	uuid: string,
 }
@@ -41,6 +47,14 @@ export type BotInitData = {
 	backtest?: boolean,
 };
 
+export type BotPlaybookData = {
+	name: string,
+	storage?: StorageItem | null,
+	storageUuid?: string,
+	lastState?: BotStateType | undefined,
+	nextState?: BotStateType | undefined,
+};
+
 export type BotData = {
 	backtest: boolean,
 	dryrun: boolean,
@@ -48,6 +62,7 @@ export type BotData = {
 	item: object[],
 	itemIndex: string[],
 	itemNameIndex: string[],
+	playbook?: BotPlaybookData | undefined,
 	init: (
 		_: BotInitData
 	) => void,
@@ -254,3 +269,36 @@ export const Bot: BotData = {
 		return _.uuid;
 	},
 };
+
+process.on('exit', async (code) => {
+	const used = process.memoryUsage().heapUsed / 1024 / 1024;
+	Bot.log(`The bot used approximately ${Math.round(used * 100) / 100} MB`, Log.Verbose);
+  Bot.log(`Exit code: ${code}`, Log.Verbose);
+});
+
+// Persist playbook state, on exit for next run.
+// TODO: Refactor into process exit - issue within `process.on('exit')` and `redis.setItem()` where no response/error is received.
+// process.on('exit', async (code) => {
+// 	const used = process.memoryUsage().heapUsed / 1024 / 1024;
+// 	console.log(`The bot used approximately ${Math.round(used * 100) / 100} MB`);
+
+// 	if (Bot.playbook) {
+// 		if (Bot.playbook.nextState) {
+
+// 			// Persist playbook state for next iteration
+// 			Bot.playbook.nextState.updateTime = Date.now();
+// 			Bot.log(`Bot.playbook.nextState.updateTime`, Log.Verbose);
+// 			Bot.log(Bot.playbook.nextState.updateTime, Log.Verbose);
+
+// 			// delete Bot.playbook.nextState.order.pair;
+	
+// 			const setItemResult = await Bot.playbook.storage?.setItem(Bot.playbook.name, Bot.playbook.nextState);
+// 			Bot.log(`setItemResult`, Log.Verbose);
+// 			Bot.log(setItemResult, Log.Verbose);
+// 		}
+		
+// 		await Bot.playbook.storage?.disconnect();
+// 	}
+
+//   console.log(`Exit code: ${code}`);
+// });

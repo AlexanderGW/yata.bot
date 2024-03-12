@@ -1,6 +1,6 @@
 import { parse } from 'yaml'
 
-import { Bot, BotStateType, Log } from './Bot/Bot';
+import { Bot, Log } from './Bot/Bot';
 import { Strategy, StrategyData, StrategyItem } from './Bot/Strategy';
 import { Asset, AssetData } from './Bot/Asset';
 import { Pair, PairData } from './Bot/Pair';
@@ -8,7 +8,7 @@ import { Scenario, ScenarioData, ScenarioItem, scenarioConditionOperators } from
 import { Exchange, ExchangeData } from './Bot/Exchange';
 import { Chart, ChartData, ChartItem } from './Bot/Chart';
 import { Timeframe, TimeframeData, TimeframeItem } from './Bot/Timeframe';
-import { Order, OrderData, OrderExchangeData, OrderItem } from './Bot/Order';
+import { Order, OrderData, OrderItem } from './Bot/Order';
 import { Analysis, AnalysisData, AnalysisItem } from './Bot/Analysis';
 import { Storage, StorageData, StorageItem } from './Bot/Storage';
 import { Subscription, SubscriptionData, SubscriptionEvent } from './Bot/Subscription';
@@ -144,7 +144,7 @@ export type ItemIndexType = {
 	const playbookTypeKeys = Object.keys(playbookTypes);
 
 	// Cache table of all playbook item, to facilitate referencing
-	// TODO: Type
+	// TODO: Refactor item/index structure
 	let playbookCache: PlaybookCacheData = {
 		storage: {
 			itemIndex: [],
@@ -496,30 +496,30 @@ export type ItemIndexType = {
 		}
 	}
 
-	// console.log(`playbookCache`);
-	// console.log(playbookCache);
-	// console.log(Bot.itemNameIndex);
-
 	// TEMP: Use first defined storage
 	const playbookStore: StorageItem = Bot.getItem(playbookCache.storage.item[0]);
-	// console.log(playbookStore);
 
 	// Load the playbook state
-	let lastPlaybookState: BotStateType = await playbookStore.getItem(playbookStateName);
+	Bot.playbook = {
+		name: playbookStateName,
+		storage: playbookStore,
+		lastState: await playbookStore.getItem(playbookStateName),
+	};
 
 	// Handle existing playbook state
-	if (lastPlaybookState) {
+	// TODO: Implement data validation? Version checks?
+	if (Bot.playbook.lastState) {
 
 		// Prime chart datasets, if available
-		if (lastPlaybookState.chart?.dataIndex?.length) {
-			for (let chartIdx in lastPlaybookState.chart.dataIndex) {
+		if (Bot.playbook.lastState.candleIndex?.length) {
+			for (let chartIdx in Bot.playbook.lastState.candleIndex) {
 
 				// Add dataset to chart
-				const chart: ChartItem = Bot.getItem(lastPlaybookState.chart.dataIndex[chartIdx]);
-				if (chart && lastPlaybookState.chart.data[chartIdx]) {
+				const chart: ChartItem = Bot.getItem(Bot.playbook.lastState.candleIndex[chartIdx]);
+				if (chart && Bot.playbook.lastState.candle[chartIdx]) {
 					try {
 						// TODO: Set `datasetNextTime` based on tiemframe etc - currently falls back to default `BOT_CHART_DEFAULT_TOTAL_CANDLE`
-						chart.updateDataset(lastPlaybookState.chart.data[chartIdx]);
+						chart.updateDataset(Bot.playbook.lastState.candle[chartIdx]);
 						chart.refreshDataset();
 					} catch (error) {
 						Bot.log(error, Log.Err);
@@ -528,11 +528,11 @@ export type ItemIndexType = {
 			}
 		}
 
-		// Prime orders, if available
-		if (lastPlaybookState.order?.dataIndex?.length) {
-			for (let orderIdx in lastPlaybookState.order.dataIndex) {
-				const order: OrderItem = Bot.getItem(lastPlaybookState.order.dataIndex[orderIdx]);
-				let orderData = lastPlaybookState.order.data[orderIdx];
+		// Prime order state, if available
+		if (Bot.playbook.lastState.orderIndex?.length) {
+			for (let orderIdx in Bot.playbook.lastState.orderIndex) {
+				const order: OrderItem = Bot.getItem(Bot.playbook.lastState.orderIndex[orderIdx]);
+				let orderData = Bot.playbook.lastState.order[orderIdx];
 				if (order && orderData) {
 					try {
 						order.update(orderData);
@@ -546,42 +546,29 @@ export type ItemIndexType = {
 	
 	// No existing playbook state, default to empty
 	else {
-		lastPlaybookState = {
-			chart: {
-				data: [],
-				dataIndex: [],
-			},
-			order: {
-				data: [],
-				dataIndex: [],
-			},
-			timeframe: {
-				data: [],
-				dataIndex: [],
-			},
+		Bot.playbook.lastState = {
+			candle: [],
+			candleIndex: [],
+			order: [],
+			orderIndex: [],
+			timeframe: [],
+			timeframeIndex: [],
 			updateTime: 0
 		};
 	}
 
-	// console.log(lastPlaybookState);
-
-	let nextPlaybookState: BotStateType = {
-		chart: {
-			data: [],
-			dataIndex: [],
+	Bot.playbook.nextState = {
+		...{
+			candle: [],
+			candleIndex: [],
+			order: [],
+			orderIndex: [],
+			timeframe: [],
+			timeframeIndex: [],
+			updateTime: 0,
 		},
-		order: {
-			data: [],
-			dataIndex: [],
-		},
-		timeframe: {
-			data: [],
-			dataIndex: [],
-		},
-		updateTime: 0
+		...Bot.playbook.lastState
 	};
-
-	// console.log(playbookCache.timeframe);
 
 	// Attempt to execute all `Timeframe`
 	if (playbookCache.timeframe.item.length === 0)
@@ -605,11 +592,8 @@ export type ItemIndexType = {
 					continue;
 
 				// Send a despatch to subscribers, indicating the timeframe has results
-				Subscription.despatch({
+				await Subscription.despatch({
 					event: SubscriptionEvent.TimeframeResult,
-
-					// Pass last playbook state timeframe results, for `new` comparison
-					lastState: lastPlaybookState.timeframe,
 
 					// The timeframe context
 					timeframe: timeframe,
@@ -641,64 +625,64 @@ export type ItemIndexType = {
 					}
 				}
 
-				// Add timeframe results to playbook state
-				nextPlaybookState.timeframe.data.push(timeframeSignal);
-				nextPlaybookState.timeframe.dataIndex.push(timeframe.name ?? timeframe.uuid);
+				// Persist next state timeframe result timestamps
+				const idxIndentifier = timeframe.name ?? timeframe.uuid;
+				let index = Bot.playbook.nextState.timeframeIndex.findIndex(_name => _name === idxIndentifier);
+				if (index >= 0) {
+
+					// Add timeframe results, with deduplication
+					Bot.playbook.nextState.timeframe[index] = [
+						...new Set([
+							...Bot.playbook.nextState.timeframe[index],
+							...timeframeSignal
+						])
+					];
+				} else {
+					Bot.playbook.nextState.timeframe.push(timeframeSignal);
+					Bot.playbook.nextState.timeframeIndex.push(idxIndentifier);
+				}
 			} catch (error) {
 				Bot.log(error, Log.Err);
 			}
 		}
 	}
 
-	// Persist chart data
+	// Persist next state chart data
 	if (playbookCache.chart.item.length) {
 		for (let chartIdx in playbookCache.chart.itemIndex) {
 			const chart: ChartItem = Bot.getItem(playbookCache.chart.item[chartIdx]);
 
 			// Add chart data to playbook state
 			if (chart.dataset) {
-				nextPlaybookState.chart.data.push(chart.dataset);
-				nextPlaybookState.chart.dataIndex.push(chart.name ?? chart.uuid);
+				const idxIndentifier = chart.name ?? chart.uuid;
+				let index = Bot.playbook.nextState.candleIndex.findIndex(_name => _name === idxIndentifier);
+				if (index >= 0) {
+
+					// Replace chart candles
+					Bot.playbook.nextState.candle[index] = chart.dataset;
+				} else {
+					Bot.playbook.nextState.candle.push(chart.dataset);
+					Bot.playbook.nextState.candleIndex.push(idxIndentifier);
+				}
 			}
 		}
 	}
 
-	// Persist order data
-	// TODO: Noticed inconsistencies with order data in the cache - check all data fields are persisting
+	// Persist next state order data
 	if (playbookCache.order.item.length) {
 		for (let orderIdx in playbookCache.order.itemIndex) {
 			const order: OrderItem = Bot.getItem(playbookCache.order.item[orderIdx]);
 
-			let orderData: OrderExchangeData = {
-				closeTime: order.closeTime,
-				expireTime: order.expireTime,
-				limitPrice: order.limitPrice,
-				openTime: order.openTime,
-				price: order.price,
-				quantity: order.quantity,
-				quantityFilled: order.quantityFilled,
-				referenceId: order.referenceId,
-				status: order.status,
-				responseTime: order.responseTime,
-				side: order.side,
-				startTime: order.startTime,
-				stopPrice: order.stopPrice,
-				transactionId: order.transactionId,
-				type: order.type,
-			};
+			const idxIndentifier = order.name ?? order.uuid;
+			let index = Bot.playbook.nextState.orderIndex.findIndex(_name => _name === idxIndentifier);
+			if (index >= 0) {
 
-			// Add order data to playbook state
-			nextPlaybookState.order.data.push(orderData);
-			nextPlaybookState.order.dataIndex.push(order.name ?? order.uuid);
+				// Replace order
+				Bot.playbook.nextState.order[index] = order;
+			} else {
+				Bot.playbook.nextState.order.push(order);
+				Bot.playbook.nextState.orderIndex.push(idxIndentifier);
+			}
 		}
 	}
-
-	// Persist playbook state for next iteration
-	nextPlaybookState.updateTime = Date.now();
-	// console.log(nextPlaybookState);
-	await playbookStore.setItem(playbookStateName, nextPlaybookState);
-	await playbookStore.disconnect();
-
-	// const used = process.memoryUsage().heapUsed / 1024 / 1024;
-	// console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`)
 })();

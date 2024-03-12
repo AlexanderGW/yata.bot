@@ -1,7 +1,6 @@
 import { Bot, Log } from '../Bot';
 import { ChartCandleData, ChartItem } from '../Chart';
 import { ExchangeApiBalanceData, ExchangeApiData, ExchangeApiInterface, ExchangeApiTickerData, ExchangeBalanceData, ExchangeTickerData } from '../Exchange';
-import { countDecimals } from '../Helper';
 import { OrderSide, OrderItem, OrderType, OrderStatus, OrderExchangeData } from '../Order';
 import { PairData } from '../Pair';
 
@@ -293,20 +292,20 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			this._handleError(responseJson);
 
 			// Response carries previous, new foreign 
-			// transaction ID, and status is `Ok`
+			// transaction ID, and status is `ok`
 			if (
 				responseJson.result.originaltxid === _.transactionId[lastTransactionIdx]
 				&& responseJson.result.txid
-				&& responseJson.result.status === 'Ok'
+				&& responseJson.result.status === 'ok'
 			) {
 				orderResponse.status = OrderStatus.Edit;
 				orderResponse.responseTime = Date.now();
 				orderResponse.transactionId = orderResponse.transactionId
 					? [
 						...orderResponse.transactionId,
-						responseJson.result.txid[0]
+						responseJson.result.txid
 					]
-					: [responseJson.result.txid[0]];
+					: [responseJson.result.txid];
 			}
 		}
 
