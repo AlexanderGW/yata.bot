@@ -1,6 +1,6 @@
 import { Bot, Log } from '../Bot';
 import { ExchangeApiData, ExchangeApiInterface, ExchangeApiTickerData } from '../Exchange';
-import { OrderItem, OrderStatus, OrderExchangeData } from '../Order';
+import { OrderItem, OrderStatus, OrderData } from '../Order';
 import { PairData } from '../Pair';
 
 export class PaperExchange implements ExchangeApiInterface {
@@ -17,7 +17,7 @@ export class PaperExchange implements ExchangeApiInterface {
 	async closeOrder (
 		_: OrderItem,
 	) {
-		const orderResponse: OrderExchangeData = {
+		const orderResponse: OrderData = {
 			status: OrderStatus.Close,
 			responseTime: Date.now(),
 		};
@@ -28,7 +28,7 @@ export class PaperExchange implements ExchangeApiInterface {
 	async openOrder (
 		_: OrderItem,
 	) {
-		const orderResponse: OrderExchangeData = {
+		const orderResponse: OrderData = {
 			status: OrderStatus.Open,
 			responseTime: Date.now(),
 		};
@@ -39,7 +39,7 @@ export class PaperExchange implements ExchangeApiInterface {
 	async editOrder (
 		_: OrderItem,
 	) {
-		const orderResponse: OrderExchangeData = {
+		const orderResponse: OrderData = {
 			status: OrderStatus.Edit,
 			responseTime: Date.now(),
 		};
@@ -50,7 +50,7 @@ export class PaperExchange implements ExchangeApiInterface {
 	async getOrder (
 		_: OrderItem,
 	) {
-		const orderResponse: OrderExchangeData = {
+		const orderResponse: OrderData = {
 			status: OrderStatus.Unknown,
 			responseTime: Date.now(),
 		};

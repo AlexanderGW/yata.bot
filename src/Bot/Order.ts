@@ -37,7 +37,7 @@ export enum OrderType {
 	Unknown = 'Unknown',
 };
 
-export type OrderData = {
+export type OrderBaseData = {
 	[index: string]: any,
 	closeTime?: number,
 	dryrun?: boolean,
@@ -46,14 +46,13 @@ export type OrderData = {
 	limitPrice?: string, // for stop limit triggers?
 	name?: string,
 	openTime?: number,
-	pair?: PairItem,
+	parent?: OrderItem,
 	price?: string,
 	priceActual?: number,
 	quantity?: string,
 	quantityActual?: number,
 	quantityFilled?: number,
 	referenceId?: number | string;
-	related?: OrderItem,
 	responseStatus?: OrderStatus,
 	responseTime?: number,
 	side?: OrderSide,
@@ -66,25 +65,8 @@ export type OrderData = {
 	uuid?: string,
 }
 
-// TODO: Consolidate with `OrderData`? - Split out?
-// MOVE TO `ExchangeOrderData` ?
-export type OrderExchangeData = {
-	[index: string]: any,
-	closeTime?: number,
-	expireTime?: number,
-	limitPrice?: string,
-	openTime?: number,
-	price?: string,
-	quantity?: string,
-	quantityFilled?: number,
-	referenceId?: number | string,
-	status?: OrderStatus,
-	responseTime?: number,
-	side?: OrderSide,
-	startTime?: number,
-	stopPrice?: string,
-	transactionId?: string[],
-	type?: OrderType,
+export type OrderData = OrderBaseData & {
+	pair?: PairItem,
 }
 
 export class OrderItem implements OrderData {
@@ -139,6 +121,7 @@ export class OrderItem implements OrderData {
 			!this.responseTime
 
 			// Unknown state
+			|| this.responseStatus === OrderStatus.Unknown
 			|| this.status === OrderStatus.Unknown
 
 			// Status mismatch
@@ -202,7 +185,7 @@ export class OrderItem implements OrderData {
 				Number(ticker?.decimals)
 			);
 
-			// Bot.log(`Order '${this.name}'; Actual price: ${priceActual}`);
+			Bot.log(`Order '${this.name}'; Actual price: ${priceActual}`);
 
 			this.price = price;
 			this.priceActual = priceActual;
@@ -401,7 +384,6 @@ export class OrderItem implements OrderData {
 	async execute (
 		_?: OrderAction
 	) {
-
 		const priceResult = await this.setPrice(this.price);
 		if (!priceResult)
 			throw new Error(`Order '${this.name}'; Price required for this type`);
@@ -409,7 +391,7 @@ export class OrderItem implements OrderData {
 		// Check quantity
 		await this.setQuantity(this.quantity);
 
-		let orderResponse: OrderExchangeData | undefined;
+		let orderResponse: OrderBaseData | undefined;
 		
 		// Build log message
 		let logParts: string[] = [];
@@ -450,36 +432,41 @@ export class OrderItem implements OrderData {
 				break;
 		}
 
-		if (orderResponse) {
+		// Empty response
+		if (!orderResponse)
+			throw new Error(`Order '${this.name}'; Empty API response`);
 
-			// Order response contains higher confirmation time
-			if (
-				orderResponse.responseTime
-				&& orderResponse.responseTime > this.responseTime
-			) {
-				logParts.push(`Confirmed '${orderResponse.status},${orderResponse.responseTime}'`);
-			}
-
-			if (orderResponse.transactionId?.length) {
-				const lastTransactionIdx = orderResponse.transactionId.length - 1;
-				logParts.push(`Transaction ID '${orderResponse.transactionId[lastTransactionIdx]}'`);
-			}
-
-			// Log order response values
-			logParts.push(`Type '${this.type}'`);
-			if (
-				orderResponse.price
-				&& Number(orderResponse.price) > 0
-			)
-				logParts.push(`Price '${orderResponse.price}'`);
-			logParts.push(`Side '${this.side}'`);
-			if (
-				orderResponse.stopPrice
-				&& Number(orderResponse.stopPrice) > 0
-			)
-				logParts.push(`Stop '${orderResponse.stopPrice}'`);
-			logParts.push(`Qty '${orderResponse.quantity ?? this.quantity}'`);
+		// Order response contains higher confirmation time
+		if (
+			orderResponse.responseTime
+			&& orderResponse.responseTime > this.responseTime
+		) {
+			logParts.push(`Response time '${orderResponse.responseTime}'`);
 		}
+
+		if (orderResponse.responseStatus) {
+			logParts.push(`Response status '${orderResponse.responseStatus}'`);
+		}
+
+		if (orderResponse.transactionId?.length) {
+			const lastTransactionIdx = orderResponse.transactionId.length - 1;
+			logParts.push(`Transaction ID '${orderResponse.transactionId[lastTransactionIdx]}'`);
+		}
+
+		// Log order response values
+		logParts.push(`Type '${this.type}'`);
+		if (
+			orderResponse.price
+			&& Number(orderResponse.price) > 0
+		)
+			logParts.push(`Price '${orderResponse.price}'`);
+		logParts.push(`Side '${this.side}'`);
+		if (
+			orderResponse.stopPrice
+			&& Number(orderResponse.stopPrice) > 0
+		)
+			logParts.push(`Stop '${orderResponse.stopPrice}'`);
+		logParts.push(`Qty '${orderResponse.quantity ?? this.quantity}'`);
 
 		// Is a dry-run order
 		if (this.dryrun)
@@ -487,17 +474,20 @@ export class OrderItem implements OrderData {
 
 		Bot.log(logParts.join('; '), logType);
 
+		// TODO: Make conditional?
+		this.update(orderResponse);
+
 		return orderResponse;
 	}
 
 	update (
-		_: OrderData
+		_: OrderBaseData
 	) {
 		this.dryrun = _.dryrun ?? Bot.dryrun;
 		if (_.name)
 			this.name = _.name;
-		if (_.pair)
-			this.pair = _.pair;
+		// if (_.pair)
+		// 	this.pair = _.pair;
 		if (_.price)
 			this.price = _.price;
 		if (_.priceActual)
@@ -508,10 +498,12 @@ export class OrderItem implements OrderData {
 			this.quantityActual = _.quantityActual;
 		if (_.quantityFilled)
 			this.quantityFilled = _.quantityFilled;
-		if (_.related)
-			this.related = _.related;
+		if (_.parent)
+			this.parent = _.parent;
 		if (_.responseTime)
 			this.responseTime = _.responseTime;
+		if (_.responseStatus)
+				this.responseStatus = _.responseStatus;
 		if (_.side)
 			this.side = _.side;
 		if (_.status)

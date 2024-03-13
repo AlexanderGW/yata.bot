@@ -535,6 +535,7 @@ export type ItemIndexType = {
 				let orderData = Bot.playbook.lastState.order[orderIdx];
 				if (order && orderData) {
 					try {
+						// TODO: Implement validation on state `status`, `responseStatus`
 						order.update(orderData);
 					} catch (error) {
 						Bot.log(error, Log.Err);

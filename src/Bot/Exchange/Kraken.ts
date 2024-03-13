@@ -1,7 +1,7 @@
 import { Bot, Log } from '../Bot';
 import { ChartCandleData, ChartItem } from '../Chart';
 import { ExchangeApiBalanceData, ExchangeApiData, ExchangeApiInterface, ExchangeApiTickerData, ExchangeBalanceData, ExchangeTickerData } from '../Exchange';
-import { OrderSide, OrderItem, OrderType, OrderStatus, OrderExchangeData } from '../Order';
+import { OrderSide, OrderItem, OrderType, OrderStatus, OrderData, OrderBaseData } from '../Order';
 import { PairData } from '../Pair';
 
 import { existsSync, mkdirSync, writeFile } from 'node:fs';
@@ -110,8 +110,8 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 
 	async openOrder (
 		_: OrderItem,
-	) {
-		let orderResponse: OrderExchangeData = {};
+	): Promise<OrderBaseData> {
+		let orderResponse: OrderBaseData = {};
 
 		let assetASymbol = this.symbolToForeign(_.pair.a.symbol);
 		let assetBSymbol = this.symbolToForeign(_.pair.b.symbol);
@@ -166,6 +166,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			
 			// Confirmed
 			if (responseJson.result.txid) {
+				orderResponse.responseStatus = OrderStatus.Open;
 				orderResponse.status = OrderStatus.Open;
 				orderResponse.responseTime = Date.now();
 				orderResponse.transactionId = orderResponse.transactionId
@@ -182,8 +183,8 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 
 	async closeOrder (
 		_: OrderItem,
-	) {
-		let orderResponse: OrderExchangeData = {};
+	): Promise<OrderBaseData> {
+		let orderResponse: OrderBaseData = {};
 
 		// Get latest order transaction ID index
 		let lastTransactionIdx = 0;
@@ -193,7 +194,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		let responseJson = await this.handle?.api(
 
 			// Type
-			'CloseOrder',
+			'CancelOrder',
 
 			// Options
 			{
@@ -216,12 +217,12 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				responseJson.result.pending === true
 				|| responseJson.result.count === 0
 			) {
-				orderResponse.status = OrderStatus.Pending;
+				orderResponse.responseStatus = OrderStatus.Pending;
 			}
 			
 			// Successful
 			else {
-				orderResponse.status = OrderStatus.Close;
+				orderResponse.responseStatus = OrderStatus.Close;
 			}
 
 			orderResponse.responseTime = Date.now();
@@ -232,8 +233,8 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 
 	async editOrder (
 		_: OrderItem,
-	) {
-		let orderResponse: OrderExchangeData = {};
+	): Promise<OrderBaseData> {
+		let orderResponse: OrderBaseData = {};
 
 		// Get latest order transaction ID index
 		let lastTransactionIdx = 0;
@@ -298,7 +299,8 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				&& responseJson.result.txid
 				&& responseJson.result.status === 'ok'
 			) {
-				orderResponse.status = OrderStatus.Edit;
+				orderResponse.responseStatus = OrderStatus.Open;
+				orderResponse.status = OrderStatus.Open;
 				orderResponse.responseTime = Date.now();
 				orderResponse.transactionId = orderResponse.transactionId
 					? [
@@ -367,11 +369,6 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 
 		return returnData;
 	}
-
-
-
-
-
 
 	async getTicker (
 		_: PairData,
@@ -478,18 +475,10 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		return returnData;
 	}
 
-
-
-
-
-
-
-
-
 	async getOrder (
 		_: OrderItem,
 	) {
-		let orderResponse: OrderExchangeData = {};
+		let orderResponse: OrderData = {};
 
 		// Get latest order transaction ID index
 		let lastTransactionIdx = 0;
@@ -537,6 +526,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		// Walk all transactions
 		for (let resultTxId in responseJson.result) {
 			const transaction = responseJson.result[resultTxId];
+			console.log(transaction);
 
 			// The requested transasction
 			if (
@@ -620,6 +610,8 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 					orderResponse.status = OrderStatus.Unknown;
 					break;
 			}
+
+			orderResponse.responseStatus = orderResponse.status;
 
 			if (transaction.stopprice)
 				orderResponse.stopPrice = transaction.stopprice;
@@ -739,8 +731,6 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		}
 	}
 
-
-
 	refreshChart (
 		chart: ChartItem,
 		_: ChartCandleData
@@ -845,16 +835,3 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		}
 	}
 }
-
-// export const Kraken = {
-// 	async new (
-// 		_: ExchangeData,
-// 	): Promise<KrakenItem> {
-// 		let krakenItem = new KrakenItem(_);
-// 		let uuid = Bot.setItem(krakenItem);
-
-// 		let item: KrakenItem = Bot.getItem(uuid);
-
-// 		return item;
-// 	}
-// };

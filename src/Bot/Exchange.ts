@@ -1,7 +1,7 @@
 import { ChartItem } from "./Chart";
 import { v4 as uuidv4 } from 'uuid';
 import { Bot, Log } from "./Bot";
-import { OrderExchangeData, OrderItem } from "./Order";
+import { OrderBaseData, OrderData, OrderItem } from "./Order";
 import { PairData } from "./Pair";
 
 export type ExchangeBalanceData = {
@@ -67,8 +67,6 @@ export type ExchangeApiInterface = {
 	symbolLocal?: string[],
 	symbolForeign?: string[],
 
-	// doApi: () => Promise<ExchangeApiInterface>;
-
 	getBalance: () => Promise<ExchangeApiBalanceData>;
 
 	// TODO: Collate all defined ticker symbols - then call en-masse?
@@ -80,19 +78,19 @@ export type ExchangeApiInterface = {
 
 	closeOrder: (
 		_: OrderItem,
-	) => Promise<OrderExchangeData>;
+	) => Promise<OrderBaseData>;
 
 	editOrder: (
 		_: OrderItem,
-	) => Promise<OrderExchangeData>;
+	) => Promise<OrderBaseData>;
 
 	getOrder: (
 		_: OrderItem,
-	) => Promise<OrderExchangeData>;
+	) => Promise<OrderBaseData>;
 
 	openOrder: (
 		_: OrderItem,
-	) => Promise<OrderExchangeData>;
+	) => Promise<OrderBaseData>;
 
 	syncChart: (
 		chart: ChartItem,
@@ -152,13 +150,7 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 		this.uuid = _.uuid ?? uuidv4();
 	}
 
-	// async doApi (
-	// 	_: ExchangeData,
-	// ): Promise<ExchangeApiInterface> {
-		
-	// }
-
-	// return both symbol balances?
+	// TODO: return both symbol balances?
 	async getBalance (
 		symbol: string
 	) {
@@ -198,7 +190,6 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 			
 			// TODO: Check and sync ticker data - track last poll?
 			const response = await this.api?.getTicker(_);
-			
 			if (response?.ticker && response?.tickerIndex) {
 				this.ticker = [
 					...this.ticker,
@@ -226,8 +217,6 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 		return false;
 	}
 
-	
-
 	async syncChart (
 		chart: ChartItem,
 	) {
@@ -239,7 +228,6 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 		await this.api?.syncChart(chart);
 	}
 }
-
 
 export const Exchange = {
 	async new (
