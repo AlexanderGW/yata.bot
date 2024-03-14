@@ -1,4 +1,5 @@
 import { Bot, Log } from '../Bot';
+import { ChartItem } from '../Chart';
 import { ExchangeApiData, ExchangeApiInterface, ExchangeApiTickerData } from '../Exchange';
 import { OrderItem, OrderStatus, OrderData } from '../Order';
 import { PairData } from '../Pair';
@@ -47,6 +48,13 @@ export class PaperExchange implements ExchangeApiInterface {
 		return orderResponse;
 	}
 
+	async getBalance () {
+		return {
+			balance: [],
+			balanceIndex: [],
+		};
+	}
+
 	async getOrder (
 		_: OrderItem,
 	) {
@@ -58,13 +66,6 @@ export class PaperExchange implements ExchangeApiInterface {
 		return orderResponse;
 	}
 
-	async getBalance () {
-		return {
-			balance: [],
-			balanceIndex: [],
-		};
-	}
-
 	async getTicker (
 		_: PairData,
 	) {
@@ -72,5 +73,11 @@ export class PaperExchange implements ExchangeApiInterface {
 			ticker: [],
 			tickerIndex: [],
 		};
+	}
+
+	async syncChart (
+		chart: ChartItem,
+	) {
+		
 	}
 }

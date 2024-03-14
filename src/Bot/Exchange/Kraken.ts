@@ -370,111 +370,6 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		return returnData;
 	}
 
-	async getTicker (
-		_: PairData,
-	): Promise<ExchangeApiTickerData> {
-		// TODO: fix
-		// if (_.exchange.uuid !== this.uuid)
-		// 	throw new Error(`Exchange '${this.name}'; api.Pair '${_.name}'; api.Incompatible exchange pair`);
-
-		let assetASymbolForeign = this.symbolToForeign(_.a.symbol);
-		let assetBSymbolForeign = this.symbolToForeign(_.b.symbol);
-		
-		const pair = `${_.a.symbol}-${_.b.symbol}`;
-		const pairForeign = `${assetASymbolForeign}${assetBSymbolForeign}`;
-
-		Bot.log(`Exchange '${this.name}'; api.getTicker; Pair: '${pair}'; Foreign: '${pairForeign}'`, Log.Verbose);
-
-		// Get balances on exchange
-		let responseTickerJson = await this.handle?.api(
-
-			// Type
-			'Ticker',
-
-			{
-				pair: pairForeign,
-			}
-		);
-
-		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseTickerJson)}'`, Log.Verbose);
-
-		if (!responseTickerJson)
-			throw new Error(`Invalid 'Ticker' response`);
-
-		// Handle any ticker errors
-		this._handleError(responseTickerJson);
-
-		let returnData: ExchangeApiTickerData = {};
-		returnData.ticker = [];
-		returnData.tickerIndex = [];
-
-		// Walk all balances
-		for (let resultPair in responseTickerJson.result) {
-			// Get asset pair information on exchange
-			// TODO: Refactor for batch `pair` calls, and possible caching?
-			let responseAssetPairsJson = await this.handle?.api(
-
-				// Type
-				'AssetPairs',
-
-				{
-					pair: resultPair,
-				}
-			);
-
-			// Log raw response
-			Bot.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseAssetPairsJson)}'`, Log.Verbose);
-
-			if (!responseAssetPairsJson)
-				throw new Error(`Invalid 'AssetPairs' response`);
-
-			// Handle any errors
-			this._handleError(responseAssetPairsJson);
-
-			const resultPairASymbolForeign = resultPair.substring(0, 4);
-			const resultPairBSymbolForeign = resultPair.substring(4);
-			const resultPairASymbolLocal = this.symbolToLocal(resultPairASymbolForeign);
-			const resultPairBSymbolLocal = this.symbolToLocal(resultPairBSymbolForeign);
-			const pairTicker = `${resultPairASymbolLocal}-${resultPairBSymbolLocal}`;
-			
-			const ticker: {
-				a: string[],
-				b: string[],
-				c: string[],
-				v: string[],
-				p: string[],
-				t: string[],
-				l: string[],
-				h: string[],
-				o: string,
-			} = responseTickerJson.result[resultPair];
-
-			const tickerData: ExchangeTickerData = {
-				ask: Number(ticker.a[0]),
-				bid: Number(ticker.b[0]),
-				// decimals: countDecimals(ticker.c[0]),
-				decimals: Number(responseAssetPairsJson.result[resultPair].pair_decimals ?? 5),
-				high: Number(ticker.h[0]),
-				low: Number(ticker.l[0]),
-				open: Number(ticker.o),
-				price: Number(ticker.c[0]),
-				tradeCount: Number(ticker.t[0]),
-				volume: Number(ticker.v[0]),
-				vwap: Number(ticker.p[0]),
-			};
-
-			const index = returnData.tickerIndex.indexOf(pairTicker);
-			if (index < 0) {
-				returnData.ticker.push(tickerData);
-				returnData.tickerIndex.push(pairTicker);
-			} else
-				returnData.ticker[index] = tickerData;
-		}
-
-		return returnData;
-	}
-
 	async getOrder (
 		_: OrderItem,
 	) {
@@ -627,6 +522,111 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		}
 
 		return orderResponse;
+	}
+
+	async getTicker (
+		_: PairData,
+	): Promise<ExchangeApiTickerData> {
+		// TODO: fix
+		// if (_.exchange.uuid !== this.uuid)
+		// 	throw new Error(`Exchange '${this.name}'; api.Pair '${_.name}'; api.Incompatible exchange pair`);
+
+		let assetASymbolForeign = this.symbolToForeign(_.a.symbol);
+		let assetBSymbolForeign = this.symbolToForeign(_.b.symbol);
+		
+		const pair = `${_.a.symbol}-${_.b.symbol}`;
+		const pairForeign = `${assetASymbolForeign}${assetBSymbolForeign}`;
+
+		Bot.log(`Exchange '${this.name}'; api.getTicker; Pair: '${pair}'; Foreign: '${pairForeign}'`, Log.Verbose);
+
+		// Get balances on exchange
+		let responseTickerJson = await this.handle?.api(
+
+			// Type
+			'Ticker',
+
+			{
+				pair: pairForeign,
+			}
+		);
+
+		// Log raw response
+		Bot.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseTickerJson)}'`, Log.Verbose);
+
+		if (!responseTickerJson)
+			throw new Error(`Invalid 'Ticker' response`);
+
+		// Handle any ticker errors
+		this._handleError(responseTickerJson);
+
+		let returnData: ExchangeApiTickerData = {};
+		returnData.ticker = [];
+		returnData.tickerIndex = [];
+
+		// Walk all balances
+		for (let resultPair in responseTickerJson.result) {
+			// Get asset pair information on exchange
+			// TODO: Refactor for batch `pair` calls, and possible caching?
+			let responseAssetPairsJson = await this.handle?.api(
+
+				// Type
+				'AssetPairs',
+
+				{
+					pair: resultPair,
+				}
+			);
+
+			// Log raw response
+			Bot.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseAssetPairsJson)}'`, Log.Verbose);
+
+			if (!responseAssetPairsJson)
+				throw new Error(`Invalid 'AssetPairs' response`);
+
+			// Handle any errors
+			this._handleError(responseAssetPairsJson);
+
+			const resultPairASymbolForeign = resultPair.substring(0, 4);
+			const resultPairBSymbolForeign = resultPair.substring(4);
+			const resultPairASymbolLocal = this.symbolToLocal(resultPairASymbolForeign);
+			const resultPairBSymbolLocal = this.symbolToLocal(resultPairBSymbolForeign);
+			const pairTicker = `${resultPairASymbolLocal}-${resultPairBSymbolLocal}`;
+			
+			const ticker: {
+				a: string[],
+				b: string[],
+				c: string[],
+				v: string[],
+				p: string[],
+				t: string[],
+				l: string[],
+				h: string[],
+				o: string,
+			} = responseTickerJson.result[resultPair];
+
+			const tickerData: ExchangeTickerData = {
+				ask: Number(ticker.a[0]),
+				bid: Number(ticker.b[0]),
+				// decimals: countDecimals(ticker.c[0]),
+				decimals: Number(responseAssetPairsJson.result[resultPair].pair_decimals ?? 5),
+				high: Number(ticker.h[0]),
+				low: Number(ticker.l[0]),
+				open: Number(ticker.o),
+				price: Number(ticker.c[0]),
+				tradeCount: Number(ticker.t[0]),
+				volume: Number(ticker.v[0]),
+				vwap: Number(ticker.p[0]),
+			};
+
+			const index = returnData.tickerIndex.indexOf(pairTicker);
+			if (index < 0) {
+				returnData.ticker.push(tickerData);
+				returnData.tickerIndex.push(pairTicker);
+			} else
+				returnData.ticker[index] = tickerData;
+		}
+
+		return returnData;
 	}
 
 	// compat (
