@@ -10,15 +10,10 @@ Following a concept of timeframes with strategies, which look for scenarios (def
 
 ## Todo
 - In-progress
-  - JSON/YAML support for configurations
-  - Refactor `Storage` interfacing, as per `Exchange`
   - Expand storage interfacing (File, Memory, Redis, MongoDB, etc)
-  - State persistence: Timeframe results, chart datasets, orders, asset positions, etc.
-- Support for web3 exchanges
-- Unify log formatting for better data ingestion
+  - Support for Web3 exchanges
+  - Testing: Mock JSON
 - D3 UI
-- Testing: Mock JSON
-- Cleanup `Helper` structure
 
 ## Playbooks (YAML templates)
 Bot instances can be configured using YAML templates, known as playbooks, stored in the `~/playbook/<name>/<name>.yml` directory. Replace `<name>` with actual template name.
@@ -170,12 +165,12 @@ Use the `candle.` prefix to target only chart candle metrics. Available fields; 
 
 ### Examples
 
-#### Bullmarket Support Band
+#### Bull Market Support Band
 Placed within the `scenario` section of a playbook.
 
 ```yaml
 # EMA21 crossing below the SMA20
-bearishCrossBullmarketSupportBand:
+bearishCrossBullMarketSupportBand:
   analysis:
     - ema21
     - sma20
@@ -187,7 +182,7 @@ bearishCrossBullmarketSupportBand:
   windowTime: 4w
 
 # EMA21 crossing above SMA20
-bullishCrossBullmarketSupportBand:
+bullishCrossBullMarketSupportBand:
   analysis:
     - ema21
     - sma20
