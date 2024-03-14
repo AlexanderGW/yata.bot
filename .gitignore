@@ -5,4 +5,4 @@ storage/log/**/*.log
 storage/dataset/**/*.json
 storage/json/**/*.json
 playbook/*
-!playbook/eth-btc-mockup
+!playbook/sample*

@@ -1,0 +1,146 @@
+# Y:A:TA:B
+# Sample LINK/BTC bot to trade RSI crosses
+
+# Playbook schema version, required
+version: 1
+
+# Paper trading (default is `true`)
+# WARNING: Set to `false` for real transactions
+# dryrun: false
+
+# Will test the entire bredth of a chart dataset, instead of the leading edge
+# NOTE: This currently works by testing complete candles, not the evolution of candles
+# backtest: false
+
+# Analysis
+analysis:
+  rsi14:
+    config:
+      inRealField: close
+      optInTimePeriod: 14
+    type: RSI
+
+# Assets
+asset:
+  btc:
+    name: Bitcoin
+    symbol: BTC
+  link:
+    name: Chainlink
+    symbol: LINK
+
+# Charts
+chart:
+  linkBtcKraken4h:
+    pair: linkBtcKraken
+    pollTime: 5s # Five seconds
+    candleTime: 4h # Four hours
+
+# Exchanges
+exchange:
+  # paper:
+  kraken:
+    class: Kraken
+
+# Orders
+order:
+  linkBtcKrakenBuy:
+    pair: linkBtcKraken
+    side: Buy
+    type: Limit
+  linkBtcKrakenSell:
+    pair: linkBtcKraken
+    side: Sell
+    type: Limit
+
+# Pairs
+pair:
+  linkBtcKraken:
+    a: link
+    b: btc
+    exchange: kraken
+
+# Scenarios
+scenario:
+  rsi14BearishOverbought:
+    analysis:
+      - rsi14
+    condition:
+      - # Previous candle
+        - [rsi14.outReal, '>=', 70]
+      - # Latest candle
+        - [rsi14.outReal, '<=', 70]
+    # Optional extension on how far back from the leading edge, can this scenario be triggered; default is the number of condition candles above.
+    windowTime: 14d
+
+  rsi14BullishOversold:
+    analysis:
+      - rsi14
+    condition:
+      - # Previous candle
+        - [rsi14.outReal, '<=', 30]
+      - # Latest candle
+        - [rsi14.outReal, '>=', 30]
+    windowTime: 14d
+
+# Storage
+storage:
+  # file:
+  #   class: File
+
+  redis:
+    class: Redis
+
+  # mongodb:
+  #   class: MongoDB
+
+# Strategies
+strategy:
+  rsi14BearishOverbought_linkBtcKraken4h:
+    action:
+      # Optional second parameter strategy
+      # Executed whenever the scenario matches
+      # i.e. [scenario, strategy]
+      - [rsi14BearishOverbought]
+    analysis:
+      - rsi14
+    chart: linkBtcKraken4h
+  rsi14BullishOversold_linkBtcKraken4h:
+    action:
+      - [rsi14BullishOversold]
+    analysis:
+      - rsi14
+    chart: linkBtcKraken4h
+
+# Subscriptions
+subscription:
+  linkBtcKrakenBuy:
+    action:
+      - actionLinkBtcBuy # Exported function in the `.ts` file of this directory
+    chart: linkBtcKraken4h
+    match: all # Action everytime seen
+    # match: new # Default, action once when first seen
+    condition:
+      - [total, '>=', 1]
+    timeframeAny:
+      - rsi14BullishOversold_linkBtcKraken4h
+  linkBtcKrakenSell:
+    action:
+      - actionLinkBtcSell # Exported function in the `.ts` file of this directory
+    chart: linkBtcKraken4h
+    condition:
+      - [total, '>=', 1]
+    timeframeAny:
+      - rsi14BearishOverbought_linkBtcKraken4h
+
+# Timeframes
+timeframe:
+  rsi14BearishOverbought_linkBtcKraken4h:
+    intervalTime: 0 # Default, run once
+    strategy:
+      - rsi14BearishOverbought_linkBtcKraken4h
+    windowTime: 14d # Ten days
+  rsi14BullishOversold_linkBtcKraken4h:
+    strategy:
+      - rsi14BullishOversold_linkBtcKraken4h
+    windowTime: 14d # Ten days
