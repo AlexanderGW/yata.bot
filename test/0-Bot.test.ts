@@ -33,10 +33,12 @@ describe('Bot tests', () => {
             class: 'Redis',
         });
 
-        let redisSet = await redis.setItem({
+        const itemData = {
             name: 'aaa',
             uuid: 'aaa',
-        });
+        }
+
+        let redisSet = await redis.setItem('aaa', itemData);
         console.log(`redisSet: ${redisSet}`);
 
         // Redis hit
@@ -61,6 +63,6 @@ describe('Bot tests', () => {
 
         expect(getItem.uuid).to.equal(exchangeKraken.uuid);
 
-        await redis.client.disconnect();
+        await redis.disconnect();
     });
 });
