@@ -7,7 +7,7 @@
 import { appendFileSync } from 'node:fs';
 import { StorageItem } from './Storage';
 import { ChartCandleData } from './Chart';
-import { OrderData } from './Order';
+import { OrderBaseData, OrderData, OrderItem } from './Order';
 
 /**
  * Logging levels
@@ -63,6 +63,11 @@ export type BotData = {
 	itemIndex: string[],
 	itemNameIndex: string[],
 	playbook?: BotPlaybookData | undefined,
+	__devPrepareNextStateOrder: (
+		order: OrderItem,
+		result: OrderBaseData,
+	) => boolean,
+	exit: () => Promise<void>,
 	init: (
 		_: BotInitData
 	) => void,
@@ -97,6 +102,73 @@ export const Bot: BotData = {
 	 * Legacy item storage name
 	 */
 	itemNameIndex: [],
+
+	__devPrepareNextStateOrder (
+		order: OrderItem,
+		result: OrderBaseData,
+	) {
+		if (result) {
+			const orderIndex = Bot.playbook?.nextState?.orderIndex.findIndex((x: string) => x === order.name);
+	
+			if (
+				orderIndex
+				&& orderIndex >= -1
+				&& Bot.playbook?.nextState?.order[orderIndex]
+			) {
+				if (result.transactionId)
+					Bot.playbook.nextState.order[orderIndex].transactionId = [
+						...order.transactionId,
+						...result.transactionId
+					];
+	
+				// TODO: Implement validation on state `status`, `responseStatus`?
+				if (result.responseStatus)
+					Bot.playbook.nextState.order[orderIndex].responseStatus = result.responseStatus;
+				if (result.responseTime)
+					Bot.playbook.nextState.order[orderIndex].responseTime = result.responseTime;
+				if (result.referenceId)
+					Bot.playbook.nextState.order[orderIndex].referenceId = result.referenceId;
+				if (result.status)
+					Bot.playbook.nextState.order[orderIndex].status = result.status;
+
+				return true;
+			}
+		}
+
+		return false;
+	},
+
+	async exit () {
+
+		// TODO: Refactor into process exit - issue within `process.on('exit')` and `redis.setItem()` where no response/error is received.
+		if (Bot.playbook) {
+			if (Bot.playbook.nextState) {
+
+				// Persist playbook state for next iteration
+				Bot.playbook.nextState.updateTime = Date.now();
+
+				Bot.log(`Bot.playbook.nextState`, Log.Verbose);
+				console.log(Bot.playbook.nextState);
+
+				// TODO: To be refactored; If `pair` not removed, the `OrderItem.pair` will be replaced with primative object, on next run
+				Bot.playbook.nextState.order.forEach(order => {
+					delete order.pair;
+				});
+
+				const setItemResult = await Bot.playbook.storage?.setItem(
+					Bot.playbook.name,
+					Bot.playbook.nextState
+				);
+				// Bot.log(`setItemResult`, Log.Verbose);
+				// Bot.log(setItemResult, Log.Verbose);
+			}
+			
+			await Bot.playbook.storage?.disconnect();
+		}
+
+		// TODO: Process exit event/functions to be implemented/refactorered
+		process.exit(0);
+	},
 
 	/**
 	 * 
