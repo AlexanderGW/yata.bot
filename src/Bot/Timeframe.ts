@@ -10,8 +10,8 @@ export type TimeframeData = {
 	lastStartTime?: number, // Milliseconds
 	name?: string,
 	pollTime?: number, // Milliseconds
-	result: Array<Array<ChartCandleData>>,
-	resultIndex: string[],
+	result?: Array<Array<ChartCandleData>>,
+	resultIndex?: string[],
 	strategy: Array<StrategyItem>,
 	uuid?: string,
 	windowTime?: number, // Milliseconds
