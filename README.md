@@ -166,9 +166,21 @@ Use the `candle.` prefix to target only chart candle metrics. Available fields; 
 ### Examples
 
 #### Bull Market Support Band
-Placed within the `scenario` section of a playbook.
 
 ```yaml
+analysis:
+  ema21:
+    config:
+      inRealField: close
+      optInTimePeriod: 21
+    type: EMA
+  sma20:
+    config:
+      inRealField: close
+      optInTimePeriod: 20
+    type: SMA
+
+scenario:
 # EMA21 crossing below the SMA20
 bearishCrossBullMarketSupportBand:
   analysis:
