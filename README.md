@@ -1,4 +1,4 @@
-# TradeBot
+# Yet Another Technical Analysis Bot (YATAB)
 Still in very early stages of development. Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.com/package/talib).
 
 Following a concept of timeframes with strategies, which look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
@@ -167,6 +167,38 @@ scenario:
 If you define condition fields without prefixes (i.e `outReal` instead of `rsi14.outReal` for analysis named `rsi14`), the condition will be evaluated on all datasets that use that field name.
 
 Use the `candle.` prefix to target only chart candle metrics. Available fields; `close`, `closeTime`, `high`, `low`, `open`, `openTime`, `tradeCount`, `volume`, `vwap`
+
+### Examples
+
+#### Bullmarket Support Band
+Placed within the `scenario` section of a playbook.
+
+```yaml
+# EMA21 crossing below the SMA20
+bearishCrossBullmarketSupportBand:
+  analysis:
+    - ema21
+    - sma20
+  condition:
+    - # Previous candle - TIP: If this candle is removed, then the scenario could be used to indicate and trigger other strategies, while bullish, instead of a cross
+      - [ema21.outReal, '>=', sma20.outReal]
+    - # Latest candle
+      - [ema21.outReal, '<', sma20.outReal]
+  windowTime: 4w
+
+# EMA21 crossing above SMA20
+bullishCrossBullmarketSupportBand:
+  analysis:
+    - ema21
+    - sma20
+  condition:
+    - # Previous candle
+      - [ema21.outReal, '<', sma20.outReal]
+    - # Latest candle
+      - [ema21.outReal, '>=', sma20.outReal]
+  windowTime: 4w
+```
+
 
 ## Environment
 See `.env.example` for bot configuration options, and exchange API keys
