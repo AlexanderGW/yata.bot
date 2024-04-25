@@ -1,7 +1,7 @@
 import { Bot, ItemBaseData, Log } from "../Bot";
 import { StorageApiData, StorageApiInterface } from "../Storage";
 
-import { existsSync, readFileSync, mkdirSync, writeFile } from 'node:fs';
+import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 
 export class FileStorage implements StorageApiInterface {
 	name: string;
@@ -23,21 +23,26 @@ export class FileStorage implements StorageApiInterface {
 	async getItem (
 		name: string,
 	): Promise<any> {
-		let returnValue: any = false;
+		let returnValue: any = null;
 		try {
 			const storagePath = `./storage/json`;
-			const storageFile = `${storagePath}/${name}.json`;
+			if (!existsSync(storagePath)) {
+				throw new Error(`Storage '${this.name}'; Path '${storagePath}' does not exist`);
+			}
 
-			if (!existsSync(storagePath))
-				return false;
+			const storageFile = `${storagePath}/${name}.json`;
 
 			const fileContent = readFileSync(
 				storageFile,
 				'utf8',
 			);
+			if (!fileContent) {
+				throw new Error(`Storage '${this.name}'; File '${storageFile}' does not exist`);
+			}
 			returnValue = JSON.parse(fileContent);
-		} catch (error) {
-			Bot.log(`FileStorage.getItem; ${JSON.stringify(error)}`, Log.Err);
+		} catch (data) {
+			const error = data as Error;
+			Bot.log(error?.message, Log.Err);
 		}
 
 		return returnValue;
@@ -55,36 +60,30 @@ export class FileStorage implements StorageApiInterface {
 	): Promise<boolean> {
 		const storagePath = `./storage/json`;
 		const storageFile = `${storagePath}/${id}.json`;
+
+		Bot.log(`Storage '${this.name}'; setItem; '${storageFile}'`, Log.Verbose);
 		
-		// Create path
 		try {
+
+			// Create path
 			if (!existsSync(storagePath)) {
-				mkdirSync(
+				if (!mkdirSync(
 					storagePath,
 					{
 						recursive: true
 					}
-				)
+				)) {
+					throw new Error(`Failed to create path '${storagePath}'`);
+				}
 			}
-		} catch (error) {
-			Bot.log(`Failed to create path '${storagePath}'`, Log.Err);
-			return false;
-		}
 
-		// Write data
-		try {
-			writeFile(
+			// Write data
+			writeFileSync(
 				storageFile,
 				JSON.stringify(value),
-				(error) => {
-					if (error)
-						throw new Error(error.message);
-					
-					Bot.log(`FileStorage.setItem; File written: ${storageFile}`, Log.Verbose);
-				}
 			);
 		} catch (error) {
-			Bot.log(`FileStorage.setItem; writeFile; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(`Storage '${this.name}'; Failed to create item '${storagePath}'`, Log.Err);
 			return false;
 		}
 
