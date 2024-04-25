@@ -4,7 +4,7 @@ import { ExchangeApiBalanceData, ExchangeApiData, ExchangeApiInterface, Exchange
 import { OrderSide, OrderItem, OrderType, OrderStatus, OrderData, OrderBaseData } from '../Order';
 import { PairData } from '../Pair';
 
-import { existsSync, mkdirSync, writeFile } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 
 export type KrakenExchangeResponse = {
 	result: any,
@@ -818,20 +818,14 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		}
 
 		try {
-			const exchangeName = this.name;
 
-			writeFile(
+			// TODO: Refactor into a storage interface
+			writeFileSync(
 				storageFile,
 				responseJson,
-				(error) => {
-					if (error)
-						throw new Error(JSON.stringify(error));
-					
-					Bot.log(`Exchange '${exchangeName}'; api.refreshChart; Output: ${storageFile}`, Log.Verbose);
-				}
 			);
 		} catch (error) {
-			Bot.log(`Exchange '${this.name}'; api.refreshChart; writeFile; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(`Exchange '${this.name}'; api.refreshChart; writeFileSync; ${JSON.stringify(error)}`, Log.Err);
 		}
 	}
 }

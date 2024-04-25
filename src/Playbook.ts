@@ -686,4 +686,6 @@ export type ItemIndexType = {
 			}
 		}
 	}
+
+	await Bot.exit();
 })();

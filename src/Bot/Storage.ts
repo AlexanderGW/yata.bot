@@ -114,7 +114,7 @@ export class StorageItem implements StorageData, StorageBaseInterface {
 			Bot.log(error, Log.Err);
 		}
 
-		Bot.log(value, Log.Verbose);
+		// Bot.log(value, Log.Verbose);
 
 		return value;
 	}
@@ -125,10 +125,9 @@ export class StorageItem implements StorageData, StorageBaseInterface {
 		option?: StorageItemOptionData,
 	): Promise<boolean> {
 		try {
-			Bot.log(`Storage '${this.name}'; setItem; ID: '${id}'`, Log.Info);
 			const uuid = await this.api?.setItem(id, _, option);
 			if (!uuid)
-				throw new Error(`Failed to set item`);
+				throw new Error(`Failed to set item '${id}'`);
 			
 			return true;
 		} catch (error) {
@@ -154,7 +153,7 @@ export const Storage = {
 			
 		// Add API backend
 		await import(importPath).then(module => {
-			let storageApi: any = new module[className](_);
+			let storageApi: StorageApiInterface = new module[className](_);
 			if (storageApi.constructor.name !== className)
 				throw new Error(`Failed to instanciate Storage API class '${className}'`);
 

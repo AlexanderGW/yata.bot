@@ -73,7 +73,10 @@ export class RedisStorage implements StorageApiInterface {
 	): Promise<boolean> {
 		try {
 			const json = JSON.stringify(value);
-			await this.handle.set(id, json);
+			// Bot.log(`Redis.setItem`);
+			const result = await this.handle.set(id, json);
+			// Bot.log(`Redis.setItem.result`);
+			// Bot.log(result);
 			return true;
 		} catch (error) {
 			Bot.log(error, Log.Err);

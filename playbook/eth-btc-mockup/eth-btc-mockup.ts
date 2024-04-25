@@ -27,7 +27,8 @@ export const actionEthBtcBuy = (
 	// let ethBtcKrakenSell = Bot.getItem('order.ethBtcKrakenSell');
 	// console.log(ethBtcKrakenSell);
 
-	// ethBtcKrakenSell.execute(OrderAction.Create);
+	// ethBtcKrakenSell.execute(OrderAction.Open);
+	Bot.exit();
 };
 
 // Subscription `ethBtcKrakenSell` action callback
@@ -35,4 +36,5 @@ export const actionEthBtcSell = (
 	subscription: SubscriptionData
 ) => {
 	Bot.log(`actionEthBtcSell`);
+	Bot.exit();
 };

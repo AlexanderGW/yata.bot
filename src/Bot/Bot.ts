@@ -147,8 +147,8 @@ export const Bot: BotData = {
 				// Persist playbook state for next iteration
 				Bot.playbook.nextState.updateTime = Date.now();
 
-				Bot.log(`Bot.playbook.nextState`, Log.Verbose);
-				console.log(Bot.playbook.nextState);
+				// Bot.log(`Bot.playbook.nextState`, Log.Verbose);
+				// console.log(Bot.playbook.nextState);
 
 				// TODO: To be refactored; If `pair` not removed, the `OrderItem.pair` will be replaced with primative object, on next run
 				Bot.playbook.nextState.order.forEach(order => {
@@ -159,8 +159,13 @@ export const Bot: BotData = {
 					Bot.playbook.name,
 					Bot.playbook.nextState
 				);
+				if (setItemResult) {
+					Bot.log(`Updated playback state: '${Bot.playbook.name}'`);
+				}
 				// Bot.log(`setItemResult`, Log.Verbose);
 				// Bot.log(setItemResult, Log.Verbose);
+			} else {
+				Bot.log(`No next playback state`, Log.Verbose);
 			}
 			
 			await Bot.playbook.storage?.disconnect();

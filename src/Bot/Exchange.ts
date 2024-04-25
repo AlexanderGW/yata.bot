@@ -5,7 +5,7 @@ import { OrderBaseData, OrderData, OrderItem } from "./Order";
 import { PairData } from "./Pair";
 
 export type ExchangeBalanceData = {
-	[index: string]: any,
+	[index: string]: number | undefined,
 	available?: number,
 	balance?: number,
 	credit?: number,
@@ -14,7 +14,7 @@ export type ExchangeBalanceData = {
 };
 
 export type ExchangeTickerData = {
-	[index: string]: any,
+	[index: string]: number | undefined,
 	ask?: number,
 	bid?: number,
 	decimals?: number,
@@ -244,7 +244,7 @@ export const Exchange = {
 
 		// Add API backend
 		await import(importPath).then(module => {
-			let exchangeApi: any = new module[className](_);
+			let exchangeApi: ExchangeApiInterface = new module[className](_);
 			if (exchangeApi.constructor.name !== className)
 				throw new Error(`Failed to instanciate Exchange API class '${className}'`);
 
