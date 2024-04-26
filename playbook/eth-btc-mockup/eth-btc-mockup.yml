@@ -5,7 +5,7 @@ version: 1
 
 # Paper trading (default is `true`)
 # WARNING: Set to `false` for real transactions
-#dryrun: true
+# dryrun: true
 
 # Analysis
 analysis:
@@ -45,26 +45,17 @@ exchange:
 # Orders
 order:
   ethBtcKrakenBuy:
-    #dryrun: true
+    # dryrun: true
     pair: ethBtcKraken
-    position: ethBtcKraken
     side: buy
     type: market
-    # type: limit:-5%
     quantity: 10%
   ethBtcKrakenSell:
-    #dryrun: true
+    # dryrun: true
     pair: ethBtcKraken
-    position: ethBtcKraken
     side: sell
     type: market
-    # type: limit:+5%
     quantity: 10%
-
-# Positions
-position:
-  ethBtcKraken:
-    pair: ethBtcKraken
 
 # Pairs
 pair:
@@ -94,8 +85,8 @@ scenario:
 
 # Storage
 storage:
-  # file: # Default
-  #   class: File
+  file: # Default
+    class: File
   # redis: # Currently supports localhost
   #   class: Redis
 
