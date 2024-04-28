@@ -14,7 +14,7 @@ export class RedisStorage implements StorageApiInterface {
 		this.uuid = _.uuid;
 
 		this.handle = createClient({
-			url: 'redis://127.0.0.1:6379'
+			url: process.env.REDIS_URI! ?? 'redis://127.0.0.1:6379'
 		});
 
 		this.handle.on(
