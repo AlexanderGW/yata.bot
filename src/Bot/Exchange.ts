@@ -67,7 +67,9 @@ export type ExchangeApiInterface = {
 	symbolLocal?: string[],
 	symbolForeign?: string[],
 
-	getBalance: () => Promise<ExchangeApiBalanceData>;
+	getBalance: (
+		symbol?: string,
+	) => Promise<ExchangeApiBalanceData>;
 
 	// TODO: Collate all defined ticker symbols - then call en-masse?
 	// syncTickers: () => Promise<void>;

@@ -314,7 +314,12 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		return orderResponse;
 	}
 
-	async getBalance () {
+	async getBalance (
+		symbol?: string,
+	) {
+		if (symbol)
+			throw new Error(`Not implemented`);
+
 		// Get balances on exchange
 		let responseJson = await this.handle?.api(
 
@@ -324,7 +329,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.getBalance ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+		Bot.log(`Exchange '${this.name}'; api.getBalance; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 		if (!responseJson)
 			throw new Error(`Invalid response`);
@@ -410,7 +415,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.getOrder ; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+		Bot.log(`Exchange '${this.name}'; api.getOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 		if (!responseJson)
 			return orderResponse;
