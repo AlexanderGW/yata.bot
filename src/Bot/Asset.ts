@@ -32,6 +32,6 @@ export const Asset = {
 		let item = new AssetItem(_);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(uuid) as AssetItem;
 	}
 };

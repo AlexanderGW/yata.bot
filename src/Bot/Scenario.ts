@@ -708,6 +708,6 @@ export const Scenario = {
 		let item = new ScenarioItem(_);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(uuid) as ScenarioItem;
 	}
 };

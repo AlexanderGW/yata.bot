@@ -188,6 +188,6 @@ export const Strategy = {
 		let item = new StrategyItem(_);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(uuid) as StrategyItem;
 	}
 };

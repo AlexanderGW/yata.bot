@@ -166,7 +166,7 @@ export const Subscription: SubscriptionInterface = {
 									if (!result[l])
 										continue;
 
-									const strategy: StrategyItem = Bot.getItem(timeframe.resultIndex[k]);
+									const strategy: StrategyItem = Bot.getItem(timeframe.resultIndex[k]) as StrategyItem;
 									
 									const latestCandle = result[l].length - 1;
 									const datapoint = result[l][latestCandle][0].datapoint;
@@ -334,6 +334,6 @@ export const Subscription: SubscriptionInterface = {
 		this.item.push(item);
 		this.itemIndex.push(uuid);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(uuid) as SubscriptionItem;
 	}
 };

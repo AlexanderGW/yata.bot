@@ -162,7 +162,7 @@ export const Storage = {
 		}).catch(err => Bot.log(err.message, Log.Err));
 
 		let uuid = Bot.setItem(storageItem);
-		const item: StorageItem = Bot.getItem(uuid);
+		const item = Bot.getItem(uuid) as StorageItem;
 
 		Bot.log(`Storage '${item.name}'; API initialised`, Log.Verbose);
 

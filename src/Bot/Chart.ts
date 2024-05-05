@@ -316,6 +316,6 @@ export const Chart = {
 		let item = new ChartItem(_);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(uuid) as ChartItem;
 	}
 };

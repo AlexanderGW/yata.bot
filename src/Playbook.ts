@@ -5,7 +5,7 @@ import { Strategy, StrategyData, StrategyItem } from './Bot/Strategy';
 import { Asset, AssetData } from './Bot/Asset';
 import { Pair, PairData } from './Bot/Pair';
 import { Scenario, ScenarioData, ScenarioItem, scenarioConditionOperators } from './Bot/Scenario';
-import { Exchange, ExchangeData } from './Bot/Exchange';
+import { Exchange, ExchangeData, ExchangeItem } from './Bot/Exchange';
 import { Chart, ChartData, ChartItem } from './Bot/Chart';
 import { Timeframe, TimeframeData, TimeframeItem } from './Bot/Timeframe';
 import { Order, OrderData, OrderItem } from './Bot/Order';
@@ -497,7 +497,7 @@ export type ItemIndexType = {
 	}
 
 	// TEMP: Use first defined storage
-	const playbookStore: StorageItem = Bot.getItem(playbookCache.storage.item[0]);
+	const playbookStore = Bot.getItem(playbookCache.storage.item[0]) as StorageItem;
 
 	// Load the playbook state
 	Bot.playbook = {
@@ -515,7 +515,7 @@ export type ItemIndexType = {
 			for (let chartIdx in Bot.playbook.lastState.candleIndex) {
 
 				// Add dataset to chart
-				const chart: ChartItem = Bot.getItem(Bot.playbook.lastState.candleIndex[chartIdx]);
+				const chart = Bot.getItem(Bot.playbook.lastState.candleIndex[chartIdx]) as ChartItem;
 				if (chart && Bot.playbook.lastState.candle[chartIdx]) {
 					try {
 						// TODO: Set `datasetNextTime` based on tiemframe etc - currently falls back to default `BOT_CHART_DEFAULT_TOTAL_CANDLE`
@@ -531,7 +531,7 @@ export type ItemIndexType = {
 		// Prime order state, if available
 		if (Bot.playbook.lastState.orderIndex?.length) {
 			for (let orderIdx in Bot.playbook.lastState.orderIndex) {
-				const order: OrderItem = Bot.getItem(Bot.playbook.lastState.orderIndex[orderIdx]);
+				const order = Bot.getItem(Bot.playbook.lastState.orderIndex[orderIdx]) as OrderItem;
 				let orderData = Bot.playbook.lastState.order[orderIdx];
 				if (order && orderData) {
 					try {
@@ -579,7 +579,7 @@ export type ItemIndexType = {
 		// Execute all timeframes, in order they were found in the playbook
 		for (let timeframeName in playbookCache.timeframe.item) {
 			try {
-				const timeframe: TimeframeItem = Bot.getItem(playbookCache.timeframe.item[timeframeName]);
+				const timeframe = Bot.getItem(playbookCache.timeframe.item[timeframeName]) as TimeframeItem;
 
 				// Establish interval
 				if (timeframe.intervalTime)
@@ -601,10 +601,10 @@ export type ItemIndexType = {
 				});
 
 				// Collect timeframe results for playbook state
-				let timeframeSignal: any = [];
+				let timeframeSignal: number[] = [];
 
 				// Walk through timeframe strategy results
-				for (let i = 0; i <= timeframe.result.length; i++) {
+				for (let i = 0; i < timeframe.result.length; i++) { // TODO: Changed from `<=` untested
 					if (!timeframe.result[i])
 						continue;
 
@@ -613,7 +613,7 @@ export type ItemIndexType = {
 						if (!timeframe.result[i][j])
 							continue;
 
-						const strategy: StrategyItem = Bot.getItem(timeframe.resultIndex[i]);
+						const strategy = Bot.getItem(timeframe.resultIndex[i]) as StrategyItem;
 
 						// TODO: Type
 						const latestCandle = timeframe.result[i][j].length - 1;
@@ -651,7 +651,7 @@ export type ItemIndexType = {
 	// Persist next state chart data
 	if (playbookCache.chart.item.length) {
 		for (let chartIdx in playbookCache.chart.itemIndex) {
-			const chart: ChartItem = Bot.getItem(playbookCache.chart.item[chartIdx]);
+			const chart = Bot.getItem(playbookCache.chart.item[chartIdx]) as ChartItem;
 
 			// Add chart data to playbook state
 			if (chart.dataset) {
@@ -672,7 +672,7 @@ export type ItemIndexType = {
 	// Persist next state order data
 	if (playbookCache.order.item.length) {
 		for (let orderIdx in playbookCache.order.itemIndex) {
-			const order: OrderItem = Bot.getItem(playbookCache.order.item[orderIdx]);
+			const order = Bot.getItem(playbookCache.order.item[orderIdx]) as OrderItem;
 
 			const idxIndentifier = order.name ?? order.uuid;
 			let index = Bot.playbook.nextState.orderIndex.findIndex(_name => _name === idxIndentifier);
