@@ -230,7 +230,9 @@ export const Bot: BotData = {
 		// Handle input
 		let input: string = '';
 		if (_input instanceof Error) {
-			input = JSON.stringify(_input);
+			input = _input.message;
+			if (_input.stack)
+				console.error(_input.stack);
 		} else {
 			input = JSON.stringify(_input);
 		}
