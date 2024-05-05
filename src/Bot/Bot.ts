@@ -59,9 +59,11 @@ export type BotData = {
 	backtest: boolean,
 	dryrun: boolean,
 	initialized: boolean,
-	item: object[],
+	item: ItemBaseData[],
 	itemIndex: string[],
 	itemNameIndex: string[],
+	itemClass: string[],
+	itemClassIndex: number[][],
 	playbook?: BotPlaybookData | undefined,
 	__devPrepareNextStateOrder: (
 		order: OrderItem,
@@ -77,7 +79,10 @@ export type BotData = {
 	) => void,
 	getItem: (
 		uuid: string,
-	) => any,
+	) => ItemBaseData | null,
+	getItemsByClass: (
+		type: string,
+	) => ItemBaseData[] | null,
 	setItem: (
 		_: ItemBaseData,
 	) => string
@@ -102,6 +107,16 @@ export const Bot: BotData = {
 	 * Legacy item storage name
 	 */
 	itemNameIndex: [],
+
+	/**
+	 * List of item class names
+	 */
+	itemClass: [],
+
+	/**
+	 * Index against list class names, containing lists of item storage index keys
+	 */
+	itemClassIndex: [],
 
 	__devPrepareNextStateOrder (
 		order: OrderItem,
@@ -279,6 +294,27 @@ export const Bot: BotData = {
 		}
 	},
 
+	getItemsByClass (
+		type: string,
+	) {
+		let index: number = 0;
+
+		index = this.itemClass.indexOf(type);
+		if (index < 0) {
+			return null;
+		}
+
+		const itemList = this.itemClassIndex[index];
+
+		let items: ItemBaseData[] = [];
+		// for (let j = 0; j <= itemList.length; j++) {
+		// 	items.push(this.item[itemList[j]]);
+		// }
+		itemList.forEach(itemIndex => items.push(this.item[itemIndex]));
+
+		return items;
+	},
+
 	/**
 	 * Lookup and return an item from general storage
 	 * 
@@ -287,7 +323,7 @@ export const Bot: BotData = {
 	 */
 	getItem (
 		identifier: string,
-	): any {
+	) {
 		let index: number = 0;
 
 		// Lookup `uuid`
@@ -300,7 +336,7 @@ export const Bot: BotData = {
 		if (index >= 0)
 			return this.item[index];
 
-		return false;
+		return null;
 	},
 
 	/**
@@ -338,9 +374,23 @@ export const Bot: BotData = {
 			if (!_.hasOwnProperty('name') || !_.name?.length)
 				_.name = _.uuid;
 
+			const itemIndex = this.item.length;
+
 			this.item.push(_);
 			this.itemIndex.push(_.uuid);
 			this.itemNameIndex.push(_.name);
+
+			// Get item class index
+			const className: string = _.constructor.name;
+			index = this.itemClass.indexOf(className);
+			if (index < 0) {
+				index = this.itemClass.length;
+				this.itemClass.push(className);
+				this.itemClassIndex.push([]);
+			}
+
+			// Add item index to class item list
+			this.itemClassIndex[index].push(itemIndex);
 		}
 
 		return _.uuid;
