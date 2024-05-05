@@ -303,9 +303,10 @@ export const Subscription: SubscriptionInterface = {
 											item
 										);
 									} catch (error) {
+										Bot.log(error, Log.Err);
 										throw new Error(`Failed to execute subscription action '${item.action}' callback.`);
 									}
-								}).catch(err => Bot.log(err.message, Log.Err));
+								}).catch(error => Bot.log(error, Log.Err));
 							}
 						}
 

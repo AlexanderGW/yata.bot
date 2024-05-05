@@ -283,7 +283,7 @@ export const Exchange = {
 
 			exchangeItem.api = exchangeApi;
 			exchangeItem.api.uuid = exchangeItem.uuid;
-		}).catch(err => Bot.log(err.message, Log.Err));
+		}).catch(error => Bot.log(error, Log.Err));
 
 		let uuid = Bot.setItem(exchangeItem);
 		const item = Bot.getItem(uuid) as ExchangeItem;

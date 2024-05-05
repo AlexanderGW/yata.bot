@@ -40,9 +40,8 @@ export class FileStorage implements StorageApiInterface {
 				throw new Error(`Storage '${this.name}'; File '${storageFile}' does not exist`);
 			}
 			returnValue = JSON.parse(fileContent);
-		} catch (data) {
-			const error = data as Error;
-			Bot.log(error?.message, Log.Err);
+		} catch (error) {
+			Bot.log(error, Log.Err);
 		}
 
 		return returnValue;
@@ -82,11 +81,13 @@ export class FileStorage implements StorageApiInterface {
 				storageFile,
 				JSON.stringify(value),
 			);
-		} catch (error) {
-			Bot.log(`Storage '${this.name}'; Failed to create item '${storagePath}'`, Log.Err);
-			return false;
-		}
 
-		return true;
+			return true;
+		} catch (error) {
+			Bot.log(error, Log.Err);
+			Bot.log(`Storage '${this.name}'; Failed to create item '${storagePath}'`, Log.Err);
+		}
+		
+		return false;
 	}
 }

@@ -819,7 +819,8 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				)
 			}
 		} catch (error) {
-			Bot.log(`Exchange '${this.name}'; api.refreshChart; mkdirSync; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(error, Log.Err);
+			Bot.log(`Exchange '${this.name}'; api.refreshChart; mkdirSync`, Log.Err);
 		}
 
 		try {
@@ -830,7 +831,8 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				responseJson,
 			);
 		} catch (error) {
-			Bot.log(`Exchange '${this.name}'; api.refreshChart; writeFileSync; ${JSON.stringify(error)}`, Log.Err);
+			Bot.log(error, Log.Err);
+			Bot.log(`Exchange '${this.name}'; api.refreshChart; writeFileSync`, Log.Err);
 		}
 	}
 }

@@ -159,7 +159,7 @@ export const Storage = {
 				throw new Error(`Failed to instanciate Storage API class '${className}'`);
 
 			storageItem.api = storageApi;
-		}).catch(err => Bot.log(err.message, Log.Err));
+		}).catch(error => Bot.log(error, Log.Err));
 
 		let uuid = Bot.setItem(storageItem);
 		const item = Bot.getItem(uuid) as StorageItem;

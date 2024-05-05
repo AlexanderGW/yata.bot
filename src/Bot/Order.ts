@@ -193,9 +193,9 @@ export class OrderItem implements OrderData {
 			return true;
 		} catch (error) {
 			Bot.log(error, Log.Err);
-
-			return false;
 		}
+
+		return false;
 	}
 
 	async getTicker () {
@@ -204,6 +204,8 @@ export class OrderItem implements OrderData {
 		} catch (error) {
 			Bot.log(error, Log.Err);
 		}
+
+		return null;
 	}
 
 	async _getBalance (
