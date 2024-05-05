@@ -1,7 +1,7 @@
 import { Bot, Log } from "./Bot";
 import { PairItem } from "./Pair";
 import { v4 as uuidv4 } from 'uuid';
-import { ExchangeItem } from "./Exchange";
+import { ExchangeBalanceData, ExchangeItem } from "./Exchange";
 import { isPercentage, toFixedNumber } from "./Helper";
 
 export enum OrderAction {
@@ -206,20 +206,32 @@ export class OrderItem implements OrderData {
 		}
 	}
 
-	async getBalanceA () {
+	async _getBalance (
+		symbol: string,
+	): Promise<ExchangeBalanceData | null> {
 		try {
-			return await this.pair.exchange.getBalance(this.pair.a.symbol);
+			const result = await this.pair.exchange.getBalance(symbol);
+			if (!result.balance || !result.balanceIndex)
+				throw new Error(`Invalid exchange balance response`);
+
+			const index = result.balanceIndex.indexOf(symbol);
+			if (index < 0)
+				throw new Error(`Symbol not found`);
+
+			return result.balance[index];
 		} catch (error) {
 			Bot.log(error, Log.Err);
 		}
+
+		return null;
+	}
+
+	async getBalanceA () {
+		return this._getBalance(this.pair.a.symbol);
 	}
 
 	async getBalanceB () {
-		try {
-			return await this.pair.exchange.getBalance(this.pair.b.symbol);
-		} catch (error) {
-			Bot.log(error, Log.Err);
-		}
+		return this._getBalance(this.pair.b.symbol);
 	}
 
 	async setQuantity (
@@ -526,6 +538,6 @@ export const Order = {
 		let item = new OrderItem(_);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(uuid) as OrderItem;
 	},
 };
