@@ -315,10 +315,10 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 	}
 
 	async getBalance (
-		symbol?: string,
+		symbol?: string[],
 	) {
-		if (symbol)
-			throw new Error(`Not implemented`);
+		// if (!symbol)
+		// 	throw new Error(`Not implemented`);
 
 		// Get balances on exchange
 		let responseJson = await this.handle?.api(

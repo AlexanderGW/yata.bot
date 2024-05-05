@@ -2,7 +2,7 @@ import { ChartItem } from "./Chart";
 import { v4 as uuidv4 } from 'uuid';
 import { Bot, Log } from "./Bot";
 import { OrderBaseData, OrderData, OrderItem } from "./Order";
-import { PairData } from "./Pair";
+import { Pair, PairData } from "./Pair";
 
 export type ExchangeBalanceData = {
 	[index: string]: number | undefined,
@@ -68,7 +68,7 @@ export type ExchangeApiInterface = {
 	symbolForeign?: string[],
 
 	getBalance: (
-		symbol?: string,
+		symbol?: string[],
 	) => Promise<ExchangeApiBalanceData>;
 
 	// TODO: Collate all defined ticker symbols - then call en-masse?
@@ -104,7 +104,7 @@ export type ExchangeBaseInterface = {
 
 	getBalance: (
 		symbol: string,
-	) => Promise<ExchangeBalanceData>;
+	) => Promise<ExchangeApiBalanceData>;
 
 	getTicker: (
 		_: PairData,
@@ -152,31 +152,62 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 		this.uuid = _.uuid ?? uuidv4();
 	}
 
-	// TODO: return both symbol balances?
 	async getBalance (
-		symbol: string
+		symbol?: string,
 	) {
-		let assetBalanceIndex = this.balanceIndex.indexOf(symbol);
-		if (assetBalanceIndex < 0) {
-			const response = await this.api?.getBalance();
+		let symbolList: string[] = [];
+		let returnData: ExchangeApiBalanceData = {};
+		returnData.balance = [];
+		returnData.balanceIndex = [];
 
-			if (response?.balance && response?.balanceIndex) {
-				this.balance = [
-					...this.balance,
-					...response.balance
-				];
-				this.balanceIndex = [
-					...this.balanceIndex,
-					...response.balanceIndex
-				];
-			}
-
-			assetBalanceIndex = this.balanceIndex.indexOf(symbol);
-			if (assetBalanceIndex < 0)
-				throw new Error(`Exchange '${this.name}'; Symbol '${symbol}' not found.`);
+		// No symbol specified, get all defined pair symbols, for this exchange
+		if (!symbol) {
+			const pairs = Pair.getAllByExchange(this.uuid);
+			console.log(`pairs`);
+			console.log(pairs);
+			pairs?.forEach(pair => {
+				symbolList.push(pair.a.symbol);
+				symbolList.push(pair.b.symbol);
+			});
+		} else {
+			symbolList.push(symbol);
 		}
 
-		return this.balance[assetBalanceIndex];
+		// Request syumbols on the exchange API
+		const response = await this.api?.getBalance(symbolList);
+		Bot.log(`Exchange '${this.name}'; api.getBalance; Response: '${JSON.stringify(response)}'`, Log.Verbose);
+
+		if (response && response?.balance && response?.balanceIndex) {
+			for (let i = 0; i < response.balance.length; i++) {
+				const index = this.balanceIndex.indexOf(response.balanceIndex[i]);
+				if (index < 0) {
+					this.balance.push(response.balance[i]);
+					this.balanceIndex.push(response.balanceIndex[i]);
+				} else {
+					this.balance[index] = response.balance[i];
+				}
+			}
+		}
+
+		// No symbol specified, return all for exchange
+		if (!symbol) {
+			returnData.balance = this.balance;
+			returnData.balanceIndex = this.balanceIndex;
+
+			return returnData;
+		}
+
+		// Attempt to return requested symbol
+		for (let i = 0; i < symbolList.length; i++) {
+			const assetBalanceIndex = this.balanceIndex.indexOf(symbolList[i]);
+			if (assetBalanceIndex < 0)
+				throw new Error(`Exchange '${this.name}'; Symbol '${symbolList[i]}' not found.`);
+	
+			returnData.balance.push(this.balance[assetBalanceIndex]);
+			returnData.balanceIndex.push(this.balanceIndex[assetBalanceIndex]);
+		}
+
+		return returnData;
 	}
 
 	async getTicker (
@@ -251,10 +282,11 @@ export const Exchange = {
 				throw new Error(`Failed to instanciate Exchange API class '${className}'`);
 
 			exchangeItem.api = exchangeApi;
+			exchangeItem.api.uuid = exchangeItem.uuid;
 		}).catch(err => Bot.log(err.message, Log.Err));
 
 		let uuid = Bot.setItem(exchangeItem);
-		const item: ExchangeItem = Bot.getItem(uuid);
+		const item = Bot.getItem(uuid) as ExchangeItem;
 
 		Bot.log(`Exchange '${item.name}'; API initialised`, Log.Verbose);
 
