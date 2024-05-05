@@ -49,13 +49,48 @@ export class PairItem implements PairData {
 	}
 }
 
-export const Pair = {
+export type PairType = {
+	new: (
+		_: PairData,
+	) => Promise<PairItem>,
+	getAllByExchange: (
+		_: ExchangeItem | string
+	) => PairItem[] | null
+};
+
+export const Pair: PairType = {
 	async new (
 		_: PairData,
 	): Promise<PairItem> {
 		let item = new PairItem(_);
 		let uuid = Bot.setItem(item);
 
-		return Bot.getItem(uuid);
+		return Bot.getItem(uuid) as PairItem;
+	},
+
+	getAllByExchange(
+		input: ExchangeItem | string
+	) {
+		const items = Bot.getItemsByClass('PairItem') as PairItem[];
+		// console.log(`pair.items`);
+		// console.log(items);
+
+		let result: PairItem[] = [];
+		if (typeof input === 'string') {
+			const exchange = Bot.getItem(input);
+			if (!exchange) {
+				return null;
+			}
+
+			result = items?.filter(pair => pair.exchange.uuid === exchange.uuid);
+		} else {
+			// console.log(`_`);
+			// console.log(_);
+			result = items?.filter(pair => pair.exchange.uuid === input.uuid);
+		}
+		// console.log(`result`);
+		// console.log(result);
+
+		return result;
 	}
 };
