@@ -10,7 +10,7 @@ Following a concept of timeframes with strategies, which look for scenarios (def
 
 ## Todo
 - In-progress
-  - Expand storage interfacing (File, Memory, Redis, MongoDB, etc)
+  - Expand storage interfacing (File, Memory, Redis, S3, DynamoDB, MongoDB, etc)
   - Support for Web3 exchanges
   - Testing: Mock JSON
 - D3 UI
@@ -219,6 +219,12 @@ npm test
 ## Development
 ```
 tsc --watch
+```
+
+### ethers.js
+Tested using an Anvil hardfork of local mainnet RPC.
+```
+anvil --fork-url http://192.168.2.3:8545 --fork-block-number 17480237 --fork-chain-id 1 --chain-id 1
 ```
 
 ## Donations
