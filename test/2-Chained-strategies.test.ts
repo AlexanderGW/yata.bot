@@ -196,7 +196,7 @@ describe('Backtest dataset 1', () => {
                     });
                     await order1.execute();
                 } catch (error) {
-                    Bot.log(error);
+                    Bot.log(error, Log.Err);
                 }
 
                 if (subscribe.timeframeAny?.length) {
@@ -220,12 +220,12 @@ describe('Backtest dataset 1', () => {
                             if (result?.length) {
 
                                 // Get strategy from storage, by UUID
-                                let strategy: StrategyItem = Bot.getItem(uuid);
-                
+                                let strategy = Bot.getItem(uuid) as StrategyItem;
+
                                 //'${strategy.action[j][0].name}'
                                 Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
                                 Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`);
-                
+
                                 let actualTimeframeResult: number[] = [];
 
                                 for (let k = 0; k < result.length; k++) {
@@ -285,7 +285,7 @@ describe('Backtest dataset 1', () => {
         )
         
         .catch((error) => {
-            console.error(error);
+            Bot.log(error, Log.Err);
         });
 
         // Execute the timeframe

@@ -6,7 +6,7 @@ export const actionLinkBtcBuy = async (
 	subscription: SubscriptionData
 ) => {
 	Bot.log(`actionLinkBtcBuy`);
-	let linkBtcKrakenBuy: OrderItem = Bot.getItem('order:linkBtcKrakenBuy');
+	let linkBtcKrakenBuy = Bot.getItem('order:linkBtcKrakenBuy') as OrderItem;
 	linkBtcKrakenBuy.update({
 		price: '-30%',
 		quantity: '0.1%',
@@ -30,7 +30,7 @@ export const actionLinkBtcSell = async (
 	subscription: SubscriptionData
 ) => {
 	Bot.log(`actionLinkBtcSell`);
-	let linkBtcKrakenSell: OrderItem = Bot.getItem('order:linkBtcKrakenSell');
+	let linkBtcKrakenSell = Bot.getItem('order:linkBtcKrakenSell') as OrderItem;
 	linkBtcKrakenSell.update({
 		price: '30%',
 		quantity: '0.1%',

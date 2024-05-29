@@ -25,7 +25,7 @@ describe('Bot tests', () => {
 
         let getItem = Bot.getItem(returnedUuid);
 
-        expect(getItem.uuid).to.equal(exchangeKraken.uuid);
+        expect(getItem?.uuid).to.equal(exchangeKraken.uuid);
     });
 
     it('should return same item with set/get via storage interface', async () => {
@@ -61,7 +61,7 @@ describe('Bot tests', () => {
 
         let getItem = Bot.getItem(returnedUuid);
 
-        expect(getItem.uuid).to.equal(exchangeKraken.uuid);
+        expect(getItem?.uuid).to.equal(exchangeKraken.uuid);
 
         await redis.disconnect();
     });
