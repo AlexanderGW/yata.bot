@@ -3,8 +3,8 @@ Still in very early stages of development. Leveraging the `talib` library, via [
 
 Following a concept of timeframes with strategies, which look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
 
-## Update: January 2024
-- Planning a candidate release for March 2024.
+## Update: July 2024
+- Planning a candidate release for September 2024
 - YAML playbook templates to configure environments, and execute callbacks 
 - Spot trading only (could expand on this later)
 
@@ -100,12 +100,10 @@ asset:
     symbol: BTC
   usd:
     symbol: USD
-
 exchange:
   kraken:
     # More exchanges are in development; Binance, Coinbase, including decentralised options, such as Uniswap
     class: Kraken
-
 pair:
   btcUsdKraken:
     a: btc
@@ -130,30 +128,23 @@ analysis:
       inRealField: close
       optInTimePeriod: 14
     type: RSI
-
 scenario:
-
   # This is the name of the scenario, and would be used as a reference in strategies
   rsi14BullishOversold:
-
     # You'll need to define, and include any analysis below, if you're using it in the conditions below
     analysis:
       - rsi14
     condition:
-
       # Previous candle
       -
         # Condition 1 - RSI was below 30
         - [rsi14.outReal, '<', 30]
-
       # Latest candle
       -
         # Condition 1 - RSI is now 30 or higher
         - [rsi14.outReal, '>=', 30]
-
         # Condition 2 - price is also 5% higher than the previous candle close
         - [candle.close, '>=', 5%]
-
         # Or a fixed price, when the price is 42K or higher
         # - [candle.close, '>=', 42000]
 ```
@@ -161,7 +152,7 @@ scenario:
 ### Scenario condition field names
 If you define condition fields without prefixes (i.e `outReal` instead of `rsi14.outReal` for analysis named `rsi14`), the condition will be evaluated on all datasets that use that field name.
 
-Use the `candle.` prefix to target only chart candle metrics. Available fields; `close`, `closeTime`, `high`, `low`, `open`, `openTime`, `tradeCount`, `volume`, `vwap`
+Use the `candle.` prefix to target only `Chart` candle metrics. Available fields; `close`, `closeTime`, `high`, `low`, `open`, `openTime`, `tradeCount`, `volume`, `vwap`
 
 ### Examples
 
@@ -179,31 +170,29 @@ analysis:
       inRealField: close
       optInTimePeriod: 20
     type: SMA
-
 scenario:
-# EMA21 crossing below the SMA20
-bearishCrossBullMarketSupportBand:
-  analysis:
-    - ema21
-    - sma20
-  condition:
-    - # Previous candle - TIP: If this candle is removed, then the scenario could be used to indicate and trigger other strategies, while bullish, instead of a cross
-      - [ema21.outReal, '>=', sma20.outReal]
-    - # Latest candle
-      - [ema21.outReal, '<', sma20.outReal]
-  windowTime: 4w
-
-# EMA21 crossing above SMA20
-bullishCrossBullMarketSupportBand:
-  analysis:
-    - ema21
-    - sma20
-  condition:
-    - # Previous candle
-      - [ema21.outReal, '<', sma20.outReal]
-    - # Latest candle
-      - [ema21.outReal, '>=', sma20.outReal]
-  windowTime: 4w
+  # EMA21 crossing below the SMA20
+  bearishCrossBullMarketSupportBand:
+    analysis:
+      - ema21
+      - sma20
+    condition:
+      - # Previous candle - TIP: If this candle is removed, then the scenario could be used to indicate and trigger other strategies, while bullish, instead of a cross
+        - [ema21.outReal, '>=', sma20.outReal]
+      - # Latest candle
+        - [ema21.outReal, '<', sma20.outReal]
+    windowTime: 4w
+  # EMA21 crossing above SMA20
+  bullishCrossBullMarketSupportBand:
+    analysis:
+      - ema21
+      - sma20
+    condition:
+      - # Previous candle
+        - [ema21.outReal, '<', sma20.outReal]
+      - # Latest candle
+        - [ema21.outReal, '>=', sma20.outReal]
+    windowTime: 4w
 ```
 
 
