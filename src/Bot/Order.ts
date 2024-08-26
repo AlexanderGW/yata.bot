@@ -99,8 +99,11 @@ export class OrderItem implements OrderData {
 	constructor (
 		_: OrderData,
 	) {
-		if (!_.pair)
+		if (_.pair === undefined)
 			throw new Error(`Pair information is required.`);
+
+		if (_.side === undefined)
+			_.side = (Number(_?.quantityActual) <= 0) ? OrderSide.Sell : OrderSide.Buy;
 
 		this.update(_);
 
