@@ -19,9 +19,9 @@ export enum OrderSide {
 };
 
 export enum OrderStatus {
-	Cancel = 'Cancel',
-	Close = 'Close',
-	Edit = 'Edit',
+	Canceled = 'Canceled',
+	Closed = 'Closed',
+	// Edit = 'Edit',
 	Error = 'Error',
 	Expired = 'Expired',
 	Open = 'Open',
@@ -144,10 +144,10 @@ export class OrderItem implements OrderData {
 			// Order has a transaction ID
 			else {
 				switch (this.status) {
-					case OrderStatus.Close:
+					case OrderStatus.Closed:
 						return OrderAction.Close;
-					case OrderStatus.Edit:
-						return OrderAction.Edit;
+					// case OrderStatus.Edit:
+					// 	return OrderAction.Edit;
 					default:
 						return OrderAction.Get;
 				}
@@ -164,20 +164,30 @@ export class OrderItem implements OrderData {
 			let priceActual: number = 0;
 
 			const ticker = await this.pair.exchange.getTicker(this.pair);
+			// console.log(`ticker`, ticker);
+
+			const tickerPrice = Number(ticker?.price);
+			Bot.log(`Order '${this.name}'; Pair: '${this.pair.name}'; tickerPrice: '${tickerPrice}'`, Log.Verbose);
 
 			if (isPercentage(price)) {
 				const pricePercent = Number(
 					price.substring(0, price.length - 1)
 				);
 
-				const tickerPrice = Number(ticker?.price);
 				if (!tickerPrice)
 					throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.a.name}'; Price is zero`);
 
 				const priceChange = (tickerPrice / 100) * pricePercent;
 				priceActual = tickerPrice + priceChange;
-			} else
+			} else {
+
+				// Use passed `price` value
 				priceActual = Number(price);
+
+				// Fallback to ticker price
+				if (priceActual <= 0)
+					priceActual = tickerPrice;
+			}
 
 			if (priceActual <= 0)
 				throw new Error(`Order '${this.name}'; Price is zero`);
@@ -354,6 +364,8 @@ export class OrderItem implements OrderData {
 		} else {
 			quantityActual = Number(quantity);
 
+			// TODO: Liquidity validation
+
 			switch (this.side) {
 				case OrderSide.Buy:
 					if (!balanceB?.available || balanceB.available <= 0)
@@ -363,7 +375,7 @@ export class OrderItem implements OrderData {
 						throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.a.name}'; Price unknown`);
 
 					if (balanceB.available < quantityActual * ticker.price)
-						throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.a.name}'; Not enough balance`);
+						throw new Error(`Order '${this.name}'; Pair '${this.pair.name}'; Asset '${this.pair.b.name}'; Not enough balance`);
 
 					break;
 

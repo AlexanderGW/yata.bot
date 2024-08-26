@@ -222,7 +222,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			
 			// Successful
 			else {
-				orderResponse.responseStatus = OrderStatus.Close;
+				orderResponse.responseStatus = OrderStatus.Closed;
 			}
 
 			orderResponse.responseTime = Date.now();
@@ -492,10 +492,10 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			// Order status
 			switch (transaction.status) {
 				case 'canceled':
-					orderResponse.status = OrderStatus.Cancel;
+					orderResponse.status = OrderStatus.Canceled;
 					break;
 				case 'closed':
-					orderResponse.status = OrderStatus.Close;
+					orderResponse.status = OrderStatus.Closed;
 					break;
 				case 'expired':
 					orderResponse.status = OrderStatus.Expired;
