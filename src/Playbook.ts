@@ -3,12 +3,12 @@ import { parse } from 'yaml'
 import { Bot, Log } from './Bot/Bot';
 import { Strategy, StrategyData, StrategyItem } from './Bot/Strategy';
 import { Asset, AssetData } from './Bot/Asset';
-import { Pair, PairData } from './Bot/Pair';
+import { Pair, PairData, PairItem } from './Bot/Pair';
 import { Scenario, ScenarioData, ScenarioItem, scenarioConditionOperators } from './Bot/Scenario';
 import { Exchange, ExchangeData, ExchangeItem } from './Bot/Exchange';
 import { Chart, ChartData, ChartItem } from './Bot/Chart';
 import { Timeframe, TimeframeData, TimeframeItem } from './Bot/Timeframe';
-import { Order, OrderData, OrderItem } from './Bot/Order';
+import { Order, OrderAction, OrderData, OrderItem } from './Bot/Order';
 import { Analysis, AnalysisData, AnalysisItem } from './Bot/Analysis';
 import { Storage, StorageData, StorageItem } from './Bot/Storage';
 import { Subscription, SubscriptionData, SubscriptionEvent } from './Bot/Subscription';
@@ -105,7 +105,7 @@ export type ItemIndexType = {
 
 
 (async () => {
-	const playbookName = process.argv[2];
+	const playbookName = process.argv[2].toLocaleLowerCase();
 	const playbookPath = `./playbook/${playbookName}`;
 	const playbookActions = `${playbookPath}/${playbookName}.ts`;
 	const playbookStateName = `playbookState.${playbookName}`;
@@ -254,7 +254,7 @@ export type ItemIndexType = {
 					...playbookObject[typeKey][itemName] as object,
 
 					// Allow custom `name` values, or default to type scope prefixed names
-					name: playbookObject[typeKey][itemName].name ?? `${typeKey}:${itemName}`
+					name: playbookObject[typeKey][itemName].name ?? `yatab:playbook:${playbookName}:${typeKey}:${itemName}`
 				};
 
 				for (let key in finalItemData) {
@@ -685,17 +685,6 @@ export type ItemIndexType = {
 				Bot.playbook.nextState.orderIndex.push(idxIndentifier);
 			}
 		}
-	}
-
-	// TODO: TEMP - deploy ganache raffle and use that for ERC-20 testing?
-	if (playbookName === 'web3') {
-		const exchange = Bot.getItem('exchange:uniswap') as ExchangeItem;
-		const balance = await exchange.getBalance('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
-		console.log(`balance`);
-		console.log(balance);
-		const balance2 = await exchange.getBalance('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48');
-		console.log(`balance2`);
-		console.log(balance2);
 	}
 
 	await Bot.exit();
