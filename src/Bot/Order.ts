@@ -167,7 +167,7 @@ export class OrderItem implements OrderData {
 			// console.log(`ticker`, ticker);
 
 			const tickerPrice = Number(ticker?.price);
-			Bot.log(`Order '${this.name}'; Pair: '${this.pair.name}'; tickerPrice: '${tickerPrice}'`, Log.Verbose);
+			Bot.log(`Order '${this.name}'; Pair: '${this.pair.name}'; Price: '${tickerPrice}'`, Log.Verbose);
 
 			if (isPercentage(price)) {
 				const pricePercent = Number(
@@ -413,6 +413,10 @@ export class OrderItem implements OrderData {
 	async execute (
 		_?: OrderAction
 	) {
+		// No support on exchange API
+		if (!this.pair.exchange.api || !("getOrder" in this.pair.exchange.api))
+			throw new Error(`Exchange '${this.name}'; Order API not supported.`);
+
 		const priceResult = await this.setPrice(this.price);
 		if (!priceResult)
 			throw new Error(`Order '${this.name}'; Price required for this type`);
