@@ -1,19 +1,34 @@
 # Yet Another Technical Analysis Bot (YATAB)
 Still in very early stages of development. Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.com/package/talib).
 
-Following a concept of timeframes with strategies, which look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
+Following a concept of timeframes with strategies (which can be chained together with other strategies), to look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
 
-## Update: July 2024
-- Planning a candidate release for September 2024
-- YAML playbook templates to configure environments, and execute callbacks 
+## Project status
+- Planning a candidate release towards the end of 2024
+- Implemented: [YAML playbook templates](#playbooks-yaml-templates)
 - Spot trading only (could expand on this later)
+- Storage; `File`, `Memory`, `Redis`
+- Exchanges; `Paper`, `Kraken`
 
-## Todo
-- In-progress
-  - Expand storage interfacing (File, Memory, Redis, S3, DynamoDB, MongoDB, etc)
-  - Support for Web3 exchanges
-  - Testing: Mock JSON
+### In development
+- Storage; `S3`, `DynamoDB`
+- Exchanges; `UniswapV3`
+
+### Backlog
+- `talib@1.1.6`
+- Storage; `MongoDB`
+- Exchanges; `UniswapV2`, `GeckoTerminalV2`
+- Testing; Mock JSON
 - D3 UI
+- Example; chained strat; happens within a TF; 4h; 2024-09-08:17:00:00; RSI BO, ..., RSI test & bounce
+
+## Setup
+First, you'll need to install NPM packages.
+```
+npm install
+```
+
+Then choose to use [Playbooks](#playbooks-yaml-templates), or write your own scripts using the examples shown in the [Structure](#structure) section, below.
 
 ## Playbooks (YAML templates)
 Bot instances can be configured using YAML templates, known as playbooks, stored in the `~/playbook/<name>/<name>.yml` directory. Replace `<name>` with actual template name.
@@ -24,7 +39,11 @@ In this example; A `subscription` callback `action` function will be imported fr
 Without the YML file extension.
 
 ```
+# NPM
 npm run playbook <name>
+
+# PNPM
+pnpm playbook <name>
 ```
 
 See [`~/playbook/eth-btc-mockup/eth-btc-mockup.yml`](playbook/eth-btc-mockup/eth-btc-mockup.yml) for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions of ETH/BTC, on Kraken.
@@ -39,8 +58,8 @@ Items are listed in order of dependency.
 | `Asset` | Identifies individual assets across the ecosystem |
 | `Exchange` | Interface with external exchanges (i.e. `Kraken`, `Uniswap`, etc.) |
 | `Pair` | Two `Asset` items, tied to an `Exchange`, tracking balances, prices |
-| `Order` | Provides actionable context on a `Pair` |
-| `Chart` | Manage dataset information for a `Pair` |
+| `Order` | Provides trade actions on `Pair` |
+| `Chart` | Manage dataset information on `Pair` |
 | `Scenario` | A set of conditions, against `Chart` and/or `Analysis` data |
 | `Strategy` | Collection of `Scenario` against a `Chart` |
 | `Timeframe` | Collection of `Strategy` within time constraints |
@@ -381,3 +400,11 @@ const exchangeKraken = Exchange.new({
 
 ## Storage
 All created items (i.e. `Pair.new()`) are kept in a simple global storage system, identified by their own UUID. Using `Bot.setItem(object): uuid` and `Bot.getItem(uuid): object`
+
+## Web3: Fantom testnet
+Notes for EVM testing.
+
+### UniswapV2Factory `0xEE4bC42157cf65291Ba2FE839AE127e3Cc76f741`
+### UniswapV2Router02 `0xa6AD18C2aC47803E193F75c3677b14BF19B94883`
+### WFTM `0xf1277d1Ed8AD466beddF92ef448A132661956621`
+### USDT `0xc7ddde830db19bd94dd584dcac774f0be47b29d1`
