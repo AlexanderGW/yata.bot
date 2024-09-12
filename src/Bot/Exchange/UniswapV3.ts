@@ -1,18 +1,43 @@
 import { Bot, Log } from '../Bot';
-import { ChartCandleData, ChartItem } from '../Chart';
-import { ExchangeApiBalanceData, ExchangeApiData, ExchangeApiInterface, ExchangeApiTickerData, ExchangeBalanceData, ExchangeTickerData } from '../Exchange';
-import { OrderSide, OrderItem, OrderType, OrderStatus, OrderData, OrderBaseData } from '../Order';
+import {
+	ExchangeApiBalanceData,
+	ExchangeApiData,
+	ExchangeApiTickerData,
+	ExchangeBalanceData,
+	ExchangeOrderApiInterface,
+	ExchangeTickerData
+} from '../Exchange';
+import {
+	OrderSide,
+	OrderItem,
+	OrderType,
+	OrderStatus,
+	OrderData,
+	OrderBaseData
+} from '../Order';
 import { PairData } from '../Pair';
 
-import { SwapQuoter, SwapRouter, Pool, Route, computePoolAddress, FeeAmount } from '@uniswap/v3-sdk';
+import {
+	SwapQuoter,
+	SwapRouter,
+	Pool,
+	Route,
+	computePoolAddress,
+	FeeAmount,
+	SwapOptions,
+	Trade
+} from '@uniswap/v3-sdk';
 
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
 
 import Quoter from '@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json'
 
-import { Token, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
-
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import {
+	Percent,
+	Token,
+	CurrencyAmount,
+	TradeType
+} from '@uniswap/sdk-core'
 
 import * as ethers from 'ethers';
 
@@ -182,13 +207,9 @@ export type UniswapV3ExchangeResponse = {
 export type UniswapV3ExchangeInterface = {
 	token: UniswapV3ExchangeToken[],
 	tokenIndex: string[],
-	refreshChart: (
-		chart: ChartItem,
-		_: object,
-	) => void;
 }
 
-export class UniswapV3Exchange implements ExchangeApiInterface, UniswapV3ExchangeInterface {
+export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3ExchangeInterface {
 	name: string;
 	uuid: string;
 
@@ -218,6 +239,119 @@ export class UniswapV3Exchange implements ExchangeApiInterface, UniswapV3Exchang
 			process.env.WEB3_PRIVATE_KEY!,
 			this.handle.provider,
 		);
+	}
+
+	_getChainId(): number {
+		return Number(process.env.WEB3_CHAIN_ID!)
+	}
+	
+	_getUniswapTokens (
+		_: PairData,
+	): Token[] {
+		const tokenAData = this._getToken(_.a.symbol);
+		const tokenADecimals = tokenAData?.decimals ?? 0;
+	
+		const tokenBData = this._getToken(_.b.symbol);
+		const tokenBDecimals = tokenBData?.decimals ?? 0;
+	
+		const chainId = this._getChainId();
+	
+		return [
+			new Token(
+				chainId,
+				_.a.symbol,
+				tokenADecimals,
+				tokenAData?.symbol,
+				tokenAData?.name
+			),
+			new Token(
+				chainId,
+				_.b.symbol,
+				tokenBDecimals,
+				tokenBData?.symbol,
+				tokenBData?.name
+			)
+		];
+	}
+
+	async _getUniswapPool(
+		tokenA: Token,
+		tokenB: Token,
+	): Promise<Pool> {
+		const currentPoolAddress = computePoolAddress({
+			factoryAddress: POOL_FACTORY_CONTRACT_ADDRESS,
+			tokenA: tokenA,
+			tokenB: tokenB,
+			fee: FeeAmount.HIGH,
+		})
+
+		const poolContract = new ethers.Contract(
+			currentPoolAddress,
+			IUniswapV3PoolABI.abi,
+			this.handle?.provider
+		);
+
+		const [
+			token0,
+			token1,
+			fee,
+			liquidity,
+			slot0
+		]: [
+			string,
+			string,
+			ethers.BigNumberish,
+			ethers.BigNumberish,
+			[
+				ethers.BigNumberish,
+				ethers.BigNumberish,
+				ethers.BigNumberish,
+				ethers.BigNumberish,
+				ethers.BigNumberish,
+				ethers.BigNumberish,
+				boolean
+			]
+		] = await Promise.all([
+			poolContract.token0(),
+			poolContract.token1(),
+			poolContract.fee(),
+			poolContract.liquidity(),
+			poolContract.slot0(),
+		]);
+
+		return new Pool(
+			tokenA,
+			tokenB,
+			Number(fee.toString()),
+			slot0[0].toString(),
+			liquidity.toString(),
+			Number(slot0[1].toString())
+		)
+	}
+
+	async _getUniswapQuote(
+		pool: Pool,
+		amount: string,
+	): Promise<ethers.BigNumberish> {
+		try {
+			const quoterContract = new ethers.Contract(
+				QUOTER_CONTRACT_ADDRESS,
+				Quoter.abi,
+				this.handle?.provider
+			);
+	
+			return await quoterContract.quoteExactInputSingle.staticCall(
+				pool.token0.address,
+				pool.token1.address,
+				pool.fee,
+				amount,
+				// TODO: Fix quoteExactInputSingle pool.sqrtRatioX96
+				0, //pool.sqrtRatioX96
+			);
+		} catch (error) {
+			Bot.log(error, Log.Err);
+			return 0;
+		}
 	}
 
 	_getToken (
@@ -323,28 +457,90 @@ export class UniswapV3Exchange implements ExchangeApiInterface, UniswapV3Exchang
 			this.handle?.provider
 		);
 
+		// TODO: Check `allowance` before sending `approve`
+
+		// Approve
 		const transaction = await tokenContract.approve.populateTransaction(
 			SWAP_ROUTER_ADDRESS,
 			amountIn
 		);
 		// console.log(`transaction`, transaction);
 
-		const response = await this.handle?.wallet?.sendTransaction(transaction);
-		logParts.push(`Response '${JSON.stringify(response)}'`);
+		const responseApprove = await this.handle?.wallet?.sendTransaction(transaction);
+		logParts.push(`Approve response '${JSON.stringify(responseApprove)}'`);
+		console.log(`responseApprove`, responseApprove);
+
+		if (!responseApprove)
+			throw new Error(`Transaction for approval failed`);
+
+
+
+
+		// Swap
+		// TODO: Need to try on a testnet with V3 pools
+		const options: SwapOptions = {
+			slippageTolerance: new Percent(100, 10_000), // 50 bips, or 0.50%
+			deadline: Math.floor(Date.now() / 1000) + 60 * 20, // 20 minutes from the current Unix time
+			recipient: String(this.handle?.wallet?.address),
+		};
+		console.log(`options`, options);
+
+		const uncheckedTradeData = {
+			route: swapRoute,
+			inputAmount: CurrencyAmount.fromRawAmount(
+				tokenIn,
+				ethers.parseUnits(String(amountIn ?? 1), tokenIn.decimals).toString()
+			),
+			outputAmount: CurrencyAmount.fromRawAmount(
+				tokenOut,
+				amountOut.toString()
+			),
+			tradeType: TradeType.EXACT_INPUT,
+		};
+		console.log(`uncheckedTradeData`, uncheckedTradeData);
+		const uncheckedTrade = Trade.createUncheckedTrade(uncheckedTradeData);
+		console.log(`uncheckedTrade`, uncheckedTrade);
+
+		const methodParameters = SwapRouter.swapCallParameters([uncheckedTrade], options);
+		console.log(`methodParameters`, methodParameters);
+
+		const MAX_FEE_PER_GAS = 100000000000;
+		const MAX_PRIORITY_FEE_PER_GAS = 100000000000;
+		
+		const responseSwapData = {
+			data: methodParameters.calldata,
+			to: SWAP_ROUTER_ADDRESS,
+			value: methodParameters.value,
+			from: String(this.handle?.wallet?.address),
+			maxFeePerGas: MAX_FEE_PER_GAS,
+			maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
+		};
+		console.log(`responseSwapData`, responseSwapData);
+		const responseSwap = await this.handle?.wallet?.sendTransaction(responseSwapData)
+		console.log(`responseSwap`, responseSwap);
+
+		logParts.push(`Swap response '${JSON.stringify(responseSwap)}'`);
+
+
+
+
+
+		
+
 
 		Bot.log(logParts.join('; '), logType);
 
-		if (!response)
-			throw new Error(`Transaction failed`);
+		if (!responseSwap)
+			throw new Error(`Transaction for swap failed`);
 
 		orderResponse.responseStatus = OrderStatus.Pending;
 		orderResponse.responseTime = Date.now();
 		orderResponse.transactionId = orderResponse.transactionId
 		? [
 			...orderResponse.transactionId,
-			response.hash
+			responseSwap.hash
 		]
-		: [response.hash];
+		: [responseSwap.hash];
 
 		return orderResponse;
 	}
@@ -501,119 +697,6 @@ export class UniswapV3Exchange implements ExchangeApiInterface, UniswapV3Exchang
 		return orderResponse;
 	}
 
-	_getChainId(): number {
-		return Number(process.env.WEB3_CHAIN_ID!)
-	}
-	
-	_getUniswapTokens (
-		_: PairData,
-	): Token[] {
-		const tokenAData = this._getToken(_.a.symbol);
-		const tokenADecimals = tokenAData?.decimals ?? 0;
-	
-		const tokenBData = this._getToken(_.b.symbol);
-		const tokenBDecimals = tokenBData?.decimals ?? 0;
-	
-		const chainId = this._getChainId();
-	
-		return [
-			new Token(
-				chainId,
-				_.a.symbol,
-				tokenADecimals,
-				tokenAData?.symbol,
-				tokenAData?.name
-			),
-			new Token(
-				chainId,
-				_.b.symbol,
-				tokenBDecimals,
-				tokenBData?.symbol,
-				tokenBData?.name
-			)
-		];
-	}
-
-	async _getUniswapPool(
-		tokenA: Token,
-		tokenB: Token,
-	): Promise<Pool> {
-		const currentPoolAddress = computePoolAddress({
-			factoryAddress: POOL_FACTORY_CONTRACT_ADDRESS,
-			tokenA: tokenA,
-			tokenB: tokenB,
-			fee: FeeAmount.HIGH,
-		})
-
-		const poolContract = new ethers.Contract(
-			currentPoolAddress,
-			IUniswapV3PoolABI.abi,
-			this.handle?.provider
-		);
-
-		const [
-			token0,
-			token1,
-			fee,
-			liquidity,
-			slot0
-		]: [
-			string,
-			string,
-			ethers.BigNumberish,
-			ethers.BigNumberish,
-			[
-				ethers.BigNumberish,
-				ethers.BigNumberish,
-				ethers.BigNumberish,
-				ethers.BigNumberish,
-				ethers.BigNumberish,
-				ethers.BigNumberish,
-				boolean
-			]
-		] = await Promise.all([
-			poolContract.token0(),
-			poolContract.token1(),
-			poolContract.fee(),
-			poolContract.liquidity(),
-			poolContract.slot0(),
-		]);
-
-		return new Pool(
-			tokenA,
-			tokenB,
-			Number(fee.toString()),
-			slot0[0].toString(),
-			liquidity.toString(),
-			Number(slot0[1].toString())
-		)
-	}
-
-	async _getUniswapQuote(
-		pool: Pool,
-		amount: string,
-	): Promise<ethers.BigNumberish> {
-		try {
-			const quoterContract = new ethers.Contract(
-				QUOTER_CONTRACT_ADDRESS,
-				Quoter.abi,
-				this.handle?.provider
-			);
-	
-			return await quoterContract.quoteExactInputSingle.staticCall(
-				pool.token0.address,
-				pool.token1.address,
-				pool.fee,
-				amount,
-				// TODO: Fix quoteExactInputSingle pool.sqrtRatioX96
-				0, //pool.sqrtRatioX96
-			);
-		} catch (error) {
-			Bot.log(error, Log.Err);
-			return 0;
-		}
-	}
-
 	async getTicker (
 		_: PairData,
 		amount?: string | number,
@@ -671,207 +754,5 @@ export class UniswapV3Exchange implements ExchangeApiInterface, UniswapV3Exchang
 			returnData.ticker[index] = tickerData;
 
 		return returnData;
-	}
-
-	// compat (
-	// 	chart: ChartItem,
-	// ) {
-	// 	if (chart.pair.exchange.uuid === this.uuid)
-	// 		return true;
-	// 	return false;
-	// }
-
-	async syncChart (
-		chart: ChartItem,
-	) {
-		let pair: string = `${chart.pair.a.symbol}/${chart.pair.b.symbol}`;
-
-		let nextDate = new Date(chart.datasetNextTime);
-		Bot.log(`Chart '${chart.name}'; api.syncChart; From: ${nextDate.toISOString()}`);
-
-		// TODO: CoinGecko API?
-
-		// const requestOptions = {
-		// 	interval: chart.candleTime / 60000,
-		// 	pair: pair,
-		// 	since: Math.floor(chart.datasetNextTime / 1000),
-		// };
-		// // Bot.log(requestOptions, Log.Warn);
-		
-		// // UniswapV3 times are in minutes
-		// let responseJson = await this.handle?.api(
-
-		// 	// Type
-		// 	'OHLC',
-
-		// 	// Options
-		// 	requestOptions
-		// );
-
-		// // Log raw response
-		// Bot.log(`Exchange '${this.name}'; api.syncChart; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
-
-		// let etlData: ChartCandleData = {
-		// 	close: [],
-		// 	high: [],
-		// 	low: [],
-		// 	open: [],
-		// 	openTime: [],
-		// 	tradeCount: [],
-		// 	volume: [],
-		// 	vwap: [],
-		// };
-
-		// // Extract, transform, load response to chart
-		// if (!responseJson?.result?.hasOwnProperty(pair))
-		// 	throw new Error(`Invalid response from UniswapV3`);
-
-		// let pairData = responseJson.result[pair];
-
-		// let p: {
-		// 	0: number,
-		// 	1: string,
-		// 	2: string,
-		// 	3: string,
-		// 	4: string,
-		// 	5: string,
-		// 	6: string,
-		// 	7: number,
-		// };
-
-		// for (let i = 0; i < pairData.length; i++) {
-		// 	p = pairData[i];
-		// 	// Bot.log(p[0]);return;
-		// 	etlData.close?.push(p[4]);
-		// 	etlData.high?.push(p[2]);
-		// 	etlData.low?.push(p[3]);
-		// 	etlData.open?.push(p[1]);
-		// 	etlData.openTime?.push(p[0]);
-		// 	etlData.tradeCount?.push(p[7]);
-		// 	etlData.volume?.push(p[6]);
-		// 	etlData.vwap?.push(p[5]);
-		// }
-
-		// this.refreshChart(
-		// 	chart,
-		// 	etlData,
-		// );
-	}
-
-	getOrderTypeValue (
-		order: OrderItem,
-	) {
-		switch (order.type) {
-			case OrderType.Limit:
-				return 'limit';
-			case OrderType.StopLoss:
-				return 'stop-loss';
-			case OrderType.TakeProfit:
-				return 'take-profit';
-			case OrderType.Market:
-				return 'market';
-			default:
-				throw new Error(`Unknown order type '${order.type}'`);
-		}
-	}
-
-	refreshChart (
-		chart: ChartItem,
-		_: ChartCandleData
-	) {
-		chart.updateDataset(_);
-		chart.refreshDataset();
-
-		// Check if datasets need to be stored
-		if (!process.env.BOT_EXCHANGE_STORE_DATASET || process.env.BOT_EXCHANGE_STORE_DATASET !== '1')
-			return true;
-
-		const pad = (value: number) =>
-			value.toString().length == 1
-			? `0${value}`
-			: value;
-
-		const now = new Date();
-
-		const candleTimeMinutes = chart.candleTime / 60000;
-
-		const pathParts = [
-			chart.pair.exchange.name,
-			chart.pair.a.symbol + chart.pair.b.symbol,
-			now.getUTCFullYear(),
-			pad(now.getUTCMonth() + 1),
-			pad(now.getUTCDate()),
-			candleTimeMinutes,
-		];
-		const path = pathParts.join('/');
-		// Bot.log(path);
-
-		const filenameParts = [
-
-			// Exchange
-			chart.pair.exchange.name,
-
-			// Pair
-			[
-				chart.pair.a.symbol,
-				chart.pair.b.symbol,
-			].join(''),
-
-			// Candle size in minutes to save space
-			candleTimeMinutes,
-
-			// Timestamp
-			[
-				now.getUTCFullYear(),
-				pad(now.getUTCMonth() + 1),
-				pad(now.getUTCDate()),
-				pad(now.getUTCHours()),
-				pad(now.getUTCMinutes()),
-				pad(now.getUTCSeconds()),
-			].join(''),
-
-			// Number of candles
-			_.open?.length,
-		];
-
-		const filename = filenameParts.join('-');
-		// Bot.log(filename);
-
-		const responseJson = JSON.stringify(_);
-
-		const storagePath = `./storage/dataset/${path}`;
-		const storageFile = `${storagePath}/${filename}.json`;
-
-		try {
-			if (!existsSync(storagePath)) {
-				mkdirSync(
-					storagePath,
-					{
-						recursive: true
-					},
-					// (err: object) => {
-					// 	if (err)
-					// 		throw new Error(JSON.stringify(err));
-
-					// 	Bot.log(`Exchange '${this.name}'; api.refreshChart; Path created: ${storagePath}`, Log.Verbose);
-					// }
-				)
-			}
-		} catch (error) {
-			Bot.log(error, Log.Err);
-			Bot.log(`Exchange '${this.name}'; api.refreshChart; mkdirSync`, Log.Err);
-		}
-
-		try {
-
-			// TODO: Refactor into a storage interface
-			writeFileSync(
-				storageFile,
-				responseJson,
-			);
-		} catch (error) {
-			Bot.log(error, Log.Err);
-			Bot.log(`Exchange '${this.name}'; api.refreshChart; writeFileSync`, Log.Err);
-		}
 	}
 }
