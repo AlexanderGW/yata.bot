@@ -1,32 +1,43 @@
 import { Bot, Log } from '../Bot';
 import { ChartCandleData, ChartItem } from '../Chart';
-import { ExchangeApiBalanceData, ExchangeApiData, ExchangeApiInterface, ExchangeApiTickerData, ExchangeBalanceData, ExchangeTickerData } from '../Exchange';
-import { OrderSide, OrderItem, OrderType, OrderStatus, OrderData, OrderBaseData } from '../Order';
+import {
+	ExchangeApiBalanceData,
+	ExchangeApiData,
+	ExchangeApiTickerData,
+	ExchangeBalanceData,
+	ExchangeOrderApiInterface,
+	ExchangeTickerApiInterface,
+	ExchangeTickerData
+} from '../Exchange';
+import {
+	OrderSide,
+	OrderItem,
+	OrderType,
+	OrderStatus,
+	OrderData,
+	OrderBaseData
+} from '../Order';
 import { PairData } from '../Pair';
-
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 
 export type KrakenExchangeResponse = {
 	result: any,
 	error?: string[],
 };
 
-export type KrakenExchangeInterface = {
-	symbolToLocal: (
-		symbol: string,
-	) => string;
+export type KrakenExchangeInterface =
+	ExchangeOrderApiInterface
+	& ExchangeTickerApiInterface
+	& {
+		symbolToLocal: (
+			symbol: string,
+		) => string;
 
-	symbolToForeign: (
-		symbol: string,
-	) => string;
+		symbolToForeign: (
+			symbol: string,
+		) => string;
+	}
 
-	refreshChart: (
-		chart: ChartItem,
-		_: object,
-	) => void;
-}
-
-export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInterface {
+export class KrakenExchange implements KrakenExchangeInterface {
 	name: string;
 	uuid: string;
 
@@ -166,8 +177,9 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			
 			// Confirmed
 			if (responseJson.result.txid) {
-				orderResponse.responseStatus = OrderStatus.Open;
-				orderResponse.status = OrderStatus.Open;
+				// TODO: Set to whatever is returned
+				orderResponse.responseStatus = OrderStatus.Pending;
+				// orderResponse.status = OrderStatus.Open;
 				orderResponse.responseTime = Date.now();
 				orderResponse.transactionId = orderResponse.transactionId
 					? [
@@ -270,9 +282,6 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				// Transaction ID
 				txid: _.transactionId[lastTransactionIdx],
 
-				// Order direction (buy/sell)
-				type: _.side === OrderSide.Buy ? 'buy' : 'sell',
-
 				// Set order `referenceId`
 				userref: _.referenceId,
 
@@ -299,9 +308,15 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				&& responseJson.result.txid
 				&& responseJson.result.status === 'ok'
 			) {
-				orderResponse.responseStatus = OrderStatus.Open;
-				orderResponse.status = OrderStatus.Open;
+				orderResponse.responseStatus = _.status;
 				orderResponse.responseTime = Date.now();
+
+				if (responseJson.result.price)
+					orderResponse.priceActual = responseJson.result.price;
+
+				if (responseJson.result.volume)
+					orderResponse.quantityActual = responseJson.result.volume;
+
 				orderResponse.transactionId = orderResponse.transactionId
 					? [
 						...orderResponse.transactionId,
@@ -309,6 +324,9 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 					]
 					: [responseJson.result.txid];
 			}
+
+			if (responseJson.result.error_message)
+				throw new Error(responseJson.result.error_message);
 		}
 
 		return orderResponse;
@@ -383,7 +401,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		// Get latest order transaction ID index
 		let lastTransactionIdx = 0;
 		if (!_.transactionId?.length)
-			throw new Error(`Unknown transaction ID`);
+			throw new Error(`Missing transaction ID`);
 
 		lastTransactionIdx = _.transactionId.length - 1;
 
@@ -492,26 +510,26 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			// Order status
 			switch (transaction.status) {
 				case 'canceled':
-					orderResponse.status = OrderStatus.Canceled;
+					orderResponse.responseStatus = OrderStatus.Canceled;
 					break;
 				case 'closed':
-					orderResponse.status = OrderStatus.Closed;
+					orderResponse.responseStatus = OrderStatus.Closed;
 					break;
 				case 'expired':
-					orderResponse.status = OrderStatus.Expired;
+					orderResponse.responseStatus = OrderStatus.Expired;
 					break;
 				case 'open':
-					orderResponse.status = OrderStatus.Open;
+					orderResponse.responseStatus = OrderStatus.Open;
 					break;
 				case 'pending':
-					orderResponse.status = OrderStatus.Pending;
+					orderResponse.responseStatus = OrderStatus.Pending;
 					break;
 				default:
-					orderResponse.status = OrderStatus.Unknown;
+					orderResponse.responseStatus = OrderStatus.Unknown;
 					break;
 			}
 
-			orderResponse.responseStatus = orderResponse.status;
+			// orderResponse.responseStatus = orderResponse.status;
 
 			if (transaction.stopprice)
 				orderResponse.stopPrice = transaction.stopprice;
@@ -634,17 +652,9 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 		return returnData;
 	}
 
-	// compat (
-	// 	chart: ChartItem,
-	// ) {
-	// 	if (chart.pair.exchange.uuid === this.uuid)
-	// 		return true;
-	// 	return false;
-	// }
-
 	async syncChart (
 		chart: ChartItem,
-	) {
+	): Promise<ChartCandleData> {
 		let assetASymbol = this.symbolToForeign(chart.pair.a.symbol);
 		let assetBSymbol = this.symbolToForeign(chart.pair.b.symbol);
 		let pair: string = `${assetASymbol}/${assetBSymbol}`;
@@ -713,10 +723,7 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 			etlData.vwap?.push(p[5]);
 		}
 
-		this.refreshChart(
-			chart,
-			etlData,
-		);
+		return etlData;
 	}
 
 	getOrderTypeValue (
@@ -733,106 +740,6 @@ export class KrakenExchange implements ExchangeApiInterface, KrakenExchangeInter
 				return 'market';
 			default:
 				throw new Error(`Unknown order type '${order.type}'`);
-		}
-	}
-
-	refreshChart (
-		chart: ChartItem,
-		_: ChartCandleData
-	) {
-		chart.updateDataset(_);
-		chart.refreshDataset();
-
-		// Check if datasets need to be stored
-		if (!process.env.BOT_EXCHANGE_STORE_DATASET || process.env.BOT_EXCHANGE_STORE_DATASET !== '1')
-			return true;
-
-		const pad = (value: number) =>
-			value.toString().length == 1
-			? `0${value}`
-			: value;
-
-		const now = new Date();
-
-		const candleTimeMinutes = chart.candleTime / 60000;
-
-		const pathParts = [
-			chart.pair.exchange.name,
-			chart.pair.a.symbol + chart.pair.b.symbol,
-			now.getUTCFullYear(),
-			pad(now.getUTCMonth() + 1),
-			pad(now.getUTCDate()),
-			candleTimeMinutes,
-		];
-		const path = pathParts.join('/');
-		// Bot.log(path);
-
-		const filenameParts = [
-
-			// Exchange
-			chart.pair.exchange.name,
-
-			// Pair
-			[
-				chart.pair.a.symbol,
-				chart.pair.b.symbol,
-			].join(''),
-
-			// Candle size in minutes to save space
-			candleTimeMinutes,
-
-			// Timestamp
-			[
-				now.getUTCFullYear(),
-				pad(now.getUTCMonth() + 1),
-				pad(now.getUTCDate()),
-				pad(now.getUTCHours()),
-				pad(now.getUTCMinutes()),
-				pad(now.getUTCSeconds()),
-			].join(''),
-
-			// Number of candles
-			_.open?.length,
-		];
-
-		const filename = filenameParts.join('-');
-		// Bot.log(filename);
-
-		const responseJson = JSON.stringify(_);
-
-		const storagePath = `./storage/dataset/${path}`;
-		const storageFile = `${storagePath}/${filename}.json`;
-
-		try {
-			if (!existsSync(storagePath)) {
-				mkdirSync(
-					storagePath,
-					{
-						recursive: true
-					},
-					// (err: object) => {
-					// 	if (err)
-					// 		throw new Error(JSON.stringify(err));
-
-					// 	Bot.log(`Exchange '${this.name}'; api.refreshChart; Path created: ${storagePath}`, Log.Verbose);
-					// }
-				)
-			}
-		} catch (error) {
-			Bot.log(error, Log.Err);
-			Bot.log(`Exchange '${this.name}'; api.refreshChart; mkdirSync`, Log.Err);
-		}
-
-		try {
-
-			// TODO: Refactor into a storage interface
-			writeFileSync(
-				storageFile,
-				responseJson,
-			);
-		} catch (error) {
-			Bot.log(error, Log.Err);
-			Bot.log(`Exchange '${this.name}'; api.refreshChart; writeFileSync`, Log.Err);
 		}
 	}
 }

@@ -1,10 +1,10 @@
 import { Bot, Log } from '../Bot';
 import { ChartItem } from '../Chart';
-import { ExchangeApiData, ExchangeApiInterface, ExchangeApiTickerData } from '../Exchange';
+import { ExchangeApiData, ExchangeOrderApiInterface, ExchangeTickerApiInterface } from '../Exchange';
 import { OrderItem, OrderStatus, OrderData } from '../Order';
 import { PairData } from '../Pair';
 
-export class PaperExchange implements ExchangeApiInterface {
+export class PaperExchange implements ExchangeOrderApiInterface, ExchangeTickerApiInterface {
 	name: string;
 	uuid: string;
 
@@ -82,6 +82,6 @@ export class PaperExchange implements ExchangeApiInterface {
 	async syncChart (
 		chart: ChartItem,
 	) {
-		
+		return {};
 	}
 }

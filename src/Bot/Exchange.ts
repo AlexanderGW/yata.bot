@@ -1,8 +1,10 @@
-import { ChartItem } from "./Chart";
+import { ChartCandleData, ChartItem } from "./Chart";
 import { v4 as uuidv4 } from 'uuid';
 import { Bot, Log } from "./Bot";
 import { OrderBaseData, OrderData, OrderItem } from "./Order";
 import { Pair, PairData } from "./Pair";
+
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 
 export type ExchangeBalanceData = {
 	[index: string]: number | undefined,
@@ -25,11 +27,12 @@ export type ExchangeTickerData = {
 	tradeCount?: number,
 	volume?: number,
 	vwap?: number,
+	// liquidity?: number,
 };
 
 export type ExchangeData = {
 	[index: string]: any,
-	// api?: ExchangeApiInterface,
+	api: ExchangeOrderApiInterface | ExchangeTickerApiInterface | undefined,
 	balance?: ExchangeBalanceData[],
 	balanceIndex?: string[],
 	class?: string,
@@ -60,23 +63,18 @@ export type ExchangeApiData = {
 	uuid: string,
 }
 
-export type ExchangeApiInterface = {
+export type ExchangeApiBaseInterface = {
 	name: string,
 	uuid: string,
 
 	symbolLocal?: string[],
 	symbolForeign?: string[],
+}
 
+export type ExchangeOrderApiInterface = ExchangeApiBaseInterface & {
 	getBalance: (
 		symbol?: string[],
 	) => Promise<ExchangeApiBalanceData>;
-
-	// TODO: Collate all defined ticker symbols - then call en-masse?
-	// syncTickers: () => Promise<void>;
-
-	getTicker: (
-		_: PairData,
-	) => Promise<ExchangeApiTickerData>;
 
 	closeOrder: (
 		_: OrderItem,
@@ -93,39 +91,55 @@ export type ExchangeApiInterface = {
 	openOrder: (
 		_: OrderItem,
 	) => Promise<OrderBaseData>;
+}
+
+export type ExchangeTickerApiInterface = ExchangeApiBaseInterface & {
+	getTicker: (
+		_: PairData,
+		amount?: string | number,
+	) => Promise<ExchangeApiTickerData>;
 
 	syncChart: (
 		chart: ChartItem,
-	) => Promise<void>;
+	) => Promise<ChartCandleData>;
+
+	// TODO: Move to ExchangeItem
+	// refreshChart: (
+	// 	chart: ChartItem,
+	// 	_: object,
+	// ) => void;
 }
 
-export type ExchangeBaseInterface = {
-	api?: ExchangeApiInterface,
+export type ExchangeApiInterface = ExchangeOrderApiInterface | ExchangeTickerApiInterface;
+
+export type ExchangeOrderInterface = {
+	api: ExchangeOrderApiInterface,
+	balance: ExchangeBalanceData[];
+	balanceIndex: string[];
 
 	getBalance: (
 		symbol: string,
 	) => Promise<ExchangeApiBalanceData>;
+}
+
+export type ExchangeTickerInterface = {
+	api: ExchangeTickerApiInterface,
 
 	getTicker: (
 		_: PairData,
 	) => Promise<ExchangeTickerData>;
-}
 
-export type ExchangeInterface = {
 	syncChart: (
 		chart: ChartItem,
 	) => Promise<void>;
 }
 
-export type ExchangeStorageInterface = {
-	refreshChart: (
-		chart: ChartItem,
-		_: object,
-	) => void;
+export type ExchangeInterface = ExchangeOrderInterface & ExchangeTickerInterface & {
+	api: ExchangeOrderApiInterface & ExchangeTickerApiInterface,
 }
 
-export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, ExchangeInterface {
-	api?: ExchangeApiInterface;
+export class ExchangeItem implements ExchangeData {
+	api: ExchangeOrderApiInterface | ExchangeTickerApiInterface | undefined;
 	balance: ExchangeBalanceData[] = [];
 	balanceIndex: string[] = [];
 	class: string = '';
@@ -155,6 +169,11 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 	async getBalance (
 		symbol?: string,
 	) {
+		
+		// No support on exchange API
+		if (!this.api || !("getBalance" in this.api))
+			throw new Error(`Exchange '${this.name}'; Order API not supported.`);
+
 		let symbolList: string[] = [];
 		let returnData: ExchangeApiBalanceData = {};
 		returnData.balance = [];
@@ -163,8 +182,7 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 		// No symbol specified, get all defined pair symbols, for this exchange
 		if (!symbol) {
 			const pairs = Pair.getAllByExchange(this.uuid);
-			console.log(`pairs`);
-			console.log(pairs);
+			// console.log(`pairs`, pairs);
 			pairs?.forEach(pair => {
 				symbolList.push(pair.a.symbol);
 				symbolList.push(pair.b.symbol);
@@ -213,6 +231,11 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 	async getTicker (
 		_: PairData,
 	) {
+
+		// No support on exchange API
+		if (!this.api || !("getTicker" in this.api))
+			throw new Error(`Exchange '${this.name}'; Ticker API not supported.`);
+
 		if (_.exchange.uuid !== this.uuid)
 			throw new Error(`Exchange '${this.name}'; Pair '${_.name}'; Incompatible exchange pair`);
 
@@ -255,10 +278,126 @@ export class ExchangeItem implements ExchangeData, ExchangeBaseInterface, Exchan
 	) {
 		Bot.log(`Chart '${chart.name}'; syncChart`);
 
+		if (!this.api || !("syncChart" in this.api))
+			throw new Error(`Exchange '${this.name}'; Ticker API not supported.`);
+
 		if (!this.compat(chart))
 			throw new Error('This chart belongs to a different exchange.');
+		
+		const etlData = await this.api?.syncChart(chart);
 
-		await this.api?.syncChart(chart);
+		await this.refreshChart(
+			chart,
+			etlData,
+		);
+	}
+
+	async refreshChart (
+		chart: ChartItem,
+		_: ChartCandleData
+	) {
+		Bot.log(`Chart '${chart.name}'; refreshChart`);
+
+		if (!this.api || !("syncChart" in this.api))
+			throw new Error(`Exchange '${this.name}'; Ticker API not supported.`);
+
+		if (!this.compat(chart))
+			throw new Error('This chart belongs to a different exchange.');
+		
+		chart.updateDataset(_);
+		chart.refreshDataset();
+
+		// Check if datasets need to be stored
+		if (!process.env.BOT_EXCHANGE_STORE_DATASET || process.env.BOT_EXCHANGE_STORE_DATASET !== '1')
+			return true;
+
+		const pad = (value: number) =>
+			value.toString().length == 1
+			? `0${value}`
+			: value;
+
+		const now = new Date();
+
+		const candleTimeMinutes = chart.candleTime / 60000;
+
+		const pathParts = [
+			chart.pair.exchange.name,
+			chart.pair.a.symbol + chart.pair.b.symbol,
+			now.getUTCFullYear(),
+			pad(now.getUTCMonth() + 1),
+			pad(now.getUTCDate()),
+			candleTimeMinutes,
+		];
+		const path = pathParts.join('/');
+		// Bot.log(path);
+
+		const filenameParts = [
+
+			// Exchange
+			chart.pair.exchange.name,
+
+			// Pair
+			[
+				chart.pair.a.symbol,
+				chart.pair.b.symbol,
+			].join(''),
+
+			// Candle size in minutes to save space
+			candleTimeMinutes,
+
+			// Timestamp
+			[
+				now.getUTCFullYear(),
+				pad(now.getUTCMonth() + 1),
+				pad(now.getUTCDate()),
+				pad(now.getUTCHours()),
+				pad(now.getUTCMinutes()),
+				pad(now.getUTCSeconds()),
+			].join(''),
+
+			// Number of candles
+			_.open?.length,
+		];
+
+		const filename = filenameParts.join('-');
+		// Bot.log(filename);
+
+		const responseJson = JSON.stringify(_);
+
+		const storagePath = `./storage/dataset/${path}`;
+		const storageFile = `${storagePath}/${filename}.json`;
+
+		try {
+			if (!existsSync(storagePath)) {
+				mkdirSync(
+					storagePath,
+					{
+						recursive: true
+					},
+					// (err: object) => {
+					// 	if (err)
+					// 		throw new Error(JSON.stringify(err));
+
+					// 	Bot.log(`Exchange '${this.name}'; api.refreshChart; Path created: ${storagePath}`, Log.Verbose);
+					// }
+				)
+			}
+		} catch (error) {
+			Bot.log(error, Log.Err);
+			Bot.log(`Exchange '${this.name}'; api.refreshChart; mkdirSync`, Log.Err);
+		}
+
+		try {
+
+			// TODO: Refactor into a storage interface
+			writeFileSync(
+				storageFile,
+				responseJson,
+			);
+		} catch (error) {
+			Bot.log(error, Log.Err);
+			Bot.log(`Exchange '${this.name}'; api.refreshChart; writeFileSync`, Log.Err);
+		}
 	}
 }
 
