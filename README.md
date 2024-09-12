@@ -1,19 +1,34 @@
 # Yet Another Technical Analysis Bot (YATAB)
 Still in very early stages of development. Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.com/package/talib).
 
-Following a concept of timeframes with strategies, which look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
+Following a concept of timeframes with strategies (which can be chained together with other strategies), to look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
 
-## Update: January 2024
-- Planning a candidate release for March 2024.
-- YAML playbook templates to configure environments, and execute callbacks 
+## Project status
+- Planning a candidate release towards the end of 2024
+- Implemented: [YAML playbook templates](#playbooks-yaml-templates)
 - Spot trading only (could expand on this later)
+- Storage; `File`, `Memory`, `Redis`
+- Exchanges; `Paper`, `Kraken`
 
-## Todo
-- In-progress
-  - Expand storage interfacing (File, Memory, Redis, MongoDB, etc)
-  - Support for Web3 exchanges
-  - Testing: Mock JSON
+### In development
+- Storage; `S3`, `DynamoDB`
+- Exchanges; `UniswapV3`
+
+### Backlog
+- `talib@1.1.6`
+- Storage; `MongoDB`
+- Exchanges; `UniswapV2`, `GeckoTerminalV2`
+- Testing; Mock JSON
 - D3 UI
+- Example; chained strat; happens within a TF; 4h; 2024-09-08:17:00:00; RSI BO, ..., RSI test & bounce
+
+## Setup
+First, you'll need to install NPM packages.
+```
+npm install
+```
+
+Then choose to use [Playbooks](#playbooks-yaml-templates), or write your own scripts using the examples shown in the [Structure](#structure) section, below.
 
 ## Playbooks (YAML templates)
 Bot instances can be configured using YAML templates, known as playbooks, stored in the `~/playbook/<name>/<name>.yml` directory. Replace `<name>` with actual template name.
@@ -24,7 +39,11 @@ In this example; A `subscription` callback `action` function will be imported fr
 Without the YML file extension.
 
 ```
+# NPM
 npm run playbook <name>
+
+# PNPM
+pnpm playbook <name>
 ```
 
 See [`~/playbook/eth-btc-mockup/eth-btc-mockup.yml`](playbook/eth-btc-mockup/eth-btc-mockup.yml) for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions of ETH/BTC, on Kraken.
@@ -39,8 +58,8 @@ Items are listed in order of dependency.
 | `Asset` | Identifies individual assets across the ecosystem |
 | `Exchange` | Interface with external exchanges (i.e. `Kraken`, `Uniswap`, etc.) |
 | `Pair` | Two `Asset` items, tied to an `Exchange`, tracking balances, prices |
-| `Order` | Provides actionable context on a `Pair` |
-| `Chart` | Manage dataset information for a `Pair` |
+| `Order` | Provides trade actions on `Pair` |
+| `Chart` | Manage dataset information on `Pair` |
 | `Scenario` | A set of conditions, against `Chart` and/or `Analysis` data |
 | `Strategy` | Collection of `Scenario` against a `Chart` |
 | `Timeframe` | Collection of `Strategy` within time constraints |
@@ -100,12 +119,10 @@ asset:
     symbol: BTC
   usd:
     symbol: USD
-
 exchange:
   kraken:
     # More exchanges are in development; Binance, Coinbase, including decentralised options, such as Uniswap
     class: Kraken
-
 pair:
   btcUsdKraken:
     a: btc
@@ -130,30 +147,23 @@ analysis:
       inRealField: close
       optInTimePeriod: 14
     type: RSI
-
 scenario:
-
   # This is the name of the scenario, and would be used as a reference in strategies
   rsi14BullishOversold:
-
     # You'll need to define, and include any analysis below, if you're using it in the conditions below
     analysis:
       - rsi14
     condition:
-
       # Previous candle
       -
         # Condition 1 - RSI was below 30
         - [rsi14.outReal, '<', 30]
-
       # Latest candle
       -
         # Condition 1 - RSI is now 30 or higher
         - [rsi14.outReal, '>=', 30]
-
         # Condition 2 - price is also 5% higher than the previous candle close
         - [candle.close, '>=', 5%]
-
         # Or a fixed price, when the price is 42K or higher
         # - [candle.close, '>=', 42000]
 ```
@@ -161,7 +171,7 @@ scenario:
 ### Scenario condition field names
 If you define condition fields without prefixes (i.e `outReal` instead of `rsi14.outReal` for analysis named `rsi14`), the condition will be evaluated on all datasets that use that field name.
 
-Use the `candle.` prefix to target only chart candle metrics. Available fields; `close`, `closeTime`, `high`, `low`, `open`, `openTime`, `tradeCount`, `volume`, `vwap`
+Use the `candle.` prefix to target only `Chart` candle metrics. Available fields; `close`, `closeTime`, `high`, `low`, `open`, `openTime`, `tradeCount`, `volume`, `vwap`
 
 ### Examples
 
@@ -179,31 +189,29 @@ analysis:
       inRealField: close
       optInTimePeriod: 20
     type: SMA
-
 scenario:
-# EMA21 crossing below the SMA20
-bearishCrossBullMarketSupportBand:
-  analysis:
-    - ema21
-    - sma20
-  condition:
-    - # Previous candle - TIP: If this candle is removed, then the scenario could be used to indicate and trigger other strategies, while bullish, instead of a cross
-      - [ema21.outReal, '>=', sma20.outReal]
-    - # Latest candle
-      - [ema21.outReal, '<', sma20.outReal]
-  windowTime: 4w
-
-# EMA21 crossing above SMA20
-bullishCrossBullMarketSupportBand:
-  analysis:
-    - ema21
-    - sma20
-  condition:
-    - # Previous candle
-      - [ema21.outReal, '<', sma20.outReal]
-    - # Latest candle
-      - [ema21.outReal, '>=', sma20.outReal]
-  windowTime: 4w
+  # EMA21 crossing below the SMA20
+  bearishCrossBullMarketSupportBand:
+    analysis:
+      - ema21
+      - sma20
+    condition:
+      - # Previous candle - TIP: If this candle is removed, then the scenario could be used to indicate and trigger other strategies, while bullish, instead of a cross
+        - [ema21.outReal, '>=', sma20.outReal]
+      - # Latest candle
+        - [ema21.outReal, '<', sma20.outReal]
+    windowTime: 4w
+  # EMA21 crossing above SMA20
+  bullishCrossBullMarketSupportBand:
+    analysis:
+      - ema21
+      - sma20
+    condition:
+      - # Previous candle
+        - [ema21.outReal, '<', sma20.outReal]
+      - # Latest candle
+        - [ema21.outReal, '>=', sma20.outReal]
+    windowTime: 4w
 ```
 
 
@@ -219,6 +227,12 @@ npm test
 ## Development
 ```
 tsc --watch
+```
+
+### ethers.js
+Tested using an Anvil hardfork of local mainnet RPC.
+```
+anvil --fork-url http://192.168.2.3:8545 --fork-block-number 17480237 --fork-chain-id 1 --chain-id 1
 ```
 
 ## Donations
@@ -386,3 +400,11 @@ const exchangeKraken = Exchange.new({
 
 ## Storage
 All created items (i.e. `Pair.new()`) are kept in a simple global storage system, identified by their own UUID. Using `Bot.setItem(object): uuid` and `Bot.getItem(uuid): object`
+
+## Web3: Fantom testnet
+Notes for EVM testing.
+
+### UniswapV2Factory `0xEE4bC42157cf65291Ba2FE839AE127e3Cc76f741`
+### UniswapV2Router02 `0xa6AD18C2aC47803E193F75c3677b14BF19B94883`
+### WFTM `0xf1277d1Ed8AD466beddF92ef448A132661956621`
+### USDT `0xc7ddde830db19bd94dd584dcac774f0be47b29d1`

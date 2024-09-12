@@ -1,3 +1,8 @@
+export type ParallelArray = {
+	data: any[],
+	dataIndex: string[],
+};
+
 export const isPercentage = (
 	value: unknown
 ): boolean => {
@@ -23,4 +28,17 @@ export const toFixedNumber = (
 ): number => {
 	const pow = Math.pow(base ?? 10, digits);
   return Math.round(num*pow) / pow;
+};
+
+// Unless miantains type context, not valuable.
+export const indexLookup = (
+	value: string,
+	index: string[],
+	data: any[],
+): any | null => {
+	const pos = index.indexOf(value);
+	if (pos < 0)
+		return null;
+
+	return data[pos];
 };

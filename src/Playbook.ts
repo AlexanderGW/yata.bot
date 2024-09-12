@@ -3,12 +3,12 @@ import { parse } from 'yaml'
 import { Bot, Log } from './Bot/Bot';
 import { Strategy, StrategyData, StrategyItem } from './Bot/Strategy';
 import { Asset, AssetData } from './Bot/Asset';
-import { Pair, PairData } from './Bot/Pair';
+import { Pair, PairData, PairItem } from './Bot/Pair';
 import { Scenario, ScenarioData, ScenarioItem, scenarioConditionOperators } from './Bot/Scenario';
 import { Exchange, ExchangeData, ExchangeItem } from './Bot/Exchange';
 import { Chart, ChartData, ChartItem } from './Bot/Chart';
 import { Timeframe, TimeframeData, TimeframeItem } from './Bot/Timeframe';
-import { Order, OrderData, OrderItem } from './Bot/Order';
+import { Order, OrderAction, OrderData, OrderItem } from './Bot/Order';
 import { Analysis, AnalysisData, AnalysisItem } from './Bot/Analysis';
 import { Storage, StorageData, StorageItem } from './Bot/Storage';
 import { Subscription, SubscriptionData, SubscriptionEvent } from './Bot/Subscription';
@@ -105,7 +105,7 @@ export type ItemIndexType = {
 
 
 (async () => {
-	const playbookName = process.argv[2];
+	const playbookName = process.argv[2].toLocaleLowerCase();
 	const playbookPath = `./playbook/${playbookName}`;
 	const playbookActions = `${playbookPath}/${playbookName}.ts`;
 	const playbookStateName = `playbookState.${playbookName}`;
@@ -254,7 +254,7 @@ export type ItemIndexType = {
 					...playbookObject[typeKey][itemName] as object,
 
 					// Allow custom `name` values, or default to type scope prefixed names
-					name: playbookObject[typeKey][itemName].name ?? `${typeKey}:${itemName}`
+					name: playbookObject[typeKey][itemName].name ?? `yatab:playbook:${playbookName}:${typeKey}:${itemName}`
 				};
 
 				for (let key in finalItemData) {

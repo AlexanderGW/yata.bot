@@ -8,6 +8,7 @@ import { appendFileSync } from 'node:fs';
 import { StorageItem } from './Storage';
 import { ChartCandleData } from './Chart';
 import { OrderBaseData, OrderData, OrderItem } from './Order';
+import { ParallelArray } from './Helper';
 
 /**
  * Logging levels
@@ -19,10 +20,7 @@ export enum Log {
 	Verbose = 0,
 }
 
-export type BotStateDataIndexType = {
-	data: Array<any>,
-	dataIndex: Array<string>,
-};
+export type BotStateDataIndexType = ParallelArray;
 
 export type BotStateType = {
 	candle: Array<ChartCandleData>,

@@ -1,10 +1,10 @@
 import { Bot, Log } from '../Bot';
 import { ChartItem } from '../Chart';
-import { ExchangeApiData, ExchangeApiInterface, ExchangeApiTickerData } from '../Exchange';
+import { ExchangeApiData, ExchangeOrderApiInterface, ExchangeTickerApiInterface } from '../Exchange';
 import { OrderItem, OrderStatus, OrderData } from '../Order';
 import { PairData } from '../Pair';
 
-export class PaperExchange implements ExchangeApiInterface {
+export class PaperExchange implements ExchangeOrderApiInterface, ExchangeTickerApiInterface {
 	name: string;
 	uuid: string;
 
@@ -19,7 +19,8 @@ export class PaperExchange implements ExchangeApiInterface {
 		_: OrderItem,
 	) {
 		const orderResponse: OrderData = {
-			status: OrderStatus.Close,
+			status: OrderStatus.Closed,
+			responseStatus: OrderStatus.Closed,
 			responseTime: Date.now(),
 		};
 		Bot.log(`Exchange '${this.name}'; Order '${_.name}'; Close`);
@@ -31,6 +32,7 @@ export class PaperExchange implements ExchangeApiInterface {
 	) {
 		const orderResponse: OrderData = {
 			status: OrderStatus.Open,
+			responseStatus: OrderStatus.Open,
 			responseTime: Date.now(),
 		};
 		Bot.log(`Exchange '${this.name}'; Order '${_.name}'; Open`);
@@ -41,7 +43,8 @@ export class PaperExchange implements ExchangeApiInterface {
 		_: OrderItem,
 	) {
 		const orderResponse: OrderData = {
-			status: OrderStatus.Edit,
+			status: OrderStatus.Open,
+			responseStatus: OrderStatus.Open,
 			responseTime: Date.now(),
 		};
 		Bot.log(`Exchange '${this.name}'; Order '${_.name}'; Edit`);
@@ -60,6 +63,7 @@ export class PaperExchange implements ExchangeApiInterface {
 	) {
 		const orderResponse: OrderData = {
 			status: OrderStatus.Unknown,
+			responseStatus: OrderStatus.Unknown,
 			responseTime: Date.now(),
 		};
 		Bot.log(`Exchange '${this.name}'; Order '${_.name}'; Get`);
@@ -78,6 +82,6 @@ export class PaperExchange implements ExchangeApiInterface {
 	async syncChart (
 		chart: ChartItem,
 	) {
-		
+		return {};
 	}
 }
