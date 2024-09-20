@@ -70,15 +70,23 @@ export class GeckoTerminalV2Exchange extends Web3 implements GeckoTerminalV2Exch
 		}
 	}
 
+	getTier() {
+		return {
+			requestWindow: 60000,
+			maxRequests: 30,
+		};
+	}
+
 	async api(
 		path: string,
 	): Promise<GeckoTerminalV2ExchangeResponse> {
+		const tier = this.getTier();
 
 		// Respect 30 requests per minute on free API.
-		if (this.requests >= 30) {
+		if (this.requests >= tier.maxRequests) {
 			const currentWindow = Date.now() - this.requestWindow;
-			if (currentWindow < 60000)
-				throw new Error(`API limit reached, please wait ${Math.ceil(60000 - currentWindow / 1000)} seconds.`);
+			if (currentWindow < tier.requestWindow)
+				throw new Error(`API limit reached, please wait ${Math.ceil(tier.requestWindow - currentWindow / 1000)} seconds.`);
 
 			this.requestWindow = Date.now();
 			this.requests = 0;
@@ -208,16 +216,10 @@ export class GeckoTerminalV2Exchange extends Web3 implements GeckoTerminalV2Exch
 			tokenA,
 			tokenB
 		);
-		Bot.log(`Pool.TokenA`, Log.Warn);
-		Bot.log(pool.token0.address, Log.Warn);
-		Bot.log(`Pool.TokenB`, Log.Verbose);
-		Bot.log(pool.token1.address, Log.Warn);
-
-		const token = pool.token0.address === tokenA.address ? 'base' : 'quote';
-		Bot.log(`token ${token}`, Log.Warn);
 
 		const timeframe = pos < 3 ? 'minute' : pos < 6 ? 'hour' : 'day';
 		const aggregate = chart.candleTime / (pos < 3 ? 60000 : pos < 6 ? 3600000 : 86400000);
+		const token = pool.token0.address === tokenA.address ? 'base' : 'quote';
 		
 		let responseJson = await this.api(
 			`/networks/${network}/pools/${poolAddress}/ohlcv/${timeframe}` +
