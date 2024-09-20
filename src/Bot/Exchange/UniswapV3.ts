@@ -22,13 +22,9 @@ import {
 	SwapRouter,
 	Pool,
 	Route,
-	computePoolAddress,
-	FeeAmount,
 	SwapOptions,
 	Trade
 } from '@uniswap/v3-sdk';
-
-import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
 
 import Quoter from '@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json'
 
@@ -46,6 +42,8 @@ import {
   TransactionReceipt,
   Web3ContractContext,
 } from 'ethereum-abi-types-generator';
+
+import { Web3, erc20Abi } from '../../Helper/Web3';
 
 export interface CallOptions {
   from?: string;
@@ -168,168 +166,25 @@ export interface IQuoter {
   ): MethodReturnContext;
 }
 
-const POOL_FACTORY_CONTRACT_ADDRESS =
-  '0x1F98431c8aD98523631AE4a59f267346ea31F984'
-const QUOTER_CONTRACT_ADDRESS =
-  '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
-const SWAP_ROUTER_ADDRESS =
-	'0xE592427A0AEce92De3Edee1F18E0157C05861564';
+export const QUOTER_CONTRACT_ADDRESS =
+ '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
 
-// ERC-20 Token Contract ABI
-const erc20Abi = [
-	'function name() public view returns (string)',
-	'function symbol() public view returns (string)',
-	'function decimals() public view returns (uint8)',
-	'function balanceOf(address owner) view returns (uint256)',
-	'function approve(address _spender, uint256 _value) public returns (bool success)',
-	'function allowance(address _owner, address _spender) public view returns (uint256 remaining)'
-];
-
-export type UniswapV3ExchangeToken = {
-	balance?: number,
-	decimals?: number,
-	name?: string,
-	symbol?: string,
-}
-
-export type UniswapV3ExchangeHandle = {
-	address?: string,
-	provider?: ethers.JsonRpcProvider,
-	router?: SwapRouter,
-	wallet?: ethers.Wallet,
-}
+export const SWAP_ROUTER_ADDRESS =
+ '0xE592427A0AEce92De3Edee1F18E0157C05861564';
 
 export type UniswapV3ExchangeResponse = {
 	result: any,
 	error?: string[],
 };
 
-export type UniswapV3ExchangeInterface = {
-	token: UniswapV3ExchangeToken[],
-	tokenIndex: string[],
-}
-
-export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3ExchangeInterface {
-	name: string;
-	uuid: string;
-
-	token: UniswapV3ExchangeToken[];
-	tokenIndex: string[];
-
-	handle?: UniswapV3ExchangeHandle;
-
+export class UniswapV3Exchange extends Web3 implements ExchangeOrderApiInterface {
 	constructor (
 		_: ExchangeApiData,
 	) {
-		this.name = _.name;
-		this.uuid = _.uuid;
-
-		this.token = [];
-		this.tokenIndex = [];
-
-		console.log(`ExchangeApiData`);
-		console.log(_);
-
-		this.handle = {
-			address: process.env.WEB3_ADDRESS!,
-			provider: new ethers.JsonRpcProvider(process.env.WEB3_PROVIDER_URI!),
-		};
-
-		this.handle.wallet = new ethers.Wallet(
-			process.env.WEB3_PRIVATE_KEY!,
-			this.handle.provider,
-		);
+		super(_);
 	}
 
-	_getChainId(): number {
-		return Number(process.env.WEB3_CHAIN_ID!)
-	}
-	
-	_getUniswapTokens (
-		_: PairData,
-	): Token[] {
-		const tokenAData = this._getToken(_.a.symbol);
-		const tokenADecimals = tokenAData?.decimals ?? 0;
-	
-		const tokenBData = this._getToken(_.b.symbol);
-		const tokenBDecimals = tokenBData?.decimals ?? 0;
-	
-		const chainId = this._getChainId();
-	
-		return [
-			new Token(
-				chainId,
-				_.a.symbol,
-				tokenADecimals,
-				tokenAData?.symbol,
-				tokenAData?.name
-			),
-			new Token(
-				chainId,
-				_.b.symbol,
-				tokenBDecimals,
-				tokenBData?.symbol,
-				tokenBData?.name
-			)
-		];
-	}
-
-	async _getUniswapPool(
-		tokenA: Token,
-		tokenB: Token,
-	): Promise<Pool> {
-		const currentPoolAddress = computePoolAddress({
-			factoryAddress: POOL_FACTORY_CONTRACT_ADDRESS,
-			tokenA: tokenA,
-			tokenB: tokenB,
-			fee: FeeAmount.HIGH,
-		})
-
-		const poolContract = new ethers.Contract(
-			currentPoolAddress,
-			IUniswapV3PoolABI.abi,
-			this.handle?.provider
-		);
-
-		const [
-			token0,
-			token1,
-			fee,
-			liquidity,
-			slot0
-		]: [
-			string,
-			string,
-			ethers.BigNumberish,
-			ethers.BigNumberish,
-			[
-				ethers.BigNumberish,
-				ethers.BigNumberish,
-				ethers.BigNumberish,
-				ethers.BigNumberish,
-				ethers.BigNumberish,
-				ethers.BigNumberish,
-				boolean
-			]
-		] = await Promise.all([
-			poolContract.token0(),
-			poolContract.token1(),
-			poolContract.fee(),
-			poolContract.liquidity(),
-			poolContract.slot0(),
-		]);
-
-		return new Pool(
-			tokenA,
-			tokenB,
-			Number(fee.toString()),
-			slot0[0].toString(),
-			liquidity.toString(),
-			Number(slot0[1].toString())
-		)
-	}
-
-	async _getUniswapQuote(
+	async getQuote(
 		pool: Pool,
 		amount: string,
 	): Promise<ethers.BigNumberish> {
@@ -354,17 +209,7 @@ export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3Ex
 		}
 	}
 
-	_getToken (
-		address: string
-	) {
-		const index = this.tokenIndex.indexOf(address);
-		if (index < 0)
-			return null;
-
-		return this.token[index];
-	}
-
-	_handleError (
+	handleError (
 		_: ethers.ethers.TransactionReceipt
 	) {
 
@@ -387,9 +232,15 @@ export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3Ex
 		logParts.push(`Exchange '${this.name}'`);
 		logParts.push(`api.openOrder`);
 
-		const [tokenA, tokenB] = this._getUniswapTokens(_.pair);
+		const [tokenA, tokenB] = await this.getErc20FromPair(_.pair);
 
-		const pool = await this._getUniswapPool(
+		const poolAddress = this.getPoolAddress(
+			tokenA,
+			tokenB
+		);
+
+		const pool = await this.getPool(
+			poolAddress,
 			tokenA,
 			tokenB
 		);
@@ -468,7 +319,7 @@ export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3Ex
 
 		const responseApprove = await this.handle?.wallet?.sendTransaction(transaction);
 		logParts.push(`Approve response '${JSON.stringify(responseApprove)}'`);
-		console.log(`responseApprove`, responseApprove);
+		// console.log(`responseApprove`, responseApprove);
 
 		if (!responseApprove)
 			throw new Error(`Transaction for approval failed`);
@@ -483,7 +334,7 @@ export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3Ex
 			deadline: Math.floor(Date.now() / 1000) + 60 * 20, // 20 minutes from the current Unix time
 			recipient: String(this.handle?.wallet?.address),
 		};
-		console.log(`options`, options);
+		// console.log(`options`, options);
 
 		const uncheckedTradeData = {
 			route: swapRoute,
@@ -500,6 +351,7 @@ export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3Ex
 		console.log(`uncheckedTradeData`, uncheckedTradeData);
 		const uncheckedTrade = Trade.createUncheckedTrade(uncheckedTradeData);
 		console.log(`uncheckedTrade`, uncheckedTrade);
+		// console.log(`uncheckedTrade.pools`, uncheckedTrade.route.pools[0]);
 
 		const methodParameters = SwapRouter.swapCallParameters([uncheckedTrade], options);
 		console.log(`methodParameters`, methodParameters);
@@ -576,14 +428,6 @@ export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3Ex
 			// Request each token
 			for(let i = 0; i < addressList.length; i++) {
 				
-				// Connect to the token contract
-				const tokenContract = new ethers.Contract(
-					addressList[i],
-					erc20Abi,
-					// IERC20Minimal.abi,
-					this.handle?.provider
-				);
-
 				// Build log message
 				let logParts: string[] = [];
 				let logType: Log = Log.Verbose;
@@ -591,33 +435,22 @@ export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3Ex
 				logParts.push(`Exchange '${this.name}'`);
 
 				// Lookup existing token data
-				let tokenData = this._getToken(addressList[i]);
-				if (!tokenData) {
+				let tokenData = await this.getErc20(addressList[i]);
+				logParts.push(`Name '${tokenData.name}'`);
+				logParts.push(`Symbol '${tokenData.symbol}'`);
+				logParts.push(`Decimals '${tokenData.decimals}'`);
 
-					// Get token name
-					const name = await tokenContract.name();
-					logParts.push(`Name '${name}'`);
-
-					// Get token symbol
-					const symbol = await tokenContract.symbol();
-					logParts.push(`Symbol '${symbol}'`);
-
-					// Get token decimals
-					const decimals = Number(await tokenContract.decimals());
-					logParts.push(`Decimals '${decimals}'`);
-
-					tokenData = {
-						name,
-						symbol,
-						decimals,
-					};
-				}
+				const tokenContract = new ethers.Contract(
+					addressList[i],
+					erc20Abi,
+					this.handle?.provider
+				);
 
 				// Query token contract for address balance
 				const rawBalance = await tokenContract.balanceOf(this.handle?.address);
 
 				const balance = Number(ethers.formatUnits(rawBalance, tokenData.decimals));
-				// logParts.push(`Balance '${balance}'`);
+				logParts.push(`Balance '${balance}'`);
 
 				// Update return data with balance information
 				const balanceData: ExchangeBalanceData = {
@@ -646,7 +479,7 @@ export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3Ex
 				Bot.log(logParts.join('; '), logType);
 			}
 		} catch(error) {
-			console.error(error);
+			Bot.log(error, Log.Err);
 		};
 
 		return returnData;
@@ -682,7 +515,7 @@ export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3Ex
 			Bot.log(`Exchange '${this.name}'; api.getOrder; Receipt: '${JSON.stringify(receipt)}'`, Log.Verbose);
 
 			// Handle any errors
-			// this._handleError(receipt);
+			// this.handleError(receipt);
 
 			// TODO: Verify the statuses on types
 			orderResponse.responseStatus =
@@ -719,19 +552,25 @@ export class UniswapV3Exchange implements ExchangeOrderApiInterface, UniswapV3Ex
 		const pairTicker = `${_.a.symbol}-${_.b.symbol}`;
 		logParts.push(`Pair: '${pairTicker}'`);
 		
-		const [tokenA, tokenB] = this._getUniswapTokens(_);
+		const [tokenA, tokenB] = await this.getErc20FromPair(_);
 
 		const amountIn = ethers.parseUnits(String(amount ?? 1), tokenA.decimals).toString();
 		const amountInReal = Number(ethers.formatUnits(amountIn, tokenA?.decimals));
 		logParts.push(`Amount In: '${amountInReal}'`);
 
-		const pool = await this._getUniswapPool(
+		const poolAddress = this.getPoolAddress(
+			tokenA,
+			tokenB
+		);
+
+		const pool = await this.getPool(
+			poolAddress,
 			tokenA,
 			tokenB
 		);
 		// console.log(`pool`, pool);
 
-		const amountOut = await this._getUniswapQuote(
+		const amountOut = await this.getQuote(
 			pool,
 			amountIn
 		);
