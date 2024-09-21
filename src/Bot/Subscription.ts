@@ -316,7 +316,14 @@ export const Subscription: SubscriptionInterface = {
 
 						// Execute callback
 						if (item.actionCallback) {
-							await item.actionCallback(item);
+							try {
+								totalCallbacks++;
+
+								await item.actionCallback(item);
+							} catch (error) {
+								Bot.log(error, Log.Err);
+								throw new Error(`Failed to execute action callback '${item.actionCallback}'.`);
+							}
 						}
 					}
 				}
