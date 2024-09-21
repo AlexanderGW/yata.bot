@@ -12,15 +12,15 @@ Following a concept of timeframes with strategies (which can be chained together
 
 ### In development
 - Storage; `S3`, `DynamoDB`
-- Exchanges; `UniswapV3`
+- Exchanges; `UniswapV3`, `GeckoTerminalV2`
 
 ### Backlog
 - `talib@1.1.6`
 - Storage; `MongoDB`
-- Exchanges; `UniswapV2`, `GeckoTerminalV2`
+- Exchanges; `UniswapV2`
 - Testing; Mock JSON
 - D3 UI
-- Example; chained strat; happens within a TF; 4h; 2024-09-08:17:00:00; RSI BO, ..., RSI test & bounce
+- Playbooks, helpers repo: `repo.yata.bot`
 
 ## Setup
 First, you'll need to install NPM packages.
