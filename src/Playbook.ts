@@ -401,7 +401,7 @@ export type ItemIndexType = {
 										value[valueIdx][setIdx][0].lastIndexOf('.') > 0
 										&& value[valueIdx][setIdx][0].indexOf('candle.') !== 0
 									) {
-										value[valueIdx][setIdx][0] = `analysis:${value[valueIdx][setIdx][0]}`;
+										value[valueIdx][setIdx][0] = `yatab:playbook:${playbookName}:analysis:${value[valueIdx][setIdx][0]}`;
 									}
 									// If `valueB` condition field contains a full-stop (.), and isn't prefixed `candle.`, add the `analysis` prefix, for Playbook name prefixing compatibility.
 									if (
@@ -409,7 +409,7 @@ export type ItemIndexType = {
 										&& value[valueIdx][setIdx][2].lastIndexOf('.') > 0
 										&& value[valueIdx][setIdx][2].indexOf('candle.') !== 0
 									) {
-										value[valueIdx][setIdx][2] = `analysis:${value[valueIdx][setIdx][2]}`;
+										value[valueIdx][setIdx][2] = `yatab:playbook:${playbookName}:analysis:${value[valueIdx][setIdx][2]}`;
 									}
 
 									let operator = value[valueIdx][setIdx][1];
@@ -593,12 +593,13 @@ export type ItemIndexType = {
 					continue;
 
 				// Send a despatch to subscribers, indicating the timeframe has results
-				await Subscription.despatch({
+				const totalCallbacks = await Subscription.despatch({
 					event: SubscriptionEvent.TimeframeResult,
 
 					// The timeframe context
 					timeframe: timeframe,
 				});
+				Bot.log(`Timeframe '${timeframe.name}'; Subscription.despatch.totalCallbacks: ${totalCallbacks}`, Log.Verbose);
 
 				// Collect timeframe results for playbook state
 				let timeframeSignal: number[] = [];
