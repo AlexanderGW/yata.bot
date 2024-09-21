@@ -59,7 +59,7 @@ export type SubscriptionInterface = {
 	itemIndex: string[],
 	despatch: (
 		_: SubscriptionDespatchData,
-	) => Promise<void>,
+	) => Promise<number>,
 	new: (
 		_: SubscriptionData,
 	) => void,
@@ -114,7 +114,9 @@ export const Subscription: SubscriptionInterface = {
 
 	async despatch (
 		_: SubscriptionDespatchData,
-	): Promise<void> {
+	): Promise<number> {
+		let totalCallbacks: number = 0;
+
 		switch (_.event) {
 
 			/**
@@ -198,7 +200,7 @@ export const Subscription: SubscriptionInterface = {
 
 					// This subscription only wants `new` signals
 					if (newSignal === 0 && item.match === 'new')
-						return;
+						continue;
 
 					signalResult.new = newSignal;
 
@@ -293,13 +295,15 @@ export const Subscription: SubscriptionInterface = {
 								// Import module
 								let importPath = `../../playbook/${item.playbook}/${item.playbook}.ts`;
 
-								await import(importPath).then((module: SubscriptionActionCallbackModule) => {
+								await import(importPath).then(async (module: SubscriptionActionCallbackModule) => {
 									if (!item.action || !module.hasOwnProperty(item.action))
 										throw new Error(`Subscription action callback not found, or invalid.`);
 
 									// Execute imported subscription callback on module
 									try {
-										module[item.action](
+										totalCallbacks++;
+
+										await module[item.action](
 											item
 										);
 									} catch (error) {
@@ -312,7 +316,7 @@ export const Subscription: SubscriptionInterface = {
 
 						// Execute callback
 						if (item.actionCallback) {
-							item.actionCallback(item);
+							await item.actionCallback(item);
 						}
 					}
 				}
@@ -324,6 +328,8 @@ export const Subscription: SubscriptionInterface = {
 				Bot.log(`Unknown subscription event '${_.event}'`, Log.Warn);
 			}
 		}
+
+		return totalCallbacks;
 	},
 
 	new(
