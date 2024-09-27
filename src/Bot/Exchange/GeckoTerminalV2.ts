@@ -106,7 +106,7 @@ export class GeckoTerminalV2Exchange extends Web3 implements GeckoTerminalV2Exch
 		);
 
 		if (response.status !== 200)
-			throw new Error(response.statusText);
+			throw new Error(`HTTP${response.status}; ${response.statusText}`);
 
 		return response.data as GeckoTerminalV2ExchangeResponse;
 	}
