@@ -214,6 +214,9 @@ describe('Backtest dataset 1', () => {
     };
 
     before(async function () {
+        Bot.init({
+            backtest: true,
+        });
 
         // Create exchange client
         exchangeDefaultPaper = await Exchange.new({
@@ -316,6 +319,8 @@ describe('Backtest dataset 1', () => {
             strategy: [
                 stratRsi14BullishOversold,
             ],
+
+            name: 'timeframe50DaysStratRsi14BullishOversold',
         });
 
         // Expected results for `stratRsi14BullishOversold` against the dataset
@@ -348,6 +353,8 @@ describe('Backtest dataset 1', () => {
             strategy: [
                 stratMacd12_26_9BullishCross,
             ],
+
+            name: 'timeframe50DaysStratMacd12_26_9BullishCross',
         });
 
         // Expected results for `stratMacd12_26_9BullishCross` against the dataset
@@ -389,6 +396,8 @@ describe('Backtest dataset 1', () => {
             strategy: [
                 stratBullishSma20Cross,
             ],
+
+            name: 'timeframe50DaysStratBullishSma20Cross',
         });
 
         // Expected results for `stratBullishSma20Cross` against the dataset
