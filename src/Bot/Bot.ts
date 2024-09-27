@@ -152,37 +152,31 @@ export const Bot: BotData = {
 	},
 
 	async exit () {
+		if (!Bot.playbook?.nextState)
+			return Bot.log(`No next playback state`, Log.Verbose);
 
-		// TODO: Refactor into process exit - issue within `process.on('exit')` and `redis.setItem()` where no response/error is received.
-		if (Bot.playbook) {
-			if (Bot.playbook.nextState) {
+		// Persist playbook state for next iteration
+		Bot.playbook.nextState.updateTime = Date.now();
 
-				// Persist playbook state for next iteration
-				Bot.playbook.nextState.updateTime = Date.now();
+		// Bot.log(`Bot.playbook.nextState`, Log.Verbose);
+		// console.log(Bot.playbook.nextState);
 
-				// Bot.log(`Bot.playbook.nextState`, Log.Verbose);
-				// console.log(Bot.playbook.nextState);
+		// TODO: To be refactored; If `pair` not removed, the `OrderItem.pair` will be replaced with primative object, on next run
+		Bot.playbook.nextState.order.forEach(order => {
+			delete order.pair;
+		});
 
-				// TODO: To be refactored; If `pair` not removed, the `OrderItem.pair` will be replaced with primative object, on next run
-				Bot.playbook.nextState.order.forEach(order => {
-					delete order.pair;
-				});
-
-				const setItemResult = await Bot.playbook.storage?.setItem(
-					Bot.playbook.name,
-					Bot.playbook.nextState
-				);
-				if (setItemResult) {
-					Bot.log(`Updated playback state: '${Bot.playbook.name}'`);
-				}
-				// Bot.log(`setItemResult`, Log.Verbose);
-				// Bot.log(setItemResult, Log.Verbose);
-			} else {
-				Bot.log(`No next playback state`, Log.Verbose);
-			}
-			
-			await Bot.playbook.storage?.disconnect();
+		const setItemResult = await Bot.playbook.storage?.setItem(
+			Bot.playbook.name,
+			Bot.playbook.nextState
+		);
+		if (setItemResult) {
+			Bot.log(`Updated playback state: '${Bot.playbook.name}'`);
 		}
+		// Bot.log(`setItemResult`, Log.Verbose);
+		// Bot.log(setItemResult, Log.Verbose);
+		
+		await Bot.playbook.storage?.disconnect();
 
 		// TODO: Process exit event/functions to be implemented/refactorered
 		process.exit(0);

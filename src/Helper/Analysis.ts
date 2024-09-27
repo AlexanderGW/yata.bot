@@ -5,7 +5,7 @@ import { Bot, Log } from "../Bot/Bot";
 export const Rsi14 = Analysis.new({
 	name: 'RSI',
 	config: {
-		inRealField: 'close',
+		inRealField: 'candle.close',
 		optInTimePeriod: 14,
 		startIndex: 14,
 	},
@@ -17,7 +17,7 @@ export const Rsi14 = Analysis.new({
 export const Ema20 = Analysis.new({
 	name: 'EMA20',
 	config: {
-		inRealField: 'close',
+		inRealField: 'candle.close',
 		optInTimePeriod: 20,
 	},
 	type: 'EMA',
@@ -28,7 +28,7 @@ export const Ema20 = Analysis.new({
 export const Ema21 = Analysis.new({
 	name: 'EMA21',
 	config: {
-		inRealField: 'close',
+		inRealField: 'candle.close',
 		optInTimePeriod: 21,
 	},
 	type: 'EMA',
@@ -39,7 +39,7 @@ export const Ema21 = Analysis.new({
 export const Ema100 = Analysis.new({
 	name: 'EMA100',
 	config: {
-		inRealField: 'close',
+		inRealField: 'candle.close',
 		optInTimePeriod: 100,
 	},
 	type: 'EMA',
@@ -50,7 +50,7 @@ export const Ema100 = Analysis.new({
 export const Sma20 = Analysis.new({
 	name: 'SMA20',
 	config: {
-		inRealField: 'close',
+		inRealField: 'candle.close',
 		optInTimePeriod: 20,
 	},
 	type: 'SMA',
@@ -61,7 +61,7 @@ export const Sma20 = Analysis.new({
 export const Sma50 = Analysis.new({
 	name: 'SMA50',
 	config: {
-		inRealField: 'close',
+		inRealField: 'candle.close',
 		optInTimePeriod: 50,
 	},
 	type: 'SMA',
@@ -72,7 +72,7 @@ export const Sma50 = Analysis.new({
 export const Sma200 = Analysis.new({
 	name: 'SMA200',
 	config: {
-		inRealField: 'close',
+		inRealField: 'candle.close',
 		optInTimePeriod: 200,
 	},
 	type: 'SMA',
@@ -95,7 +95,7 @@ export const Bollinger20 = Analysis.new({
 export const Macd12_26_9 = Analysis.new({
 	name: 'MACD12_26_9',
 	config: {
-		inRealField: 'close',
+		inRealField: 'candle.close',
 	},
 	type: 'MACD',
 });

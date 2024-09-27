@@ -86,7 +86,9 @@ export class TimeframeItem implements TimeframeData {
 	async execute () {
 		const startTime = Date.now();
 
-		let logLine = `Timeframe '${this.name}'; Executed; Interval '${this.intervalTime}ms'`;
+		let logLine = `Timeframe '${this.name}'; Executed`;
+		if (this.intervalTime)
+			logLine = `${logLine}; Interval '${this.intervalTime}ms'`;
 		if (this.lastStartTime) {
 			logLine = `${logLine}; Last run '${this.lastStartTime}'`;
 			logLine = `${logLine}; Time since '${startTime - this.lastStartTime}ms''`;

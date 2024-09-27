@@ -1,7 +1,7 @@
 import { AnalysisResultData, AnalysisItem, AnalysisExecuteResultData } from "./Analysis";
 import { Bot, Log } from "./Bot";
 import { ChartCandleData, ChartItem } from "./Chart";
-import { ScenarioConditionMatch, ScenarioItem } from "./Scenario";
+import { ScenarioConditionMatch, ScenarioItem, getFieldData } from "./Scenario";
 import { v4 as uuidv4 } from 'uuid';
 import { TimeframeItem } from "./Timeframe";
 
@@ -86,9 +86,12 @@ export class StrategyItem implements StrategyData {
 			analysis = this.analysis[i];
 
 			let inReal: number[] | string[] = [];
+			let inRealClass: string = '';
 			let inRealField: string = '';
 			if (analysis?.config?.inRealField) {
-				inRealField = analysis.config.inRealField;
+				const fieldResult = getFieldData(analysis.config.inRealField);
+				inRealClass = String(fieldResult.fieldClass);
+				inRealField = fieldResult.fieldName;
 			}
 
 			// Source the result of previously executed analysis
