@@ -64,6 +64,27 @@ export type ScenarioConditionMatch = {
 	valueBReal?: string | number,
 }
 
+export type ScenarioFieldDataReturn = {
+	fieldClass?: string,
+	fieldName: string,
+};
+
+export const getFieldData = (
+	value: string,
+): ScenarioFieldDataReturn => {
+	// const colonPos = value.lastIndexOf(':');
+	const dotPos = value.lastIndexOf('.');
+	const fieldClass = value.substring(0, dotPos);
+	const fieldName = value.substring(dotPos + 1);
+	
+	const data: ScenarioFieldDataReturn = {
+		fieldClass,
+		fieldName
+	};
+
+	return data;
+};
+
 export class ScenarioItem implements ScenarioData {
 	analysis: AnalysisItem[];
 	condition: ScenarioConditionCandle;
@@ -248,7 +269,7 @@ export class ScenarioItem implements ScenarioData {
 		}
 
 		if (conditionMatch.length < this.condition.length)
-			throw new Error('Scenario conditions are not compatible with dataset.');
+			throw new Error(`Scenario '${this.name}'; Conditions are not compatible with dataset.`);
 
 		// Walk through field values, on result dataset
 		let offset: number = 0;
@@ -419,7 +440,7 @@ export class ScenarioItem implements ScenarioData {
 								dataset = _.analysisData[i][1];
 
 								if (!dataset.result) //continue;
-									throw new Error(`No data available on scenario`);
+									throw new Error(`Scenario '${this.name}'; No data available on scenario`);
 	
 								// Establish the analysis result offset from the dataset
 								let startIndex: number = dataset.begIndex;
@@ -476,7 +497,7 @@ export class ScenarioItem implements ScenarioData {
 								}
 
 								if (!datasetResultField) //continue;
-									throw new Error(`Condition field not found in scenario data`);
+									throw new Error(`Scenario '${this.name}'; Condition field not found in chart/analysis data`);
 
 								if (valueBIsPercentage) {
 									if (analysisOffset <= 0) continue;
@@ -553,7 +574,7 @@ export class ScenarioItem implements ScenarioData {
 								datasetResultField = _.chart.dataset[valueA as keyof AnalysisExecuteResultData];
 
 							if (!datasetResultField) //continue;
-								throw new Error(`Condition field '${valueA}' not found on scenario chart data`);
+								throw new Error(`Scenario '${this.name}'; Condition field '${valueA}' not found on scenario chart data`);
 						}
 						
 						// Value is a reference to specific chart or analysis data
@@ -571,7 +592,7 @@ export class ScenarioItem implements ScenarioData {
 						}
 
 						if (!datasetResultField) //continue;
-							throw new Error(`Condition field '${valueB}' not found on scenario chart data`);
+							throw new Error(`Scenario '${this.name}'; Condition field '${valueB}' not found on scenario chart data`);
 
 						if (valueBIsPercentage) {
 							if (k <= 0) continue;
