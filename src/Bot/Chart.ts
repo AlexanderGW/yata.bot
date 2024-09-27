@@ -96,25 +96,14 @@ export class ChartItem implements ChartData {
 				return;
 			}
 
-			try {
-				let response: any = readFileSync(
-					this.datasetFile,
-					'utf8',
-					// function (
-					// 	err: object,
-					// 	_: object
-					// ) {
-					// 	if (err)
-					// 		console.error(err);
-					// }
-				);
-	
-				let responseJson: ChartCandleData = JSON.parse(response);
-				if (responseJson)
-					this.dataset = responseJson;
-			} catch (error) {
-				Bot.log(error, Log.Err);
-			}
+			let response: any = readFileSync(
+				this.datasetFile,
+				'utf8',
+			);
+
+			let responseJson: ChartCandleData = JSON.parse(response);
+			if (responseJson)
+				this.dataset = responseJson;
 		}
 
 		this.refreshDataset();
