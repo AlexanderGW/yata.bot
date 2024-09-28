@@ -1,4 +1,4 @@
-import { Bot, Log } from "../Bot";
+import { YATAB, Log } from "../YATAB";
 import { StorageApiData, StorageApiInterface } from "../Storage";
 import { createClient, RedisClientType } from 'redis';
 
@@ -19,7 +19,7 @@ export class RedisStorage implements StorageApiInterface {
 
 		this.handle.on(
 			'error',
-			(err: string) => Bot.log(
+			(err: string) => YATAB.log(
 				`RedisStorage '${this.name}'; ${JSON.stringify(err)}`
 			, Log.Err)
 		);
@@ -55,7 +55,7 @@ export class RedisStorage implements StorageApiInterface {
 			const valueRaw = await this.handle.get(id);
 			returnValue = JSON.parse(valueRaw as string);
 		} catch (error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 		}
 
 		return returnValue;
@@ -73,13 +73,13 @@ export class RedisStorage implements StorageApiInterface {
 	): Promise<boolean> {
 		try {
 			const json = JSON.stringify(value);
-			// Bot.log(`Redis.setItem`);
+			// YATAB.log(`Redis.setItem`);
 			const result = await this.handle.set(id, json);
-			// Bot.log(`Redis.setItem.result`);
-			// Bot.log(result);
+			// YATAB.log(`Redis.setItem.result`);
+			// YATAB.log(result);
 			return true;
 		} catch (error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 		}
 			
 		return false;

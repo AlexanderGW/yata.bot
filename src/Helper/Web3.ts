@@ -5,8 +5,8 @@ import {
 	TradeType
 } from '@uniswap/sdk-core'
 import { FeeAmount, computePoolAddress } from '@uniswap/v3-sdk';
-import { PairData } from '../Bot/Pair';
-import { ExchangeApiData } from '../Bot/Exchange';
+import { PairData } from '../YATAB/Pair';
+import { ExchangeApiData } from '../YATAB/Exchange';
 
 import {
 	SwapQuoter,
@@ -20,7 +20,7 @@ import {
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
 
 import * as ethers from 'ethers';
-import { Bot, Log } from '../Bot/Bot';
+import { YATAB, Log } from '../YATAB/YATAB';
 
 // ERC-20 Token Contract ABI
 export const erc20Abi = [

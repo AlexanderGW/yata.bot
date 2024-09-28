@@ -3,12 +3,12 @@ import { expect } from 'chai';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import { Asset, AssetItem } from '../src/Bot/Asset';
-import { Bot, Log } from '../src/Bot/Bot';
-import { Pair, PairItem } from '../src/Bot/Pair';
+import { Asset, AssetItem } from '../src/YATAB/Asset';
+import { YATAB, Log } from '../src/YATAB/YATAB';
+import { Pair, PairItem } from '../src/YATAB/Pair';
 
-import { Order, OrderAction, OrderItem, OrderSide, OrderStatus, OrderType } from '../src/Bot/Order';
-import { Exchange, ExchangeItem } from '../src/Bot/Exchange';
+import { Order, OrderAction, OrderItem, OrderSide, OrderStatus, OrderType } from '../src/YATAB/Order';
+import { Exchange, ExchangeItem } from '../src/YATAB/Exchange';
 
 const fs = require('fs');
 
@@ -105,7 +105,7 @@ if (
         //         // // Check order confirmation
         //         // console.log(orderResponse);
         //     } catch (error) {
-        //         Bot.log(error, Log.Err);
+        //         YATAB.log(error, Log.Err);
         //     }
         // });
     
@@ -128,7 +128,7 @@ if (
                 // // Check order confirmation
                 // console.log(orderResponse);
             } catch (error) {
-                Bot.log(error, Log.Err);
+                YATAB.log(error, Log.Err);
             }
         });
 
@@ -153,7 +153,7 @@ if (
         //         order1EditLimitBuy = await order1OpenLimitBuy.execute(OrderAction.Edit);
         //         console.log(order1EditLimitBuy);
         //     } catch (error) {
-        //         Bot.log(error, Log.Err);
+        //         YATAB.log(error, Log.Err);
         //     }
         // });
     
@@ -172,7 +172,7 @@ if (
         //         order1CloseLimitBuy = await order1OpenLimitBuy.execute(OrderAction.Close);
         //         console.log(order1CloseLimitBuy);
         //     } catch (error) {
-        //         Bot.log(error, Log.Err);
+        //         YATAB.log(error, Log.Err);
         //     }
         // });
     });

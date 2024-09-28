@@ -3,12 +3,12 @@ import { expect } from 'chai';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import { Asset, AssetItem } from '../src/Bot/Asset';
-import { Bot, Log } from '../src/Bot/Bot';
-import { Chart, ChartCandleData, ChartItem } from '../src/Bot/Chart';
-import { Pair, PairItem } from '../src/Bot/Pair';
-import { Strategy, StrategyItem } from '../src/Bot/Strategy';
-import { Timeframe, TimeframeItem } from '../src/Bot/Timeframe';
+import { Asset, AssetItem } from '../src/YATAB/Asset';
+import { YATAB, Log } from '../src/YATAB/YATAB';
+import { Chart, ChartCandleData, ChartItem } from '../src/YATAB/Chart';
+import { Pair, PairItem } from '../src/YATAB/Pair';
+import { Strategy, StrategyItem } from '../src/YATAB/Strategy';
+import { Timeframe, TimeframeItem } from '../src/YATAB/Timeframe';
 
 // Helpers
 import {
@@ -23,8 +23,8 @@ import {
 	Rsi14 as analysisRsi14,
 	Sma20 as analysisSma20
 } from '../src/Helper/Analysis';
-import { Exchange, ExchangeItem } from '../src/Bot/Exchange';
-import { Subscription, SubscriptionData, SubscriptionEvent } from '../src/Bot/Subscription';
+import { Exchange, ExchangeItem } from '../src/YATAB/Exchange';
+import { Subscription, SubscriptionData, SubscriptionEvent } from '../src/YATAB/Subscription';
 
 const fs = require('fs');
 
@@ -66,7 +66,7 @@ describe('Backtest dataset 1', () => {
 
                 // Index timeframe UUID for test comparison
                 actualResultIndex.push(timeframe.uuid);
-                Bot.log(`TEST: Timeframe '${timeframe.name}'; timeframeResultCount: ${timeframe.result.length}`, Log.Verbose);
+                YATAB.log(`TEST: Timeframe '${timeframe.name}'; timeframeResultCount: ${timeframe.result.length}`, Log.Verbose);
         
                 let timeField: string = '';
                 if (subscribe.chart.dataset?.openTime)
@@ -81,10 +81,10 @@ describe('Backtest dataset 1', () => {
                     if (result?.length) {
 
                         // Get strategy from storage, by UUID
-                        let strategy = Bot.getItem(uuid) as StrategyItem;
+                        let strategy = YATAB.getItem(uuid) as StrategyItem;
         
-                        Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`, Log.Verbose);
-                        Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`, Log.Verbose);
+                        YATAB.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`, Log.Verbose);
+                        YATAB.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`, Log.Verbose);
         
                         let actualTimeframeResult: number[] = [];
 
@@ -102,11 +102,11 @@ describe('Backtest dataset 1', () => {
                                     actualTimeframeResult.push(date.getTime());
                                     
                                     // resultTimes.push(date.toISOString());
-                                    Bot.log(`TEST: Match: (${date.getTime().toString()}) ${date.toISOString()}`, Log.Verbose);
+                                    YATAB.log(`TEST: Match: (${date.getTime().toString()}) ${date.toISOString()}`, Log.Verbose);
                                     
                                     // Output details on all matching scenario conditions
                                     for (let l = 0; l < result[k].length; l++) {
-                                        Bot.log(JSON.stringify(result[k][l]), Log.Verbose);
+                                        YATAB.log(JSON.stringify(result[k][l]), Log.Verbose);
                                     }
                                 }
                             }
@@ -214,7 +214,7 @@ describe('Backtest dataset 1', () => {
     };
 
     before(async function () {
-        Bot.init({
+        YATAB.init({
             backtest: true,
         });
 

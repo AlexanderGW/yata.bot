@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Bot, Log } from './Bot';
+import { YATAB, Log } from './YATAB';
 import { ChartCandleData } from './Chart';
 import { StrategyItem } from "./Strategy";
 
@@ -93,7 +93,7 @@ export class TimeframeItem implements TimeframeData {
 			logLine = `${logLine}; Last run '${this.lastStartTime}'`;
 			logLine = `${logLine}; Time since '${startTime - this.lastStartTime}ms''`;
 		}
-		Bot.log(logLine);
+		YATAB.log(logLine);
 
 		// if ((startTime - this.lastStartTime) < this.intervalTime)
 		// 	throw new Error(`Timeframe '${this.name}'; Interval time has not yet passed`);
@@ -124,7 +124,7 @@ export class TimeframeItem implements TimeframeData {
 					);
 					strategy.chart.datasetSyncTime = Date.now();
 				} catch (error) {
-					Bot.log(error, Log.Err);
+					YATAB.log(error, Log.Err);
 				}
 			}
 
@@ -141,12 +141,12 @@ export class TimeframeItem implements TimeframeData {
 				this.result.push(signal);
 				this.resultIndex.push(strategy.name ?? strategy.uuid);
 			} catch (error) {
-				Bot.log(error, Log.Err);
+				YATAB.log(error, Log.Err);
 			}
 		}
 
 		this.lastEndTime = Date.now();
-		Bot.log(`Timeframe '${this.name}'; Finished; Runtime '${this.lastEndTime - startTime}ms'`);
+		YATAB.log(`Timeframe '${this.name}'; Finished; Runtime '${this.lastEndTime - startTime}ms'`);
 		this.lastStartTime = startTime;
 	}
 }
@@ -156,8 +156,8 @@ export const Timeframe = {
 		_: TimeframeData,
 	): TimeframeItem {
 		let item = new TimeframeItem(_);
-		let uuid = Bot.setItem(item);
+		let uuid = YATAB.setItem(item);
 
-		return Bot.getItem(uuid) as TimeframeItem;
+		return YATAB.getItem(uuid) as TimeframeItem;
 	}
 };

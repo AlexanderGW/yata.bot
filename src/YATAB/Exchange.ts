@@ -1,6 +1,6 @@
 import { ChartCandleData, ChartItem } from "./Chart";
 import { v4 as uuidv4 } from 'uuid';
-import { Bot, Log } from "./Bot";
+import { YATAB, Log } from "./YATAB";
 import { OrderBaseData, OrderData, OrderItem } from "./Order";
 import { Pair, PairData } from "./Pair";
 
@@ -193,7 +193,7 @@ export class ExchangeItem implements ExchangeData {
 
 		// Request syumbols on the exchange API
 		const response = await this.api?.getBalance(symbolList);
-		Bot.log(`Exchange '${this.name}'; api.getBalance; Response: '${JSON.stringify(response)}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.getBalance; Response: '${JSON.stringify(response)}'`, Log.Verbose);
 
 		if (response && response?.balance && response?.balanceIndex) {
 			for (let i = 0; i < response.balance.length; i++) {
@@ -276,7 +276,7 @@ export class ExchangeItem implements ExchangeData {
 	async syncChart (
 		chart: ChartItem,
 	) {
-		Bot.log(`Chart '${chart.name}'; syncChart`);
+		YATAB.log(`Chart '${chart.name}'; syncChart`);
 
 		if (!this.api || !("syncChart" in this.api))
 			throw new Error(`Exchange '${this.name}'; Ticker API not supported.`);
@@ -296,7 +296,7 @@ export class ExchangeItem implements ExchangeData {
 		chart: ChartItem,
 		_: ChartCandleData
 	) {
-		Bot.log(`Chart '${chart.name}'; refreshChart`);
+		YATAB.log(`Chart '${chart.name}'; refreshChart`);
 
 		if (!this.api || !("syncChart" in this.api))
 			throw new Error(`Exchange '${this.name}'; Ticker API not supported.`);
@@ -329,7 +329,7 @@ export class ExchangeItem implements ExchangeData {
 			candleTimeMinutes,
 		];
 		const path = pathParts.join('/');
-		// Bot.log(path);
+		// YATAB.log(path);
 
 		const filenameParts = [
 
@@ -360,7 +360,7 @@ export class ExchangeItem implements ExchangeData {
 		];
 
 		const filename = filenameParts.join('-');
-		// Bot.log(filename);
+		// YATAB.log(filename);
 
 		const responseJson = JSON.stringify(_);
 
@@ -378,13 +378,13 @@ export class ExchangeItem implements ExchangeData {
 					// 	if (err)
 					// 		throw new Error(JSON.stringify(err));
 
-					// 	Bot.log(`Exchange '${this.name}'; api.refreshChart; Path created: ${storagePath}`, Log.Verbose);
+					// 	YATAB.log(`Exchange '${this.name}'; api.refreshChart; Path created: ${storagePath}`, Log.Verbose);
 					// }
 				)
 			}
 		} catch (error) {
-			Bot.log(error, Log.Err);
-			Bot.log(`Exchange '${this.name}'; api.refreshChart; mkdirSync`, Log.Err);
+			YATAB.log(error, Log.Err);
+			YATAB.log(`Exchange '${this.name}'; api.refreshChart; mkdirSync`, Log.Err);
 		}
 
 		try {
@@ -395,8 +395,8 @@ export class ExchangeItem implements ExchangeData {
 				responseJson,
 			);
 		} catch (error) {
-			Bot.log(error, Log.Err);
-			Bot.log(`Exchange '${this.name}'; api.refreshChart; writeFileSync`, Log.Err);
+			YATAB.log(error, Log.Err);
+			YATAB.log(`Exchange '${this.name}'; api.refreshChart; writeFileSync`, Log.Err);
 		}
 	}
 }
@@ -422,12 +422,12 @@ export const Exchange = {
 
 			exchangeItem.api = exchangeApi;
 			exchangeItem.api.uuid = exchangeItem.uuid;
-		}).catch(error => Bot.log(error, Log.Err));
+		}).catch(error => YATAB.log(error, Log.Err));
 
-		let uuid = Bot.setItem(exchangeItem);
-		const item = Bot.getItem(uuid) as ExchangeItem;
+		let uuid = YATAB.setItem(exchangeItem);
+		const item = YATAB.getItem(uuid) as ExchangeItem;
 
-		Bot.log(`Exchange '${item.name}'; API initialised`, Log.Verbose);
+		YATAB.log(`Exchange '${item.name}'; API initialised`, Log.Verbose);
 
 		return item;
 	}

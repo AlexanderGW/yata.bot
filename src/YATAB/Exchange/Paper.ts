@@ -1,4 +1,4 @@
-import { Bot, Log } from '../Bot';
+import { YATAB, Log } from '../YATAB';
 import { ChartItem } from '../Chart';
 import { ExchangeApiData, ExchangeOrderApiInterface, ExchangeTickerApiInterface } from '../Exchange';
 import { OrderItem, OrderStatus, OrderData } from '../Order';
@@ -23,7 +23,7 @@ export class PaperExchange implements ExchangeOrderApiInterface, ExchangeTickerA
 			responseStatus: OrderStatus.Closed,
 			responseTime: Date.now(),
 		};
-		Bot.log(`Exchange '${this.name}'; Order '${_.name}'; Close`);
+		YATAB.log(`Exchange '${this.name}'; Order '${_.name}'; Close`);
 		return orderResponse;
 	}
 
@@ -35,7 +35,7 @@ export class PaperExchange implements ExchangeOrderApiInterface, ExchangeTickerA
 			responseStatus: OrderStatus.Open,
 			responseTime: Date.now(),
 		};
-		Bot.log(`Exchange '${this.name}'; Order '${_.name}'; Open`);
+		YATAB.log(`Exchange '${this.name}'; Order '${_.name}'; Open`);
 		return orderResponse;
 	}
 
@@ -47,7 +47,7 @@ export class PaperExchange implements ExchangeOrderApiInterface, ExchangeTickerA
 			responseStatus: OrderStatus.Open,
 			responseTime: Date.now(),
 		};
-		Bot.log(`Exchange '${this.name}'; Order '${_.name}'; Edit`);
+		YATAB.log(`Exchange '${this.name}'; Order '${_.name}'; Edit`);
 		return orderResponse;
 	}
 
@@ -66,7 +66,7 @@ export class PaperExchange implements ExchangeOrderApiInterface, ExchangeTickerA
 			responseStatus: OrderStatus.Unknown,
 			responseTime: Date.now(),
 		};
-		Bot.log(`Exchange '${this.name}'; Order '${_.name}'; Get`);
+		YATAB.log(`Exchange '${this.name}'; Order '${_.name}'; Get`);
 		return orderResponse;
 	}
 

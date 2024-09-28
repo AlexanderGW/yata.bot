@@ -1,12 +1,12 @@
-import { Bot } from "../../src/Bot/Bot";
-import { OrderAction, OrderItem } from "../../src/Bot/Order";
-import { SubscriptionData } from "../../src/Bot/Subscription";
+import { YATAB } from "../../src/YATAB/YATAB";
+import { OrderAction, OrderItem } from "../../src/YATAB/Order";
+import { SubscriptionData } from "../../src/YATAB/Subscription";
 
 export const actionLinkBtcBuy = async (
 	subscription: SubscriptionData
 ) => {
-	Bot.log(`actionLinkBtcBuy`);
-	let linkBtcKrakenBuy = Bot.getItem('yatab:playbook:sample-link-btc:order:linkBtcKrakenBuy') as OrderItem;
+	YATAB.log(`actionLinkBtcBuy`);
+	let linkBtcKrakenBuy = YATAB.getItem('yatab:playbook:sample-link-btc:order:linkBtcKrakenBuy') as OrderItem;
 	linkBtcKrakenBuy.update({
 		price: '-30%',
 		quantity: '0.1%',
@@ -18,19 +18,19 @@ export const actionLinkBtcBuy = async (
 	// const linkBtcKrakenBuyResult = await linkBtcKrakenBuy.execute(OrderAction.Close);
 	
 	// TODO: To be refactored
-	Bot.__devPrepareNextStateOrder(
+	YATAB.__devPrepareNextStateOrder(
 		linkBtcKrakenBuy,
 		linkBtcKrakenBuyResult
 	);
 
-	await Bot.exit();
+	await YATAB.exit();
 };
 
 export const actionLinkBtcSell = async (
 	subscription: SubscriptionData
 ) => {
-	Bot.log(`actionLinkBtcSell`);
-	let linkBtcKrakenSell = Bot.getItem('yatab:playbook:sample-link-btc:order:linkBtcKrakenSell') as OrderItem;
+	YATAB.log(`actionLinkBtcSell`);
+	let linkBtcKrakenSell = YATAB.getItem('yatab:playbook:sample-link-btc:order:linkBtcKrakenSell') as OrderItem;
 	linkBtcKrakenSell.update({
 		price: '30%',
 		quantity: '0.1%',
@@ -42,10 +42,10 @@ export const actionLinkBtcSell = async (
 	// const linkBtcKrakenSellResult = await linkBtcKrakenSell.execute(OrderAction.Close);
 
 	// TODO: To be refactored
-	Bot.__devPrepareNextStateOrder(
+	YATAB.__devPrepareNextStateOrder(
 		linkBtcKrakenSell,
 		linkBtcKrakenSellResult
 	);
 
-	await Bot.exit();
+	await YATAB.exit();
 };

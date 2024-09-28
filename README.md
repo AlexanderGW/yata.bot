@@ -1,7 +1,7 @@
 # Yet Another Technical Analysis Bot (YATAB)
 Still in very early stages of development. Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.com/package/talib).
 
-Following a concept of timeframes with strategies (which can be chained together with other strategies), to look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
+Following a concept of timeframes with strategies (which can be chained together with other strategies), to look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for callbacks, based on a definable number of signals within a given timeframe.
 
 ## Project status
 - Planning a candidate release towards the end of 2024

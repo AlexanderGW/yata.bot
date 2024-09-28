@@ -1,4 +1,4 @@
-import { Bot, Log } from '../Bot';
+import { YATAB, Log } from '../YATAB';
 import { ChartCandleData, ChartItem } from '../Chart';
 import {
 	ExchangeApiBalanceData,
@@ -91,7 +91,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 	) {
 		if (_.error) {
 			for (let i = 0; i < _.error.length; i++) {
-				Bot.log(_.error[i], Log.Err);
+				YATAB.log(_.error[i], Log.Err);
 			}
 		}
 
@@ -156,7 +156,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 			// Order quantity in terms of the base asset
 			volume: _.quantityActual,
 		};
-		Bot.log(requestOptions, Log.Verbose);
+		YATAB.log(requestOptions, Log.Verbose);
 
 		let responseJson = await this.handle?.api(
 
@@ -168,7 +168,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.openOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.openOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 		if (responseJson) {
 
@@ -217,7 +217,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.closeOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.closeOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 		if (responseJson) {
 
@@ -294,7 +294,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.editOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.editOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 		if (responseJson) {
 
@@ -347,7 +347,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.getBalance; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.getBalance; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 		if (!responseJson)
 			throw new Error(`Invalid response`);
@@ -420,7 +420,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 		if (_.referenceId)
 			requestOptions.userref = _.referenceId;
 
-		Bot.log(requestOptions, Log.Verbose);
+		YATAB.log(requestOptions, Log.Verbose);
 		// return orderResponse;
 
 		let responseJson = await this.handle?.api(
@@ -433,7 +433,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.getOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.getOrder; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 		if (!responseJson)
 			return orderResponse;
@@ -560,7 +560,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 		const pair = `${_.a.symbol}-${_.b.symbol}`;
 		const pairForeign = `${assetASymbolForeign}${assetBSymbolForeign}`;
 
-		Bot.log(`Exchange '${this.name}'; api.getTicker; Pair: '${pair}'; Foreign: '${pairForeign}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.getTicker; Pair: '${pair}'; Foreign: '${pairForeign}'`, Log.Verbose);
 
 		// Get balances on exchange
 		let responseTickerJson = await this.handle?.api(
@@ -574,7 +574,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseTickerJson)}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseTickerJson)}'`, Log.Verbose);
 
 		if (!responseTickerJson)
 			throw new Error(`Invalid 'Ticker' response`);
@@ -601,7 +601,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 			);
 
 			// Log raw response
-			Bot.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseAssetPairsJson)}'`, Log.Verbose);
+			YATAB.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseAssetPairsJson)}'`, Log.Verbose);
 
 			if (!responseAssetPairsJson)
 				throw new Error(`Invalid 'AssetPairs' response`);
@@ -660,14 +660,14 @@ export class KrakenExchange implements KrakenExchangeInterface {
 		let pair: string = `${assetASymbol}/${assetBSymbol}`;
 
 		let nextDate = new Date(chart.datasetNextTime);
-		Bot.log(`Chart '${chart.name}'; api.syncChart; From: ${nextDate.toISOString()}`);
+		YATAB.log(`Chart '${chart.name}'; api.syncChart; From: ${nextDate.toISOString()}`);
 
 		const requestOptions = {
 			interval: chart.candleTime / 60000,
 			pair: pair,
 			since: Math.floor(chart.datasetNextTime / 1000),
 		};
-		// Bot.log(requestOptions, Log.Warn);
+		// YATAB.log(requestOptions, Log.Warn);
 		
 		// Kraken times are in minutes
 		let responseJson = await this.handle?.api(
@@ -680,7 +680,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.syncChart; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.syncChart; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 		let etlData: ChartCandleData = {
 			close: [],
@@ -712,7 +712,7 @@ export class KrakenExchange implements KrakenExchangeInterface {
 
 		for (let i = 0; i < pairData.length; i++) {
 			p = pairData[i];
-			// Bot.log(p[0]);return;
+			// YATAB.log(p[0]);return;
 			etlData.close?.push(p[4]);
 			etlData.high?.push(p[2]);
 			etlData.low?.push(p[3]);

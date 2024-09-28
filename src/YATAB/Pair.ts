@@ -1,5 +1,5 @@
 import { AssetItem } from "./Asset";
-import { Bot, ItemBaseData, Log } from "./Bot";
+import { YATAB, ItemBaseData, Log } from "./YATAB";
 import { v4 as uuidv4 } from 'uuid';
 import { ExchangeItem } from "./Exchange";
 
@@ -63,21 +63,21 @@ export const Pair: PairType = {
 		_: PairData,
 	): Promise<PairItem> {
 		let item = new PairItem(_);
-		let uuid = Bot.setItem(item);
+		let uuid = YATAB.setItem(item);
 
-		return Bot.getItem(uuid) as PairItem;
+		return YATAB.getItem(uuid) as PairItem;
 	},
 
 	getAllByExchange(
 		input: ExchangeItem | string
 	) {
-		const items = Bot.getItemsByClass('PairItem') as PairItem[];
+		const items = YATAB.getItemsByClass('PairItem') as PairItem[];
 		// console.log(`pair.items`);
 		// console.log(items);
 
 		let result: PairItem[] = [];
 		if (typeof input === 'string') {
-			const exchange = Bot.getItem(input);
+			const exchange = YATAB.getItem(input);
 			if (!exchange) {
 				return null;
 			}

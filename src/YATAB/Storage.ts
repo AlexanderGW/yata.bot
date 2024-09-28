@@ -1,4 +1,4 @@
-import { Bot, ItemBaseData, Log } from "./Bot";
+import { YATAB, ItemBaseData, Log } from "./YATAB";
 import { v4 as uuidv4 } from 'uuid';
 
 export type StorageItemData = {
@@ -106,15 +106,15 @@ export class StorageItem implements StorageData, StorageBaseInterface {
 	): Promise<any> {
 		let value;
 		try {
-			Bot.log(`Storage '${this.name}'; getItem; ID: '${id}'`,Log.Verbose);
+			YATAB.log(`Storage '${this.name}'; getItem; ID: '${id}'`,Log.Verbose);
 			const result = await this.api?.getItem(id, option);
 			if (result)
 				value = result;
 		} catch (error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 		}
 
-		// Bot.log(value, Log.Verbose);
+		// YATAB.log(value, Log.Verbose);
 
 		return value;
 	}
@@ -125,14 +125,14 @@ export class StorageItem implements StorageData, StorageBaseInterface {
 		option?: StorageItemOptionData,
 	): Promise<boolean> {
 		try {
-			Bot.log(`Storage '${this.name}'; setItem; ID: '${id}'`,Log.Verbose);
+			YATAB.log(`Storage '${this.name}'; setItem; ID: '${id}'`,Log.Verbose);
 			const uuid = await this.api?.setItem(id, _, option);
 			if (!uuid)
 				throw new Error(`Failed to set item '${id}'`);
 
 			return true;
 		} catch (error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 		}
 
 		return false;
@@ -159,12 +159,12 @@ export const Storage = {
 				throw new Error(`Failed to instanciate Storage API class '${className}'`);
 
 			storageItem.api = storageApi;
-		}).catch(error => Bot.log(error, Log.Err));
+		}).catch(error => YATAB.log(error, Log.Err));
 
-		let uuid = Bot.setItem(storageItem);
-		const item = Bot.getItem(uuid) as StorageItem;
+		let uuid = YATAB.setItem(storageItem);
+		const item = YATAB.getItem(uuid) as StorageItem;
 
-		Bot.log(`Storage '${item.name}'; API initialised`, Log.Verbose);
+		YATAB.log(`Storage '${item.name}'; API initialised`, Log.Verbose);
 
 		return item;
 	}

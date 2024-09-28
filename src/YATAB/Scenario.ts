@@ -1,5 +1,5 @@
 import { AnalysisData, AnalysisResultData, AnalysisItem, AnalysisExecuteResultData } from './Analysis';
-import { Bot, Log } from './Bot';
+import { YATAB, Log } from './YATAB';
 import { ChartCandleData, ChartItem } from './Chart';
 import { isPercentage, toFixedNumber } from './Helper';
 import { StrategyExecuteData, StrategyItem } from './Strategy';
@@ -210,8 +210,8 @@ export class ScenarioItem implements ScenarioData {
 					valueBClass = valueB.substring(0, valueBPos);
 					valueBName = valueB.substring(valueBPos + 1);
 
-					// Bot.log(`valueBClass: ${valueBClass}`, Log.Warn);
-					// Bot.log(`valueBName: ${valueBName}`, Log.Warn);
+					// YATAB.log(`valueBClass: ${valueBClass}`, Log.Warn);
+					// YATAB.log(`valueBName: ${valueBName}`, Log.Warn);
 
 					if (
 						(
@@ -278,8 +278,8 @@ export class ScenarioItem implements ScenarioData {
 		if (_?.chart.dataset?.open?.length)
 			endPoint = _.chart.dataset.open.length;
 
-		// Bot is in `backtest`, use the the whole `windowTime`
-		if (Bot.backtest)
+		// YATAB is in `backtest`, use the the whole `windowTime`
+		if (YATAB.backtest)
 			offset = Math.ceil((_.strategyExecuteData.timeframe.windowTime) / _.chart.candleTime);
 
 		// Custom window time within which this scenario can be triggered
@@ -299,7 +299,7 @@ export class ScenarioItem implements ScenarioData {
 
 		// Walk the data points, from the required view point
 		// (number of conditions, minus 1)
-		Bot.log(
+		YATAB.log(
 			`Scenario '${this.name}'; Datapoints '${startPoint}-${endPoint}'`,
 			Log.Verbose
 		);
@@ -505,16 +505,16 @@ export class ScenarioItem implements ScenarioData {
 									const valueBPercentage = Number.parseFloat(
 										valueB.substring(0, valueB.length - 1)
 									);
-									// Bot.log(`valueBPercentage: ${valueBPercentage}`, Log.Verbose);
+									// YATAB.log(`valueBPercentage: ${valueBPercentage}`, Log.Verbose);
 									const valueARealLastCandle = Number.parseFloat(
 										datasetResultField[analysisOffset - 1] as string
 									);
-									// Bot.log(`valueARealLastCandle: ${valueARealLastCandle}`, Log.Verbose);
+									// YATAB.log(`valueARealLastCandle: ${valueARealLastCandle}`, Log.Verbose);
 									valueBReal = toFixedNumber(
 										valueARealLastCandle + ((valueARealLastCandle / 100) * valueBPercentage),
 										10
 									);
-									// Bot.log(`valueBReal: ${valueBReal}`, Log.Verbose);
+									// YATAB.log(`valueBReal: ${valueBReal}`, Log.Verbose);
 								} else {
 									valueBReal = toFixedNumber(
 										Number.parseFloat(
@@ -600,16 +600,16 @@ export class ScenarioItem implements ScenarioData {
 							const valueBPercentage = Number.parseFloat(
 								valueB.substring(0, valueB.length - 1)
 							);
-							// Bot.log(`valueBPercentage: ${valueBPercentage}`, Log.Verbose);
+							// YATAB.log(`valueBPercentage: ${valueBPercentage}`, Log.Verbose);
 							const valueARealLastCandle = Number.parseFloat(
 								datasetResultField[k - 1] as string
 							);
-							// Bot.log(`valueARealLastCandle: ${valueARealLastCandle}`, Log.Verbose);
+							// YATAB.log(`valueARealLastCandle: ${valueARealLastCandle}`, Log.Verbose);
 							valueBReal = toFixedNumber(
 								valueARealLastCandle + ((valueARealLastCandle / 100) * valueBPercentage),
 								10
 							);
-							// Bot.log(`valueBReal: ${valueBReal}`, Log.Verbose);
+							// YATAB.log(`valueBReal: ${valueBReal}`, Log.Verbose);
 						} else {
 							valueBReal = toFixedNumber(
 								Number.parseFloat(
@@ -674,12 +674,12 @@ export class ScenarioItem implements ScenarioData {
 
 			// All scenario condition sets, match on this data frame range
 			if (conditionSetMatch.length === this.condition.length) {
-				Bot.log(conditionSetMatch, Log.Verbose);
+				YATAB.log(conditionSetMatch, Log.Verbose);
 				scenarioMatch.push(conditionSetMatch);
 
 				// Execute chained strategy, if provided
 				if (_.strategy) {
-					Bot.log(`Scenario '${this.name}'; Triggered strategy '${_.strategy.name}'`);
+					YATAB.log(`Scenario '${this.name}'; Triggered strategy '${_.strategy.name}'`);
 
 					// Try strategy
 					try {
@@ -690,7 +690,7 @@ export class ScenarioItem implements ScenarioData {
 						_.strategyExecuteData.timeframe.result.push(signal);
 						_.strategyExecuteData.timeframe.resultIndex.push(_.strategy.uuid);
 					} catch (error) {
-						Bot.log(error, Log.Err);
+						YATAB.log(error, Log.Err);
 					}
 				}
 			}
@@ -712,7 +712,7 @@ export class ScenarioItem implements ScenarioData {
 					
 					const milliseconds = _.chart.dataset[timeField][idx] * 1000;
 					let date = new Date(milliseconds);
-					Bot.log(`Scenario '${this.name}'; Match '${date.toISOString()}'; Datapoint '${candle.datapoint}'`);
+					YATAB.log(`Scenario '${this.name}'; Match '${date.toISOString()}'; Datapoint '${candle.datapoint}'`);
 				}
 			}
 			
@@ -727,8 +727,8 @@ export const Scenario = {
 		_: ScenarioData,
 	): ScenarioItem {
 		let item = new ScenarioItem(_);
-		let uuid = Bot.setItem(item);
+		let uuid = YATAB.setItem(item);
 
-		return Bot.getItem(uuid) as ScenarioItem;
+		return YATAB.getItem(uuid) as ScenarioItem;
 	}
 };

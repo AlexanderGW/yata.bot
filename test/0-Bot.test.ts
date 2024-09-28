@@ -2,8 +2,8 @@ import { expect } from 'chai';
 
 import * as dotenv from 'dotenv';
 
-import { Bot, ItemBaseData } from '../src/Bot/Bot';
-import { Storage } from '../src/Bot/Storage';
+import { YATAB, ItemBaseData } from '../src/YATAB/YATAB';
+import { Storage } from '../src/YATAB/Storage';
 
 import { v4 as uuidv4, validate } from 'uuid';
 
@@ -11,7 +11,7 @@ dotenv.config();
 
 const fs = require('fs');
 
-describe('Bot tests', () => {
+describe('YATAB tests', () => {
     it('should return same item with set/get', () => {
         let exchangeKraken: ItemBaseData = {
             uuid: uuidv4(),
@@ -19,11 +19,11 @@ describe('Bot tests', () => {
         
         expect(validate(exchangeKraken.uuid)).to.be.true;
 
-        let returnedUuid = Bot.setItem(exchangeKraken);
+        let returnedUuid = YATAB.setItem(exchangeKraken);
         
         expect(returnedUuid).to.equal(exchangeKraken.uuid);
 
-        let getItem = Bot.getItem(returnedUuid);
+        let getItem = YATAB.getItem(returnedUuid);
 
         expect(getItem?.uuid).to.equal(exchangeKraken.uuid);
     });
@@ -55,11 +55,11 @@ describe('Bot tests', () => {
         
         expect(validate(exchangeKraken.uuid)).to.be.true;
 
-        let returnedUuid = Bot.setItem(exchangeKraken);
+        let returnedUuid = YATAB.setItem(exchangeKraken);
         
         expect(returnedUuid).to.equal(exchangeKraken.uuid);
 
-        let getItem = Bot.getItem(returnedUuid);
+        let getItem = YATAB.getItem(returnedUuid);
 
         expect(getItem?.uuid).to.equal(exchangeKraken.uuid);
 

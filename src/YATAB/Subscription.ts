@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Bot, BotStateDataIndexType, BotStateType, Log } from './Bot';
+import { YATAB, YATABStateDataIndexType, YATABStateType, Log } from './YATAB';
 import { ChartCandleData, ChartItem } from './Chart';
 import { OrderItem } from './Order';
 import { StrategyItem } from "./Strategy";
@@ -168,7 +168,7 @@ export const Subscription: SubscriptionInterface = {
 									if (!result[l])
 										continue;
 
-									const strategy: StrategyItem = Bot.getItem(timeframe.resultIndex[k]) as StrategyItem;
+									const strategy: StrategyItem = YATAB.getItem(timeframe.resultIndex[k]) as StrategyItem;
 									
 									const latestCandle = result[l].length - 1;
 									const datapoint = result[l][latestCandle][0].datapoint;
@@ -184,14 +184,14 @@ export const Subscription: SubscriptionInterface = {
 						// Test for new results
 						if (
 							timeframeSignal.length
-							&& Bot.playbook?.lastState?.timeframeIndex
+							&& YATAB.playbook?.lastState?.timeframeIndex
 						) {
-							let index = Bot.playbook.lastState.timeframeIndex.findIndex(_name => _name === timeframe.name);
+							let index = YATAB.playbook.lastState.timeframeIndex.findIndex(_name => _name === timeframe.name);
 							if (index >= 0) {
 
 								// Count number of current state results, not in last state
 								for (let k = 0; k < timeframeSignal.length; k++) {
-									if (Bot.playbook.lastState.timeframe[index].indexOf(timeframeSignal[k]) < 0)
+									if (YATAB.playbook.lastState.timeframe[index].indexOf(timeframeSignal[k]) < 0)
 										newSignal++;
 								}
 							}
@@ -221,7 +221,7 @@ export const Subscription: SubscriptionInterface = {
 							logItem.push(` ${x} '${signalResult[x]}'`);
 					}
 					if (logItem.length > 1)
-						Bot.log(
+						YATAB.log(
 							logItem.join(';'),
 							Log.Verbose
 						);
@@ -283,8 +283,8 @@ export const Subscription: SubscriptionInterface = {
 						conditionMatch.length === item.condition.length
 						&& item.timeframeAny?.[index]
 					) {
-						Bot.log(`Timeframe '${item.timeframeAny?.[index].name}'; Triggered subscription '${item.name}'`);
-						Bot.log(conditionMatch, Log.Verbose);
+						YATAB.log(`Timeframe '${item.timeframeAny?.[index].name}'; Triggered subscription '${item.name}'`);
+						YATAB.log(conditionMatch, Log.Verbose);
 
 						// TODO: Refactor into `Playbook`?
 						if (item.playbook) {
@@ -307,10 +307,10 @@ export const Subscription: SubscriptionInterface = {
 											item
 										);
 									} catch (error) {
-										Bot.log(error, Log.Err);
+										YATAB.log(error, Log.Err);
 										throw new Error(`Failed to execute subscription action '${item.action}' callback.`);
 									}
-								}).catch(error => Bot.log(error, Log.Err));
+								}).catch(error => YATAB.log(error, Log.Err));
 							}
 						}
 
@@ -321,7 +321,7 @@ export const Subscription: SubscriptionInterface = {
 
 								await item.actionCallback(item);
 							} catch (error) {
-								Bot.log(error, Log.Err);
+								YATAB.log(error, Log.Err);
 								throw new Error(`Failed to execute action callback '${item.actionCallback}'.`);
 							}
 						}
@@ -332,7 +332,7 @@ export const Subscription: SubscriptionInterface = {
 			}
 
 			default: {
-				Bot.log(`Unknown subscription event '${_.event}'`, Log.Warn);
+				YATAB.log(`Unknown subscription event '${_.event}'`, Log.Warn);
 			}
 		}
 
@@ -343,11 +343,11 @@ export const Subscription: SubscriptionInterface = {
 		_: SubscriptionData,
 	): SubscriptionItem {
 		let item = new SubscriptionItem(_);
-		let uuid = Bot.setItem(item);
+		let uuid = YATAB.setItem(item);
 
 		this.item.push(item);
 		this.itemIndex.push(uuid);
 
-		return Bot.getItem(uuid) as SubscriptionItem;
+		return YATAB.getItem(uuid) as SubscriptionItem;
 	}
 };

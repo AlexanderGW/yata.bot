@@ -1,4 +1,4 @@
-import { Bot, Log } from '../Bot';
+import { YATAB, Log } from '../YATAB';
 import {
 	ExchangeApiBalanceData,
 	ExchangeApiData,
@@ -204,7 +204,7 @@ export class UniswapV3Exchange extends Web3 implements ExchangeOrderApiInterface
 				0, //pool.sqrtRatioX96
 			);
 		} catch (error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 			return 0;
 		}
 	}
@@ -380,7 +380,7 @@ export class UniswapV3Exchange extends Web3 implements ExchangeOrderApiInterface
 		
 
 
-		Bot.log(logParts.join('; '), logType);
+		YATAB.log(logParts.join('; '), logType);
 
 		if (!responseSwap)
 			throw new Error(`Transaction for swap failed`);
@@ -476,10 +476,10 @@ export class UniswapV3Exchange extends Web3 implements ExchangeOrderApiInterface
 				} else
 					this.token[index] = tokenData;
 
-				Bot.log(logParts.join('; '), logType);
+				YATAB.log(logParts.join('; '), logType);
 			}
 		} catch(error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 		};
 
 		return returnData;
@@ -506,13 +506,13 @@ export class UniswapV3Exchange extends Web3 implements ExchangeOrderApiInterface
 					continue
 				}
 			} catch (error) {
-				Bot.log(error, Log.Err);
+				YATAB.log(error, Log.Err);
 				break
 			}
 		}
 
 		if (receipt) {
-			Bot.log(`Exchange '${this.name}'; api.getOrder; Receipt: '${JSON.stringify(receipt)}'`, Log.Verbose);
+			YATAB.log(`Exchange '${this.name}'; api.getOrder; Receipt: '${JSON.stringify(receipt)}'`, Log.Verbose);
 
 			// Handle any errors
 			// this.handleError(receipt);
@@ -577,7 +577,7 @@ export class UniswapV3Exchange extends Web3 implements ExchangeOrderApiInterface
 		const amountOutReal = Number(ethers.formatUnits(amountOut, tokenB?.decimals));
 		logParts.push(`Amount Out: '${amountOutReal}'`);
 
-		Bot.log(logParts.join('; '), logType);
+		YATAB.log(logParts.join('; '), logType);
 
 		const tickerData: ExchangeTickerData = {
 			decimals: Number(tokenB?.decimals),

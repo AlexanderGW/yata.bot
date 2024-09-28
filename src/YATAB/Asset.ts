@@ -1,4 +1,4 @@
-import { Bot } from "./Bot";
+import { YATAB } from "./YATAB";
 import { v4 as uuidv4 } from 'uuid';
 
 export type AssetData = {
@@ -30,8 +30,8 @@ export const Asset = {
 		_: AssetData,
 	): AssetItem {
 		let item = new AssetItem(_);
-		let uuid = Bot.setItem(item);
+		let uuid = YATAB.setItem(item);
 
-		return Bot.getItem(uuid) as AssetItem;
+		return YATAB.getItem(uuid) as AssetItem;
 	}
 };

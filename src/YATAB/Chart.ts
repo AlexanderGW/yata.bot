@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Bot, Log } from "./Bot";
+import { YATAB, Log } from "./YATAB";
 import { PairItem } from "./Pair";
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -198,7 +198,7 @@ export class ChartItem implements ChartData {
 			logLine = `${logLine}; Next '${nextDate.toISOString()}'`;
 		}
 
-		Bot.log(logLine);
+		YATAB.log(logLine);
 	}
 
 	updateDataset (
@@ -209,7 +209,7 @@ export class ChartItem implements ChartData {
 		// Require OHLC
 		// TODO: try/catch
 		if (!_.open || !_.high || !_.low || !_.close)
-			return Bot.log(`Incomplete OHLC dataset`, Log.Warn);
+			return YATAB.log(`Incomplete OHLC dataset`, Log.Warn);
 
 		// Update existing dataset
 		if (
@@ -227,7 +227,7 @@ export class ChartItem implements ChartData {
 					datasetEndTimeIndex = this.dataset[this.datasetTimeField].length - 1;
 			}
 
-			Bot.log(
+			YATAB.log(
 				`Chart '${this.name}'; updateDataset; datasetEndTimeIndex: ${datasetEndTimeIndex}`,
 				Log.Verbose
 			);
@@ -244,13 +244,13 @@ export class ChartItem implements ChartData {
 				datasetOffset++;
 
 				const datasetEndDate = new Date(this.datasetEndTime);
-				Bot.log(
+				YATAB.log(
 					`Chart '${this.name}'; updateDataset; Possible missing delta. Appending received dataset, as it does not include the last known dataset candle '${datasetEndDate.toISOString()}'`,
 					Log.Warn
 				);
 			}
 
-			Bot.log(
+			YATAB.log(
 				`Chart '${this.name}'; updateDataset; dataEndTimeIndex: ${dataEndTimeIndex}`,
 				Log.Verbose
 			);
@@ -276,7 +276,7 @@ export class ChartItem implements ChartData {
 
 						logLine = `${logLine}; To '${_[field][i]}'`;
 
-						Bot.log(
+						YATAB.log(
 							logLine,
 							Log.Verbose
 						);
@@ -303,8 +303,8 @@ export const Chart = {
 		_: ChartData,
 	): ChartItem {
 		let item = new ChartItem(_);
-		let uuid = Bot.setItem(item);
+		let uuid = YATAB.setItem(item);
 
-		return Bot.getItem(uuid) as ChartItem;
+		return YATAB.getItem(uuid) as ChartItem;
 	}
 };

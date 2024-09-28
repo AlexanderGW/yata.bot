@@ -1,17 +1,17 @@
 import { parse } from 'yaml'
 
-import { Bot, Log } from './Bot/Bot';
-import { Strategy, StrategyData, StrategyItem } from './Bot/Strategy';
-import { Asset, AssetData } from './Bot/Asset';
-import { Pair, PairData, PairItem } from './Bot/Pair';
-import { Scenario, ScenarioData, ScenarioItem, scenarioConditionOperators } from './Bot/Scenario';
-import { Exchange, ExchangeData, ExchangeItem } from './Bot/Exchange';
-import { Chart, ChartData, ChartItem } from './Bot/Chart';
-import { Timeframe, TimeframeData, TimeframeItem } from './Bot/Timeframe';
-import { Order, OrderAction, OrderData, OrderItem } from './Bot/Order';
-import { Analysis, AnalysisData, AnalysisItem } from './Bot/Analysis';
-import { Storage, StorageData, StorageItem } from './Bot/Storage';
-import { Subscription, SubscriptionData, SubscriptionEvent } from './Bot/Subscription';
+import { YATAB, Log } from './YATAB/YATAB';
+import { Strategy, StrategyData, StrategyItem } from './YATAB/Strategy';
+import { Asset, AssetData } from './YATAB/Asset';
+import { Pair, PairData, PairItem } from './YATAB/Pair';
+import { Scenario, ScenarioData, ScenarioItem, scenarioConditionOperators } from './YATAB/Scenario';
+import { Exchange, ExchangeData, ExchangeItem } from './YATAB/Exchange';
+import { Chart, ChartData, ChartItem } from './YATAB/Chart';
+import { Timeframe, TimeframeData, TimeframeItem } from './YATAB/Timeframe';
+import { Order, OrderAction, OrderData, OrderItem } from './YATAB/Order';
+import { Analysis, AnalysisData, AnalysisItem } from './YATAB/Analysis';
+import { Storage, StorageData, StorageItem } from './YATAB/Storage';
+import { Subscription, SubscriptionData, SubscriptionEvent } from './YATAB/Subscription';
 
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -213,7 +213,7 @@ export type ItemIndexType = {
 	}
 
 	// Initialize bot
-	Bot.init({
+	YATAB.init({
 
 		// Backtesting
 		backtest:
@@ -269,7 +269,7 @@ export type ItemIndexType = {
 							let itemLookup: any = false;
 							let cacheIdx = playbookCache[key].itemIndex.indexOf(value as string);
 							if (cacheIdx >= 0)
-								itemLookup = Bot.getItem(playbookCache[key].item[cacheIdx]);
+								itemLookup = YATAB.getItem(playbookCache[key].item[cacheIdx]);
 
 							if (cacheIdx < 0 || itemLookup === false)
 								throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value}' not found`);
@@ -287,7 +287,7 @@ export type ItemIndexType = {
 									let itemLookup: any = false;
 									let cacheIdx = playbookCache[key].itemIndex.findIndex((x: string) => x === value[valueIdx]);
 									if (cacheIdx >= 0)
-										itemLookup = Bot.getItem(playbookCache[key].item[cacheIdx]);
+										itemLookup = YATAB.getItem(playbookCache[key].item[cacheIdx]);
 
 									if (cacheIdx < 0 || itemLookup === false)
 										throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value[valueIdx]}' not found`);
@@ -313,7 +313,7 @@ export type ItemIndexType = {
 						let itemLookup: any = false;
 						let cacheIdx = playbookCache.asset.itemIndex.indexOf(value as string);
 						if (cacheIdx >= 0)
-							itemLookup = Bot.getItem(playbookCache.asset.item[cacheIdx]);
+							itemLookup = YATAB.getItem(playbookCache.asset.item[cacheIdx]);
 
 						if (cacheIdx < 0 || itemLookup === false)
 							throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced asset '${value}' not found`);
@@ -335,7 +335,7 @@ export type ItemIndexType = {
 							let itemLookup: any = false;
 							let cacheIdx = playbookCache.scenario.itemIndex.findIndex((x: string) => x === value[valueIdx][0]);
 							if (cacheIdx >= 0)
-								itemLookup = Bot.getItem(playbookCache.scenario.item[cacheIdx]);
+								itemLookup = YATAB.getItem(playbookCache.scenario.item[cacheIdx]);
 
 							if (cacheIdx < 0 || itemLookup === false)
 								throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced scenario '${value[valueIdx][0]}' not found`);
@@ -347,7 +347,7 @@ export type ItemIndexType = {
 								itemLookup = false;
 								cacheIdx = playbookCache.strategy.itemIndex.findIndex((x: string) => x === value[valueIdx][1]);
 								if (cacheIdx >= 0)
-									itemLookup = Bot.getItem(playbookCache.strategy.item[cacheIdx]);
+									itemLookup = YATAB.getItem(playbookCache.strategy.item[cacheIdx]);
 
 								if (cacheIdx < 0 || itemLookup === false)
 									throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced strategy '${value[valueIdx][1]}' not found`);
@@ -437,7 +437,7 @@ export type ItemIndexType = {
 							let itemLookup: any = false;
 							let cacheIdx = playbookCache.timeframe.itemIndex.findIndex((x: string) => x === value[valueIdx]);
 							if (cacheIdx >= 0)
-								itemLookup = Bot.getItem(playbookCache.timeframe.item[cacheIdx]);
+								itemLookup = YATAB.getItem(playbookCache.timeframe.item[cacheIdx]);
 
 							if (cacheIdx < 0 || itemLookup === false)
 								throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced timeframe '${value[valueIdx]}' not found`);
@@ -488,7 +488,7 @@ export type ItemIndexType = {
 				// console.log(item);
 				
 				// Store the items for referencing
-				let uuid = Bot.setItem(item);
+				let uuid = YATAB.setItem(item);
 
 				playbookCache[typeKey].item.push(uuid);
 				playbookCache[typeKey].itemIndex.push(itemName);
@@ -497,10 +497,10 @@ export type ItemIndexType = {
 	}
 
 	// TEMP: Use first defined storage
-	const playbookStore = Bot.getItem(playbookCache.storage.item[0]) as StorageItem;
+	const playbookStore = YATAB.getItem(playbookCache.storage.item[0]) as StorageItem;
 
 	// Load the playbook state
-	Bot.playbook = {
+	YATAB.playbook = {
 		name: playbookStateName,
 		storage: playbookStore,
 		lastState: await playbookStore.getItem(playbookStateName),
@@ -508,37 +508,37 @@ export type ItemIndexType = {
 
 	// Handle existing playbook state
 	// TODO: Implement data validation? Version checks?
-	if (Bot.playbook?.lastState) {
+	if (YATAB.playbook?.lastState) {
 
 		// Prime chart datasets, if available
-		if (Bot.playbook.lastState.candleIndex?.length) {
-			for (let chartIdx in Bot.playbook.lastState.candleIndex) {
+		if (YATAB.playbook.lastState.candleIndex?.length) {
+			for (let chartIdx in YATAB.playbook.lastState.candleIndex) {
 					try {
 						// Add dataset to chart
-						const chart = Bot.getItem(Bot.playbook.lastState.candleIndex[chartIdx]) as ChartItem;
-						if (chart && Bot.playbook.lastState.candle[chartIdx]) {
+						const chart = YATAB.getItem(YATAB.playbook.lastState.candleIndex[chartIdx]) as ChartItem;
+						if (chart && YATAB.playbook.lastState.candle[chartIdx]) {
 							// TODO: Set `datasetNextTime` based on tiemframe etc - currently falls back to default `BOT_CHART_DEFAULT_TOTAL_CANDLE`
-							chart.updateDataset(Bot.playbook.lastState.candle[chartIdx]);
+							chart.updateDataset(YATAB.playbook.lastState.candle[chartIdx]);
 							chart.refreshDataset();
 						}
 					} catch (error) {
-						Bot.log(error, Log.Err);
+						YATAB.log(error, Log.Err);
 					}
 			}
 		}
 
 		// Prime order state, if available
-		if (Bot.playbook.lastState.orderIndex?.length) {
-			for (let orderIdx in Bot.playbook.lastState.orderIndex) {
+		if (YATAB.playbook.lastState.orderIndex?.length) {
+			for (let orderIdx in YATAB.playbook.lastState.orderIndex) {
 				try {
-					const order = Bot.getItem(Bot.playbook.lastState.orderIndex[orderIdx]) as OrderItem;
-					let orderData = Bot.playbook.lastState.order[orderIdx];
+					const order = YATAB.getItem(YATAB.playbook.lastState.orderIndex[orderIdx]) as OrderItem;
+					let orderData = YATAB.playbook.lastState.order[orderIdx];
 					if (order && orderData) {
 						// TODO: Implement validation on state `status`, `responseStatus`
 						order.update(orderData);
 					}
 				} catch (error) {
-					Bot.log(error, Log.Err);
+					YATAB.log(error, Log.Err);
 				}
 			}
 		}
@@ -546,7 +546,7 @@ export type ItemIndexType = {
 	
 	// No existing playbook state, default to empty
 	else {
-		Bot.playbook.lastState = {
+		YATAB.playbook.lastState = {
 			candle: [],
 			candleIndex: [],
 			order: [],
@@ -557,7 +557,7 @@ export type ItemIndexType = {
 		};
 	}
 
-	Bot.playbook.nextState = {
+	YATAB.playbook.nextState = {
 		...{
 			candle: [],
 			candleIndex: [],
@@ -567,18 +567,18 @@ export type ItemIndexType = {
 			timeframeIndex: [],
 			updateTime: 0,
 		},
-		...Bot.playbook.lastState
+		...YATAB.playbook.lastState
 	};
 
 	// Attempt to execute all `Timeframe`
 	if (playbookCache.timeframe.item.length === 0)
-		Bot.log(`No timeframes to execute`, Log.Warn);
+		YATAB.log(`No timeframes to execute`, Log.Warn);
 	else {
 
 		// Execute all timeframes, in order they were found in the playbook
 		for (let timeframeName in playbookCache.timeframe.item) {
 			try {
-				const timeframe = Bot.getItem(playbookCache.timeframe.item[timeframeName]) as TimeframeItem;
+				const timeframe = YATAB.getItem(playbookCache.timeframe.item[timeframeName]) as TimeframeItem;
 
 				// Establish interval
 				if (timeframe.intervalTime)
@@ -598,7 +598,7 @@ export type ItemIndexType = {
 					// The timeframe context
 					timeframe: timeframe,
 				});
-				Bot.log(`Timeframe '${timeframe.name}'; Subscription.despatch.totalCallbacks: ${totalCallbacks}`, Log.Verbose);
+				YATAB.log(`Timeframe '${timeframe.name}'; Subscription.despatch.totalCallbacks: ${totalCallbacks}`, Log.Verbose);
 
 				// Collect timeframe results for playbook state
 				let timeframeSignal: number[] = [];
@@ -613,7 +613,7 @@ export type ItemIndexType = {
 						if (!timeframe.result[i][j])
 							continue;
 
-						const strategy = Bot.getItem(timeframe.resultIndex[i]) as StrategyItem;
+						const strategy = YATAB.getItem(timeframe.resultIndex[i]) as StrategyItem;
 
 						// TODO: Type
 						const latestCandle = timeframe.result[i][j].length - 1;
@@ -628,22 +628,22 @@ export type ItemIndexType = {
 
 				// Persist next state timeframe result timestamps
 				const idxIndentifier = timeframe.name ?? timeframe.uuid;
-				let index = Bot.playbook.nextState.timeframeIndex.findIndex(_name => _name === idxIndentifier);
+				let index = YATAB.playbook.nextState.timeframeIndex.findIndex(_name => _name === idxIndentifier);
 				if (index >= 0) {
 
 					// Add timeframe results, with deduplication
-					Bot.playbook.nextState.timeframe[index] = [
+					YATAB.playbook.nextState.timeframe[index] = [
 						...new Set([
-							...Bot.playbook.nextState.timeframe[index],
+							...YATAB.playbook.nextState.timeframe[index],
 							...timeframeSignal
 						])
 					];
 				} else {
-					Bot.playbook.nextState.timeframe.push(timeframeSignal);
-					Bot.playbook.nextState.timeframeIndex.push(idxIndentifier);
+					YATAB.playbook.nextState.timeframe.push(timeframeSignal);
+					YATAB.playbook.nextState.timeframeIndex.push(idxIndentifier);
 				}
 			} catch (error) {
-				Bot.log(error, Log.Err);
+				YATAB.log(error, Log.Err);
 			}
 		}
 	}
@@ -651,19 +651,19 @@ export type ItemIndexType = {
 	// Persist next state chart data
 	if (playbookCache.chart.item.length) {
 		for (let chartIdx in playbookCache.chart.itemIndex) {
-			const chart = Bot.getItem(playbookCache.chart.item[chartIdx]) as ChartItem;
+			const chart = YATAB.getItem(playbookCache.chart.item[chartIdx]) as ChartItem;
 
 			// Add chart data to playbook state
 			if (chart.dataset) {
 				const idxIndentifier = chart.name ?? chart.uuid;
-				let index = Bot.playbook.nextState.candleIndex.findIndex(_name => _name === idxIndentifier);
+				let index = YATAB.playbook.nextState.candleIndex.findIndex(_name => _name === idxIndentifier);
 				if (index >= 0) {
 
 					// Replace chart candles
-					Bot.playbook.nextState.candle[index] = chart.dataset;
+					YATAB.playbook.nextState.candle[index] = chart.dataset;
 				} else {
-					Bot.playbook.nextState.candle.push(chart.dataset);
-					Bot.playbook.nextState.candleIndex.push(idxIndentifier);
+					YATAB.playbook.nextState.candle.push(chart.dataset);
+					YATAB.playbook.nextState.candleIndex.push(idxIndentifier);
 				}
 			}
 		}
@@ -672,20 +672,20 @@ export type ItemIndexType = {
 	// Persist next state order data
 	if (playbookCache.order.item.length) {
 		for (let orderIdx in playbookCache.order.itemIndex) {
-			const order = Bot.getItem(playbookCache.order.item[orderIdx]) as OrderItem;
+			const order = YATAB.getItem(playbookCache.order.item[orderIdx]) as OrderItem;
 
 			const idxIndentifier = order.name ?? order.uuid;
-			let index = Bot.playbook.nextState.orderIndex.findIndex(_name => _name === idxIndentifier);
+			let index = YATAB.playbook.nextState.orderIndex.findIndex(_name => _name === idxIndentifier);
 			if (index >= 0) {
 
 				// Replace order
-				Bot.playbook.nextState.order[index] = order;
+				YATAB.playbook.nextState.order[index] = order;
 			} else {
-				Bot.playbook.nextState.order.push(order);
-				Bot.playbook.nextState.orderIndex.push(idxIndentifier);
+				YATAB.playbook.nextState.order.push(order);
+				YATAB.playbook.nextState.orderIndex.push(idxIndentifier);
 			}
 		}
 	}
 
-	await Bot.exit();
+	await YATAB.exit();
 })();
