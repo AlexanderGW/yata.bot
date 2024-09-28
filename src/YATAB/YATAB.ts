@@ -86,6 +86,8 @@ export type YATABData = {
 	) => string
 };
 
+export const YATAB_VERSION = '1.0.0-dev';
+
 export const YATAB: YATABData = {
 	backtest: false,
 	dryrun: true,
