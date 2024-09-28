@@ -1,7 +1,14 @@
 # Yet Another Technical Analysis Bot (YATAB)
-Still in very early stages of development. Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.com/package/talib).
 
-Following a concept of timeframes with strategies (which can be chained together with other strategies), to look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for firing events (such as buy, sell, SL, etc.), based on a definable number of signals within a given timeframe.
+## Use at Your Own Risk
+[See disclaimer at the end of this file, before using this project.](#disclaimer)
+
+## What is YATAB?
+This is a technical analysis, financial market trading bot (currently supports crypto markets), with support for [YAML playbook templates](#playbooks-yaml-templates), to control how and what the bot does; whether thats automated trading, or simple notifications.
+
+Following a concept of timeframes with strategies (which can be chained together with other strategies), to look for scenarios (definable sets of conditions over a given number of data frames) on a combination of chart datapoints and/or technical analysis; with subscriptions for callbacks, based on a definable number of signals within a given timeframe.
+
+Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.com/package/talib).
 
 ## Project status
 - Planning a candidate release towards the end of 2024
@@ -408,3 +415,23 @@ Notes for EVM testing.
 ### UniswapV2Router02 `0xa6AD18C2aC47803E193F75c3677b14BF19B94883`
 ### WFTM `0xf1277d1Ed8AD466beddF92ef448A132661956621`
 ### USDT `0xc7ddde830db19bd94dd584dcac774f0be47b29d1`
+
+# Disclaimer
+
+### Use at Your Own Risk
+
+This project is provided for educational and informational purposes only. It is not intended to be used as financial, trading, or investment advice. The algorithms and technical analysis tools implemented in this bot are based on publicly available methods, but there is no guarantee that they will be accurate, profitable, or effective in any market condition.
+
+### No Liability
+
+I, the repository owner, do not assume any responsibility for any financial losses, damages, or issues that may arise from the use of this bot. You are solely responsible for your trading decisions and the risks associated with using automated trading tools.
+
+### Not Financial Advice
+
+This bot does not provide any buy/sell recommendations or market predictions. Please consult with a licensed financial advisor or conduct your own research before making any financial decisions.
+
+### Important:
+
+- Use this bot at your own discretion.
+- Past performance is not indicative of future results.
+- Ensure compliance with any relevant regulations or exchange rules.

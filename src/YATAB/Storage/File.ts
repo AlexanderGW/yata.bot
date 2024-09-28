@@ -1,4 +1,4 @@
-import { Bot, ItemBaseData, Log } from "../Bot";
+import { YATAB, ItemBaseData, Log } from "../YATAB";
 import { StorageApiData, StorageApiInterface } from "../Storage";
 
 import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -41,7 +41,7 @@ export class FileStorage implements StorageApiInterface {
 			}
 			returnValue = JSON.parse(fileContent);
 		} catch (error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 		}
 
 		return returnValue;
@@ -60,7 +60,7 @@ export class FileStorage implements StorageApiInterface {
 		const storagePath = `./storage/json`;
 		const storageFile = `${storagePath}/${id}.json`;
 
-		Bot.log(`Storage '${this.name}'; setItem; '${storageFile}'`, Log.Verbose);
+		YATAB.log(`Storage '${this.name}'; setItem; '${storageFile}'`, Log.Verbose);
 		
 		try {
 
@@ -84,8 +84,8 @@ export class FileStorage implements StorageApiInterface {
 
 			return true;
 		} catch (error) {
-			Bot.log(error, Log.Err);
-			Bot.log(`Storage '${this.name}'; Failed to create item '${storagePath}'`, Log.Err);
+			YATAB.log(error, Log.Err);
+			YATAB.log(`Storage '${this.name}'; Failed to create item '${storagePath}'`, Log.Err);
 		}
 		
 		return false;

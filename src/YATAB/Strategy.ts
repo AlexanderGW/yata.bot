@@ -1,5 +1,5 @@
 import { AnalysisResultData, AnalysisItem, AnalysisExecuteResultData } from "./Analysis";
-import { Bot, Log } from "./Bot";
+import { YATAB, Log } from "./YATAB";
 import { ChartCandleData, ChartItem } from "./Chart";
 import { ScenarioConditionMatch, ScenarioItem, getFieldData } from "./Scenario";
 import { v4 as uuidv4 } from 'uuid';
@@ -176,7 +176,7 @@ export class StrategyItem implements StrategyData {
 					strategyExecuteData: _,
 				});
 			} catch (error) {
-				Bot.log(error, Log.Err);
+				YATAB.log(error, Log.Err);
 			}
 		}
 
@@ -189,8 +189,8 @@ export const Strategy = {
 		_: StrategyData,
 	): StrategyItem {
 		let item = new StrategyItem(_);
-		let uuid = Bot.setItem(item);
+		let uuid = YATAB.setItem(item);
 
-		return Bot.getItem(uuid) as StrategyItem;
+		return YATAB.getItem(uuid) as StrategyItem;
 	}
 };

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Bot } from './Bot';
+import { YATAB } from './YATAB';
 
 const talib = require('talib');
 
@@ -96,15 +96,15 @@ export class AnalysisItem implements AnalysisData {
 			};
 		}
 
-		// Bot.log(this.explain);
-		// Bot.log(`type: ${_.type}`);
-		// Bot.log(`name: ${_.name}`);
-		// Bot.log(config);
+		// YATAB.log(this.explain);
+		// YATAB.log(`type: ${_.type}`);
+		// YATAB.log(`name: ${_.name}`);
+		// YATAB.log(config);
 
 		this.config = config;
 
 		this.uuid = _.uuid ?? uuidv4();
-		// Bot.log(`Added analysis: ${this.name}`);
+		// YATAB.log(`Added analysis: ${this.name}`);
 	}
 }
 
@@ -113,8 +113,8 @@ export const Analysis = {
 		_: AnalysisData,
 	): AnalysisItem {
 		let item = new AnalysisItem(_);
-		let uuid = Bot.setItem(item);
+		let uuid = YATAB.setItem(item);
 
-		return Bot.getItem(uuid) as AnalysisItem;
+		return YATAB.getItem(uuid) as AnalysisItem;
 	}
 };

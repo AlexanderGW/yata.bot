@@ -1,4 +1,4 @@
-import { Bot, Log } from '../Bot';
+import { YATAB, Log } from '../YATAB';
 import { ChartCandleData, ChartItem } from '../Chart';
 import {
 	ExchangeApiData,
@@ -62,7 +62,7 @@ export class GeckoTerminalV2Exchange extends Web3 implements GeckoTerminalV2Exch
 	) {
 		if (_.errors) {
 			for (let i = 0; i < _.errors.length; i++) {
-				Bot.log(_.errors[i], Log.Err);
+				YATAB.log(_.errors[i], Log.Err);
 			}
 
 			const lastError = _.errors?.pop();
@@ -94,7 +94,7 @@ export class GeckoTerminalV2Exchange extends Web3 implements GeckoTerminalV2Exch
 		this.requests++;
 
 		const endpointUrl = `https://api.geckoterminal.com/api/v2${path}`;
-		Bot.log(`GeckoTerminalV2.endpointUrl: ${endpointUrl}`, Log.Verbose);
+		YATAB.log(`GeckoTerminalV2.endpointUrl: ${endpointUrl}`, Log.Verbose);
 
 		const response = await axios.get(
 			endpointUrl,
@@ -121,7 +121,7 @@ export class GeckoTerminalV2Exchange extends Web3 implements GeckoTerminalV2Exch
 		const pairLocal = `${_.a.name}-${_.b.name}`;
 		const pairForeign = `${_.a.symbol}-${_.b.symbol}`;
 
-		Bot.log(`Exchange '${this.name}'; api.getTicker; Pair: '${pairLocal}'; Foreign: '${pairForeign}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.getTicker; Pair: '${pairLocal}'; Foreign: '${pairForeign}'`, Log.Verbose);
 
 		const network = 'eth';
 		const addresses = `${_.a.symbol},${_.b.symbol}`;
@@ -132,7 +132,7 @@ export class GeckoTerminalV2Exchange extends Web3 implements GeckoTerminalV2Exch
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.getTicker; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 		if (!responseJson)
 			throw new Error(`Invalid 'Ticker' response`);
@@ -146,8 +146,8 @@ export class GeckoTerminalV2Exchange extends Web3 implements GeckoTerminalV2Exch
 
 		// Walk all balances
 		for (let resultToken in responseJson.data.attributes.token_prices) {
-			// Bot.log(`resultToken: ${resultToken}`, Log.Verbose);
-			// Bot.log(`price: ${Number(responseJson.data.attributes.token_prices[resultToken])}`, Log.Verbose);
+			// YATAB.log(`resultToken: ${resultToken}`, Log.Verbose);
+			// YATAB.log(`price: ${Number(responseJson.data.attributes.token_prices[resultToken])}`, Log.Verbose);
 			// Get asset pair information on exchange
 			// TODO: possible caching?
 
@@ -186,7 +186,7 @@ export class GeckoTerminalV2Exchange extends Web3 implements GeckoTerminalV2Exch
 		chart: ChartItem,
 	): Promise<ChartCandleData> {
 		let nextDate = new Date(chart.datasetNextTime);
-		Bot.log(`Chart '${chart.name}'; api.syncChart; From: ${nextDate.toISOString()}`);
+		YATAB.log(`Chart '${chart.name}'; api.syncChart; From: ${nextDate.toISOString()}`);
 
 		const aggregateOptions = [
 			60000,
@@ -231,7 +231,7 @@ export class GeckoTerminalV2Exchange extends Web3 implements GeckoTerminalV2Exch
 		);
 
 		// Log raw response
-		Bot.log(`Exchange '${this.name}'; api.syncChart; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
+		YATAB.log(`Exchange '${this.name}'; api.syncChart; Response: '${JSON.stringify(responseJson)}'`, Log.Verbose);
 
 		let etlData: ChartCandleData = {
 			close: [],
@@ -260,7 +260,7 @@ export class GeckoTerminalV2Exchange extends Web3 implements GeckoTerminalV2Exch
 
 		for (let i = 0; i < pairData.length; i++) {
 			p = pairData[i];
-			// Bot.log(p[0]);return;
+			// YATAB.log(p[0]);return;
 			etlData.openTime?.push(p[0]);
 			etlData.open?.push(p[1]);
 			etlData.high?.push(p[2]);

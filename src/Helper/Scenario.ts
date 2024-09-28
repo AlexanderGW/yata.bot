@@ -1,4 +1,4 @@
-import { Scenario } from "../Bot/Scenario";
+import { Scenario } from "../YATAB/Scenario";
 import {
 	Bollinger20 as analysisBollinger20,
 	Macd12_26_9 as analysisMacd12_26_9,

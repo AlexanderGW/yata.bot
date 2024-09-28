@@ -3,12 +3,12 @@ import { expect } from 'chai';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import { Asset } from '../src/Bot/Asset';
-import { Bot, Log } from '../src/Bot/Bot';
-import { Chart, ChartCandleData } from '../src/Bot/Chart';
-import { Pair } from '../src/Bot/Pair';
-import { Strategy, StrategyItem } from '../src/Bot/Strategy';
-import { Timeframe } from '../src/Bot/Timeframe';
+import { Asset } from '../src/YATAB/Asset';
+import { YATAB, Log } from '../src/YATAB/YATAB';
+import { Chart, ChartCandleData } from '../src/YATAB/Chart';
+import { Pair } from '../src/YATAB/Pair';
+import { Strategy, StrategyItem } from '../src/YATAB/Strategy';
+import { Timeframe } from '../src/YATAB/Timeframe';
 
 // Helpers
 import {
@@ -23,9 +23,9 @@ import {
 	Rsi14 as analysisRsi14,
 	Sma20 as analysisSma20
 } from '../src/Helper/Analysis';
-import { Order, OrderSide, OrderStatus, OrderType } from '../src/Bot/Order';
-import { Exchange } from '../src/Bot/Exchange';
-import { Subscription, SubscriptionData } from '../src/Bot/Subscription';
+import { Order, OrderSide, OrderStatus, OrderType } from '../src/YATAB/Order';
+import { Exchange } from '../src/YATAB/Exchange';
+import { Subscription, SubscriptionData } from '../src/YATAB/Subscription';
 
 const fs = require('fs');
 
@@ -116,7 +116,7 @@ describe('Backtest dataset 1', () => {
                 chartEthBtc4h.dataset = responseJson;
             }
         } catch (error) {
-            Bot.log(error, Log.Err);
+            YATAB.log(error, Log.Err);
         }
 
         // RSI crossing upward into 30 range
@@ -196,7 +196,7 @@ describe('Backtest dataset 1', () => {
                     });
                     await order1.execute();
                 } catch (error) {
-                    Bot.log(error, Log.Err);
+                    YATAB.log(error, Log.Err);
                 }
 
                 if (subscribe.timeframeAny?.length) {
@@ -205,7 +205,7 @@ describe('Backtest dataset 1', () => {
 
                         // Index timeframe UUID for test comparison
                         actualResultIndex.push(timeframe.uuid);
-                        Bot.log(`TEST: Timeframe '${timeframe.name}'; timeframeResultCount: ${timeframe.result.length}`);
+                        YATAB.log(`TEST: Timeframe '${timeframe.name}'; timeframeResultCount: ${timeframe.result.length}`);
                 
                         let timeField: string = '';
                         if (subscribe.chart.dataset?.openTime)
@@ -220,11 +220,11 @@ describe('Backtest dataset 1', () => {
                             if (result?.length) {
 
                                 // Get strategy from storage, by UUID
-                                let strategy = Bot.getItem(uuid) as StrategyItem;
+                                let strategy = YATAB.getItem(uuid) as StrategyItem;
 
                                 //'${strategy.action[j][0].name}'
-                                Bot.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
-                                Bot.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`);
+                                YATAB.log(`TEST: Strategy '${strategy.name}' (${j + 1}/${timeframe.result.length}), scenario '${strategy.action[j][0].name}' has ${result.length} matches`);
+                                YATAB.log(`TEST: Total: ${result?.length}. Leading frame matches (by field: ${timeField.length ? timeField : 'index'})`);
 
                                 let actualTimeframeResult: number[] = [];
 
@@ -241,11 +241,11 @@ describe('Backtest dataset 1', () => {
                                             actualTimeframeResult.push(date.getTime());
                                             
                                             // resultTimes.push(date.toISOString());
-                                            Bot.log(`TEST: Match: ${date.toISOString()}`);
+                                            YATAB.log(`TEST: Match: ${date.toISOString()}`);
                                             
                                             // Output details on all matching scenario conditions
                                             for (let l = 0; l < result[k].length; l++) {
-                                                Bot.log((result[k][l]));
+                                                YATAB.log((result[k][l]));
                                             }
                                         }
                                     }
@@ -285,7 +285,7 @@ describe('Backtest dataset 1', () => {
         )
         
         .catch((error) => {
-            Bot.log(error, Log.Err);
+            YATAB.log(error, Log.Err);
         });
 
         // Execute the timeframe

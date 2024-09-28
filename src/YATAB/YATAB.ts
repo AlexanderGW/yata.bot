@@ -1,5 +1,5 @@
 /**
- * @name Tradebot (can't think of a name)
+ * @name Yet Another Technical Analysis YATAB (YATAB)
  * @author Alexander Gailey-White
  * @date 2024
  */
@@ -20,9 +20,9 @@ export enum Log {
 	Verbose = 0,
 }
 
-export type BotStateDataIndexType = ParallelArray;
+export type YATABStateDataIndexType = ParallelArray;
 
-export type BotStateType = {
+export type YATABStateType = {
 	candle: Array<ChartCandleData>,
 	candleIndex: Array<string>,
 	order: Array<OrderData>,
@@ -40,20 +40,20 @@ export type BotStateType = {
 	uuid: string,
 }
 
-export type BotInitData = {
+export type YATABInitData = {
 	dryrun?: boolean,
 	backtest?: boolean,
 };
 
-export type BotPlaybookData = {
+export type YATABPlaybookData = {
 	name: string,
 	storage?: StorageItem | null,
 	storageUuid?: string,
-	lastState?: BotStateType | undefined,
-	nextState?: BotStateType | undefined,
+	lastState?: YATABStateType | undefined,
+	nextState?: YATABStateType | undefined,
 };
 
-export type BotData = {
+export type YATABData = {
 	backtest: boolean,
 	dryrun: boolean,
 	initialized: boolean,
@@ -62,14 +62,14 @@ export type BotData = {
 	itemNameIndex: string[],
 	itemClass: string[],
 	itemClassIndex: number[][],
-	playbook?: BotPlaybookData | undefined,
+	playbook?: YATABPlaybookData | undefined,
 	__devPrepareNextStateOrder: (
 		order: OrderItem,
 		result: OrderBaseData,
 	) => boolean,
 	exit: () => Promise<void>,
 	init: (
-		_: BotInitData
+		_: YATABInitData
 	) => void,
 	log: (
 		input: unknown,
@@ -86,7 +86,10 @@ export type BotData = {
 	) => string
 };
 
-export const Bot: BotData = {
+export const YATAB_VERSION = 10000;
+export const YATAB_LABEL = '1.0.0-dev';
+
+export const YATAB: YATABData = {
 	backtest: false,
 	dryrun: true,
 	initialized: false,
@@ -121,28 +124,28 @@ export const Bot: BotData = {
 		result: OrderBaseData,
 	) {
 		if (result) {
-			const orderIndex = Bot.playbook?.nextState?.orderIndex.findIndex((x: string) => x === order.name);
+			const orderIndex = YATAB.playbook?.nextState?.orderIndex.findIndex((x: string) => x === order.name);
 	
 			if (
 				orderIndex
 				&& orderIndex >= -1
-				&& Bot.playbook?.nextState?.order[orderIndex]
+				&& YATAB.playbook?.nextState?.order[orderIndex]
 			) {
 				if (result.transactionId)
-					Bot.playbook.nextState.order[orderIndex].transactionId = [
+					YATAB.playbook.nextState.order[orderIndex].transactionId = [
 						...order.transactionId,
 						...result.transactionId
 					];
 	
 				// TODO: Implement validation on state `status`, `responseStatus`?
 				if (result.responseStatus)
-					Bot.playbook.nextState.order[orderIndex].responseStatus = result.responseStatus;
+					YATAB.playbook.nextState.order[orderIndex].responseStatus = result.responseStatus;
 				if (result.responseTime)
-					Bot.playbook.nextState.order[orderIndex].responseTime = result.responseTime;
+					YATAB.playbook.nextState.order[orderIndex].responseTime = result.responseTime;
 				if (result.referenceId)
-					Bot.playbook.nextState.order[orderIndex].referenceId = result.referenceId;
+					YATAB.playbook.nextState.order[orderIndex].referenceId = result.referenceId;
 				if (result.status)
-					Bot.playbook.nextState.order[orderIndex].status = result.status;
+					YATAB.playbook.nextState.order[orderIndex].status = result.status;
 
 				return true;
 			}
@@ -152,31 +155,31 @@ export const Bot: BotData = {
 	},
 
 	async exit () {
-		if (!Bot.playbook?.nextState)
-			return Bot.log(`No next playback state`, Log.Verbose);
+		if (!YATAB.playbook?.nextState)
+			return YATAB.log(`No next playback state`, Log.Verbose);
 
 		// Persist playbook state for next iteration
-		Bot.playbook.nextState.updateTime = Date.now();
+		YATAB.playbook.nextState.updateTime = Date.now();
 
-		// Bot.log(`Bot.playbook.nextState`, Log.Verbose);
-		// console.log(Bot.playbook.nextState);
+		// YATAB.log(`YATAB.playbook.nextState`, Log.Verbose);
+		// console.log(YATAB.playbook.nextState);
 
 		// TODO: To be refactored; If `pair` not removed, the `OrderItem.pair` will be replaced with primative object, on next run
-		Bot.playbook.nextState.order.forEach(order => {
+		YATAB.playbook.nextState.order.forEach(order => {
 			delete order.pair;
 		});
 
-		const setItemResult = await Bot.playbook.storage?.setItem(
-			Bot.playbook.name,
-			Bot.playbook.nextState
+		const setItemResult = await YATAB.playbook.storage?.setItem(
+			YATAB.playbook.name,
+			YATAB.playbook.nextState
 		);
 		if (setItemResult) {
-			Bot.log(`Updated playback state: '${Bot.playbook.name}'`);
+			YATAB.log(`Updated playback state: '${YATAB.playbook.name}'`);
 		}
-		// Bot.log(`setItemResult`, Log.Verbose);
-		// Bot.log(setItemResult, Log.Verbose);
+		// YATAB.log(`setItemResult`, Log.Verbose);
+		// YATAB.log(setItemResult, Log.Verbose);
 		
-		await Bot.playbook.storage?.disconnect();
+		await YATAB.playbook.storage?.disconnect();
 
 		// TODO: Process exit event/functions to be implemented/refactorered
 		process.exit(0);
@@ -188,7 +191,7 @@ export const Bot: BotData = {
 	 * @returns 
 	 */
 	init (
-		_: BotInitData,
+		_: YATABInitData,
 	): void {
 		if (this.initialized)
 			return;
@@ -196,7 +199,7 @@ export const Bot: BotData = {
 		this.backtest = _.backtest ?? false;
 		this.dryrun = _.dryrun ?? true;
 		this.initialized = true;
-		Bot.log(`Y:A:TA:B; Backtest: ${this.backtest ? `1` : `0`}; Dryrun: ${this.dryrun ? `1` : `0`}`, Log.Verbose);
+		YATAB.log(`YATAB:${YATAB_LABEL} '${YATAB_VERSION}'; Backtest: ${this.backtest ? `1` : `0`}; Dryrun: ${this.dryrun ? `1` : `0`}`, Log.Verbose);
 	},
 
 	/**
@@ -393,8 +396,8 @@ export const Bot: BotData = {
 
 process.on('exit', async (code) => {
 	const used = process.memoryUsage().heapUsed / 1024 / 1024;
-	Bot.log(`The bot used approximately ${Math.round(used * 100) / 100} MB`, Log.Verbose);
-  Bot.log(`Exit code: ${code}`, Log.Verbose);
+	YATAB.log(`The bot used approximately ${Math.round(used * 100) / 100} MB`, Log.Verbose);
+  YATAB.log(`Exit code: ${code}`, Log.Verbose);
 });
 
 // Persist playbook state, on exit for next run.
@@ -403,22 +406,22 @@ process.on('exit', async (code) => {
 // 	const used = process.memoryUsage().heapUsed / 1024 / 1024;
 // 	console.log(`The bot used approximately ${Math.round(used * 100) / 100} MB`);
 
-// 	if (Bot.playbook) {
-// 		if (Bot.playbook.nextState) {
+// 	if (YATAB.playbook) {
+// 		if (YATAB.playbook.nextState) {
 
 // 			// Persist playbook state for next iteration
-// 			Bot.playbook.nextState.updateTime = Date.now();
-// 			Bot.log(`Bot.playbook.nextState.updateTime`, Log.Verbose);
-// 			Bot.log(Bot.playbook.nextState.updateTime, Log.Verbose);
+// 			YATAB.playbook.nextState.updateTime = Date.now();
+// 			YATAB.log(`YATAB.playbook.nextState.updateTime`, Log.Verbose);
+// 			YATAB.log(YATAB.playbook.nextState.updateTime, Log.Verbose);
 
-// 			// delete Bot.playbook.nextState.order.pair;
+// 			// delete YATAB.playbook.nextState.order.pair;
 	
-// 			const setItemResult = await Bot.playbook.storage?.setItem(Bot.playbook.name, Bot.playbook.nextState);
-// 			Bot.log(`setItemResult`, Log.Verbose);
-// 			Bot.log(setItemResult, Log.Verbose);
+// 			const setItemResult = await YATAB.playbook.storage?.setItem(YATAB.playbook.name, YATAB.playbook.nextState);
+// 			YATAB.log(`setItemResult`, Log.Verbose);
+// 			YATAB.log(setItemResult, Log.Verbose);
 // 		}
 		
-// 		await Bot.playbook.storage?.disconnect();
+// 		await YATAB.playbook.storage?.disconnect();
 // 	}
 
 //   console.log(`Exit code: ${code}`);

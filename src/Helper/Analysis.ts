@@ -1,5 +1,5 @@
-import { Analysis } from "../Bot/Analysis";
-import { Bot, Log } from "../Bot/Bot";
+import { Analysis } from "../YATAB/Analysis";
+import { YATAB, Log } from "../YATAB/YATAB";
 
 // Relative Strength Index (RSI) 14
 export const Rsi14 = Analysis.new({
@@ -11,7 +11,7 @@ export const Rsi14 = Analysis.new({
 	},
 	type: 'RSI',
 });
-// Bot.log(Rsi14.explain, Log.Verbose);
+// YATAB.log(Rsi14.explain, Log.Verbose);
 
 // Exponential Moving Average (EMA) 20
 export const Ema20 = Analysis.new({
@@ -22,7 +22,7 @@ export const Ema20 = Analysis.new({
 	},
 	type: 'EMA',
 });
-// Bot.log(Ema20.explain, Log.Verbose);
+// YATAB.log(Ema20.explain, Log.Verbose);
 
 // Exponential Moving Average (EMA) 21
 export const Ema21 = Analysis.new({
@@ -33,7 +33,7 @@ export const Ema21 = Analysis.new({
 	},
 	type: 'EMA',
 });
-// Bot.log(Ema21.explain, Log.Verbose);
+// YATAB.log(Ema21.explain, Log.Verbose);
 
 // Exponential Moving Average (EMA) 100
 export const Ema100 = Analysis.new({
@@ -44,7 +44,7 @@ export const Ema100 = Analysis.new({
 	},
 	type: 'EMA',
 });
-// Bot.log(Ema100.explain, Log.Verbose);
+// YATAB.log(Ema100.explain, Log.Verbose);
 
 // Simple Moving Average (SMA) 20
 export const Sma20 = Analysis.new({
@@ -55,7 +55,7 @@ export const Sma20 = Analysis.new({
 	},
 	type: 'SMA',
 });
-// Bot.log(Sma20.explain, Log.Verbose);
+// YATAB.log(Sma20.explain, Log.Verbose);
 
 // Simple Moving Average (SMA) 50
 export const Sma50 = Analysis.new({
@@ -66,7 +66,7 @@ export const Sma50 = Analysis.new({
 	},
 	type: 'SMA',
 });
-// Bot.log(Sma50.explain, Log.Verbose);
+// YATAB.log(Sma50.explain, Log.Verbose);
 
 // Simple Moving Average (SMA) 200
 export const Sma200 = Analysis.new({
@@ -77,7 +77,7 @@ export const Sma200 = Analysis.new({
 	},
 	type: 'SMA',
 });
-// Bot.log(Sma200.explain, Log.Verbose);
+// YATAB.log(Sma200.explain, Log.Verbose);
 
 // Bollinger Bands (dependent on SMA20 result)
 export const Bollinger20 = Analysis.new({
@@ -99,4 +99,4 @@ export const Macd12_26_9 = Analysis.new({
 	},
 	type: 'MACD',
 });
-// Bot.log(Macd12_26_9.explain, Log.Verbose);
+// YATAB.log(Macd12_26_9.explain, Log.Verbose);

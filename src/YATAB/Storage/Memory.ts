@@ -1,4 +1,4 @@
-import { Bot, Log } from "../Bot";
+import { YATAB, Log } from "../YATAB";
 import { StorageApiData, StorageApiInterface, StorageItemOptionData } from "../Storage";
 
 export type ParallelArrayStorageData = {
@@ -34,7 +34,7 @@ export class MemoryStorage implements ParallelArrayStorageData, StorageApiInterf
 			if (index >= 0)
 				returnValue = this.item[index];
 		} catch (error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 		}
 
 		return returnValue;
@@ -72,7 +72,7 @@ export class MemoryStorage implements ParallelArrayStorageData, StorageApiInterf
 
 			return true;
 		} catch (error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 		}
 
 		return false;

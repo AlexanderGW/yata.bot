@@ -1,4 +1,4 @@
-import { Bot, Log } from "./Bot";
+import { YATAB, Log } from "./YATAB";
 import { PairItem } from "./Pair";
 import { v4 as uuidv4 } from 'uuid';
 import { ExchangeBalanceData, ExchangeItem } from "./Exchange";
@@ -167,7 +167,7 @@ export class OrderItem implements OrderData {
 			// console.log(`ticker`, ticker);
 
 			const tickerPrice = Number(ticker?.price);
-			Bot.log(`Order '${this.name}'; Pair: '${this.pair.name}'; Price: '${tickerPrice}'`, Log.Verbose);
+			YATAB.log(`Order '${this.name}'; Pair: '${this.pair.name}'; Price: '${tickerPrice}'`, Log.Verbose);
 
 			if (isPercentage(price)) {
 				const pricePercent = Number(
@@ -198,14 +198,14 @@ export class OrderItem implements OrderData {
 				Number(ticker?.decimals)
 			);
 
-			Bot.log(`Order '${this.name}'; Actual price: ${priceActual}`);
+			YATAB.log(`Order '${this.name}'; Actual price: ${priceActual}`);
 
 			this.price = price;
 			this.priceActual = priceActual;
 
 			return true;
 		} catch (error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 		}
 
 		return false;
@@ -215,7 +215,7 @@ export class OrderItem implements OrderData {
 		try {
 			return await this.pair.exchange.getTicker(this.pair);
 		} catch (error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 		}
 
 		return null;
@@ -235,7 +235,7 @@ export class OrderItem implements OrderData {
 
 			return result.balance[index];
 		} catch (error) {
-			Bot.log(error, Log.Err);
+			YATAB.log(error, Log.Err);
 		}
 
 		return null;
@@ -305,7 +305,7 @@ export class OrderItem implements OrderData {
 
 						quantityActual = ((balanceB.available / 100) * quantityPercent) / targetPrice;
 
-						Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of pair '${this.pair.b.name}' balance '${balanceB.available}', for '${quantityActual}', at '${targetPrice}'`, Log.Verbose);
+						YATAB.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of pair '${this.pair.b.name}' balance '${balanceB.available}', for '${quantityActual}', at '${targetPrice}'`, Log.Verbose);
 
 						break;
 					}
@@ -313,7 +313,7 @@ export class OrderItem implements OrderData {
 					// Percentage of the current quantity
 					quantityActual = this.quantityActual + ((this.quantityActual / 100) * quantityPercent);
 
-					Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of quantity '${this.quantityActual}', for '${quantityActual}'`, Log.Verbose);
+					YATAB.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of quantity '${this.quantityActual}', for '${quantityActual}'`, Log.Verbose);
 
 					break;
 
@@ -349,7 +349,7 @@ export class OrderItem implements OrderData {
 
 						quantityActual = ((balanceA.available / 100) * quantityPercent);
 
-						Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of pair '${this.pair.a.name}' balance '${balanceA.available}', for '${quantityActual}', at '${targetPrice}'`, Log.Verbose);
+						YATAB.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of pair '${this.pair.a.name}' balance '${balanceA.available}', for '${quantityActual}', at '${targetPrice}'`, Log.Verbose);
 
 						break;
 					}
@@ -357,7 +357,7 @@ export class OrderItem implements OrderData {
 					// Percentage of the current quantity
 					quantityActual = this.quantityActual + ((this.quantityActual / 100) * quantityPercent);
 
-					Bot.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of quantity '${this.quantityActual}', for '${quantityActual}'`, Log.Verbose);
+					YATAB.log(`Order '${this.name}'; Quantity derived as percentage '${quantity}', of quantity '${this.quantityActual}', for '${quantityActual}'`, Log.Verbose);
 
 					break;
 			}
@@ -404,7 +404,7 @@ export class OrderItem implements OrderData {
 			);
 		}
 
-		// Bot.log(`Order '${this.name}'; Actual quantity: ${quantityActual}`);
+		// YATAB.log(`Order '${this.name}'; Actual quantity: ${quantityActual}`);
 
 		this.quantity = quantity;
 		this.quantityActual = quantityActual;
@@ -505,7 +505,7 @@ export class OrderItem implements OrderData {
 		if (this.dryrun)
 			logParts.unshift('DRYRUN');
 
-		Bot.log(logParts.join('; '), logType);
+		YATAB.log(logParts.join('; '), logType);
 
 		// TODO: Make conditional?
 		this.update(orderResponse);
@@ -516,7 +516,7 @@ export class OrderItem implements OrderData {
 	update (
 		_: OrderBaseData
 	) {
-		this.dryrun = _.dryrun ?? Bot.dryrun;
+		this.dryrun = _.dryrun ?? YATAB.dryrun;
 		if (_.name)
 			this.name = _.name;
 		// if (_.pair)
@@ -557,8 +557,8 @@ export const Order = {
 		_: OrderData,
 	): Promise<OrderItem> {
 		let item = new OrderItem(_);
-		let uuid = Bot.setItem(item);
+		let uuid = YATAB.setItem(item);
 
-		return Bot.getItem(uuid) as OrderItem;
+		return YATAB.getItem(uuid) as OrderItem;
 	},
 };
