@@ -86,7 +86,8 @@ export type YATABData = {
 	) => string
 };
 
-export const YATAB_VERSION = '1.0.0-dev';
+export const YATAB_VERSION = 10000;
+export const YATAB_LABEL = '1.0.0-dev';
 
 export const YATAB: YATABData = {
 	backtest: false,
@@ -198,7 +199,7 @@ export const YATAB: YATABData = {
 		this.backtest = _.backtest ?? false;
 		this.dryrun = _.dryrun ?? true;
 		this.initialized = true;
-		YATAB.log(`Y:A:TA:B; Backtest: ${this.backtest ? `1` : `0`}; Dryrun: ${this.dryrun ? `1` : `0`}`, Log.Verbose);
+		YATAB.log(`YATAB:${YATAB_LABEL} '${YATAB_VERSION}'; Backtest: ${this.backtest ? `1` : `0`}; Dryrun: ${this.dryrun ? `1` : `0`}`, Log.Verbose);
 	},
 
 	/**
