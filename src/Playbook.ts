@@ -508,38 +508,37 @@ export type ItemIndexType = {
 
 	// Handle existing playbook state
 	// TODO: Implement data validation? Version checks?
-	if (Bot.playbook.lastState) {
+	if (Bot.playbook?.lastState) {
 
 		// Prime chart datasets, if available
 		if (Bot.playbook.lastState.candleIndex?.length) {
 			for (let chartIdx in Bot.playbook.lastState.candleIndex) {
-
-				// Add dataset to chart
-				const chart = Bot.getItem(Bot.playbook.lastState.candleIndex[chartIdx]) as ChartItem;
-				if (chart && Bot.playbook.lastState.candle[chartIdx]) {
 					try {
-						// TODO: Set `datasetNextTime` based on tiemframe etc - currently falls back to default `BOT_CHART_DEFAULT_TOTAL_CANDLE`
-						chart.updateDataset(Bot.playbook.lastState.candle[chartIdx]);
-						chart.refreshDataset();
+						// Add dataset to chart
+						const chart = Bot.getItem(Bot.playbook.lastState.candleIndex[chartIdx]) as ChartItem;
+						if (chart && Bot.playbook.lastState.candle[chartIdx]) {
+							// TODO: Set `datasetNextTime` based on tiemframe etc - currently falls back to default `BOT_CHART_DEFAULT_TOTAL_CANDLE`
+							chart.updateDataset(Bot.playbook.lastState.candle[chartIdx]);
+							chart.refreshDataset();
+						}
 					} catch (error) {
 						Bot.log(error, Log.Err);
 					}
-				}
 			}
 		}
 
 		// Prime order state, if available
 		if (Bot.playbook.lastState.orderIndex?.length) {
 			for (let orderIdx in Bot.playbook.lastState.orderIndex) {
-				const order = Bot.getItem(Bot.playbook.lastState.orderIndex[orderIdx]) as OrderItem;
-				let orderData = Bot.playbook.lastState.order[orderIdx];
-				if (order && orderData) {
-					try {
+				try {
+					const order = Bot.getItem(Bot.playbook.lastState.orderIndex[orderIdx]) as OrderItem;
+					let orderData = Bot.playbook.lastState.order[orderIdx];
+					if (order && orderData) {
 						// TODO: Implement validation on state `status`, `responseStatus`
 						order.update(orderData);
-					} catch (error) {
-						Bot.log(error, Log.Err);
 					}
+				} catch (error) {
+					Bot.log(error, Log.Err);
 				}
 			}
 		}
