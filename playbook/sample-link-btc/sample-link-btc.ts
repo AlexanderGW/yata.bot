@@ -6,7 +6,7 @@ export const actionLinkBtcBuy = async (
 	subscription: SubscriptionData
 ) => {
 	Bot.log(`actionLinkBtcBuy`);
-	let linkBtcKrakenBuy = Bot.getItem('order:linkBtcKrakenBuy') as OrderItem;
+	let linkBtcKrakenBuy = Bot.getItem('yatab:playbook:sample-link-btc:order:linkBtcKrakenBuy') as OrderItem;
 	linkBtcKrakenBuy.update({
 		price: '-30%',
 		quantity: '0.1%',
@@ -23,14 +23,14 @@ export const actionLinkBtcBuy = async (
 		linkBtcKrakenBuyResult
 	);
 
-	Bot.exit();
+	await Bot.exit();
 };
 
 export const actionLinkBtcSell = async (
 	subscription: SubscriptionData
 ) => {
 	Bot.log(`actionLinkBtcSell`);
-	let linkBtcKrakenSell = Bot.getItem('order:linkBtcKrakenSell') as OrderItem;
+	let linkBtcKrakenSell = Bot.getItem('yatab:playbook:sample-link-btc:order:linkBtcKrakenSell') as OrderItem;
 	linkBtcKrakenSell.update({
 		price: '30%',
 		quantity: '0.1%',
@@ -47,5 +47,5 @@ export const actionLinkBtcSell = async (
 		linkBtcKrakenSellResult
 	);
 
-	Bot.exit();
+	await Bot.exit();
 };
