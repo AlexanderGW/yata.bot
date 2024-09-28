@@ -3,7 +3,7 @@ import { OrderAction } from "../../src/Bot/Order";
 import { SubscriptionData } from "../../src/Bot/Subscription";
 
 // Subscription `ethBtcKrakenBuy` action callback
-export const actionEthBtcBuy = (
+export const actionEthBtcBuy = async (
 	subscription: SubscriptionData
 ) => {
 	// console.log(subscription);
@@ -24,17 +24,17 @@ export const actionEthBtcBuy = (
 
 	// For item `name` based overwriting, use `BOT_ITEM_NAME_OVERWRITE=1` on `.env`
 
-	// let ethBtcKrakenSell = Bot.getItem('order.ethBtcKrakenSell');
+	// let ethBtcKrakenSell = Bot.getItem('yatab:playbook:sample-eth-btc:order.ethBtcKrakenSell');
 	// console.log(ethBtcKrakenSell);
 
 	// ethBtcKrakenSell.execute(OrderAction.Open);
-	Bot.exit();
+	await Bot.exit();
 };
 
 // Subscription `ethBtcKrakenSell` action callback
-export const actionEthBtcSell = (
+export const actionEthBtcSell = async (
 	subscription: SubscriptionData
 ) => {
 	Bot.log(`actionEthBtcSell`);
-	Bot.exit();
+	await Bot.exit();
 };

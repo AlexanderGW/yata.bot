@@ -1,4 +1,4 @@
-# Y:A:TA:B
+# YATA.BOT SAMPLE
 # Sample LINK/BTC bot to trade RSI crosses
 
 # Playbook schema version, required
@@ -8,9 +8,11 @@ version: 1
 # WARNING: Set to `false` for real transactions
 # dryrun: false
 
-# Will test the entire bredth of a chart dataset, instead of the leading edge
-# NOTE: This currently works by testing complete candles, not the evolution of candles
-# backtest: false
+# Will test the entire bredth of a chart dataset, instead of the leading edge.
+# Derived from provided data; `windowTime`, `candleTime`, scenario condition size.
+# NOTE: This currently works by testing complete candles within a timeframe,
+# not the evolution of candles.
+# backtest: true
 
 # Analysis
 analysis:

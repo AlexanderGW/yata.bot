@@ -1,17 +1,24 @@
-# MOCKUP FOR YAML TEMPLATE PARSING AND TESTING
+# YATA.BOT SAMPLE
+# Sample ETH/BTC bot to trade RSI crosses - using a dataset on file
 
 # Playbook schema version, required
 version: 1
 
 # Paper trading (default is `true`)
 # WARNING: Set to `false` for real transactions
-# dryrun: true
+# dryrun: false
+
+# Will test the entire bredth of a chart dataset, instead of the leading edge.
+# Derived from provided data; `windowTime`, `candleTime`, scenario condition size.
+# NOTE: This currently works by testing complete candles within a timeframe,
+# not the evolution of candles.
+backtest: true
 
 # Analysis
 analysis:
   rsi14:
     config:
-      inRealField: close
+      inRealField: candle.close
       optInTimePeriod: 14
     type: RSI
 
@@ -35,12 +42,12 @@ chart:
 # Exchanges
 exchange:
   # paper:
-  kraken:
-    class: Kraken
+  paper:
+    class: Paper
     # Optional override the item `name`
     # Be careful to use unique values, 
     # or you may run into strange problems
-    name: Kraken
+    name: paper
 
 # Orders
 order:
@@ -62,7 +69,7 @@ pair:
   ethBtcKraken:
     a: eth
     b: btc
-    exchange: kraken
+    exchange: paper
 
 # Scenarios
 scenario:
@@ -71,17 +78,17 @@ scenario:
       - rsi14
     condition:
       - # Previous candle
-        - [outReal, '>=', 70]
+        - [rsi14.outReal, '>=', 70]
       - # Latest candle
-        - [outReal, '<=', 70]
+        - [rsi14.outReal, '<=', 70]
   rsi14BullishOversold:
     analysis:
       - rsi14
     condition:
       - # Previous candle
-        - [outReal, '<=', 30]
+        - [rsi14.outReal, '<=', 30]
       - # Latest candle
-        - [outReal, '>=', 30]
+        - [rsi14.outReal, '>=', 30]
 
 # Storage
 storage:
