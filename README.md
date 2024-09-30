@@ -53,7 +53,7 @@ npm run playbook <name>
 pnpm playbook <name>
 ```
 
-See [`~/playbook/eth-btc-mockup/eth-btc-mockup.yml`](playbook/eth-btc-mockup/eth-btc-mockup.yml) for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions of ETH/BTC, on Kraken.
+See [`~/playbook/sample-eth-btc/sample-eth-btc.yml`](playbook/sample-eth-btc/sample-eth-btc.yml) for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions of ETH/BTC, on Kraken.
 
 ## Items
 The concept of items, refers to all core components of the bot.
@@ -73,7 +73,7 @@ Items are listed in order of dependency.
 | `Subscription` | Collection of `Timeframe`, awaiting a set of signal conditions, to do actions (callbacks) |
 
 ### Subscription actions (callbacks)
-See [`~/playbook/eth-btc-mockup/eth-btc-mockup.ts`](playbook/eth-btc-mockup/eth-btc-mockup.ts) for an example set of callbacks, reference in the `eth-btc-mockup` playbook above
+See [`~/playbook/sample-eth-btc/sample-eth-btc.ts`](playbook/sample-eth-btc/sample-eth-btc.ts) for an example set of callbacks, reference in the `sample-eth-btc` playbook above
 
 ### Timings
 All time values are in milliseconds, with the following exceptions;
