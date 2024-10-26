@@ -1,6 +1,6 @@
 import { parse } from 'yaml'
 
-import { YATAB, Log } from './YATAB/YATAB';
+import { YATAB, Log, YATAB_VERSION, YATAB_SCHEMA } from './YATAB/YATAB';
 import { Strategy, StrategyData, StrategyItem } from './YATAB/Strategy';
 import { Asset, AssetData } from './YATAB/Asset';
 import { Pair, PairData, PairItem } from './YATAB/Pair';
@@ -15,8 +15,13 @@ import { Subscription, SubscriptionData, SubscriptionEvent } from './YATAB/Subsc
 
 import { existsSync, readFileSync } from 'node:fs';
 
+import axios from 'axios';
+
 import * as dotenv from 'dotenv';
+import { configFields } from './Helper/Analysis';
 dotenv.config();
+
+export const REPO_URL = 'https://repo.yata.bot/';
 
 export interface PlaybookItemData {
 	storage?: {
@@ -94,7 +99,7 @@ export type PlaybookStructure = {
 	[index: string]: any,
 	backtest?: boolean;
 	dryrun?: boolean;
-	version: number;
+	version?: number;
 } & PlaybookItems;
 
 export type ItemIndexType = {
@@ -102,7 +107,188 @@ export type ItemIndexType = {
 	item: string[],
 };
 
+const mergePlaybook = (
+	target: PlaybookStructure,
+	source: PlaybookStructure
+): PlaybookStructure => {
+	for (const key in source) {
+		// If both the target and source have the same key and
+		// both values are objects, recursively merge them
+		if (source.hasOwnProperty(key)) {
+			if (
+				source[key] && 
+				typeof source[key] === 'object' &&
+				!Array.isArray(source[key])
+			) {
+				if (!target[key])
+					target[key] = {};
 
+				target[key] = mergePlaybook(target[key], source[key]);
+			} else {
+				// Otherwise, just assign the source value to the target
+				target[key] = source[key];
+			}
+		}
+	}
+
+	return target;
+}
+
+const parsePlaybook = async (
+	data: string,
+): Promise<PlaybookStructure | undefined> => {
+	let playbookData: PlaybookStructure = parse(data);
+
+	// Check playbook version
+	if (!playbookData.hasOwnProperty('version'))
+		throw new Error(`Missing required 'version' key`);
+	if (Number(playbookData.version) > YATAB_SCHEMA)
+		throw new Error(`Unsupported schema version`);
+
+	// Fetch use references
+	if (playbookData.hasOwnProperty('use')) {
+		// YATAB.log(playbookData.use, Log.Warn);
+		for (let typeKey in playbookData.use) {
+			const playbookObject = await use(playbookData.use[typeKey]);
+			// YATAB.log(`use(${playbookData.use[typeKey]})`, Log.Warn);
+			if (!playbookObject) continue;
+
+			playbookData = mergePlaybook(playbookData, playbookObject);
+
+			// console.warn(`playbookData`);
+			// console.warn(playbookData);
+			// TODO: Storage item, verify hash?
+		}
+	}
+
+	return playbookData;
+};
+
+export type PlaybookUseScopeData = {
+	type: string,
+	name: string,
+	params?: string[],
+}
+
+const use = async (
+	scopeRaw: string
+): Promise<PlaybookStructure | undefined> => {
+	const [type, name, ...params] = scopeRaw.toLocaleLowerCase().split(':');
+	// const scope: PlaybookUseScopeData = {
+	// 	type,
+	// 	name,
+	// 	params
+	// };
+	if (!type)
+			throw new Error(`Use '${scopeRaw}'; Missing 'type'`);
+	if (!name)
+			throw new Error(`Use '${scopeRaw}'; Missing 'name'`);
+	
+  // TODO: Apply `params`
+	let p = params;
+	// console.log(`params`, params);
+
+	// TODO: Lookup existing data, avoid recursion loops
+
+	switch (type) {
+		case 'playbook':
+		case 'scenario':
+			const endpointUrl = `${REPO_URL}${type}/raw?name=${name}`;
+			YATAB.log(`Use '${scopeRaw}'; Request '${endpointUrl}'`, Log.Warn);
+
+			const response = await axios.get(
+				endpointUrl,
+				{
+					headers: {
+						'Accept': `text/yaml`,
+						'YATAB-Schema': YATAB_SCHEMA,
+					}
+				}
+			);
+
+			if (response.status !== 200)
+				throw new Error(`Use '${scopeRaw}'; HTTP${response.status}; ${response.statusText}`);
+
+			const playbookData = await parsePlaybook(response.data);
+			if (!playbookData)
+				throw new Error(`Use '${scopeRaw}'; Data is invalid`);
+
+			const p0 = String(p?.shift());
+
+			if (type === 'scenario' || p0 === 'scenario') {
+				// console.log(`playbookData.scenario`, playbookData?.scenario);
+				if (!playbookData?.scenario || playbookData?.scenario?.hasOwnProperty(name))
+					throw new Error(`Use '${scopeRaw}'; Scenario data is invalid`);
+
+				// let config = {};
+
+				// Apply named parameters to analysis config
+				// TODO: Apply params by `idx` against order in `configFields[analysisType]`
+				// for (let idx in paramsRaw) {
+				// 	if (paramsRaw[idx].indexOf('=') < 0) continue;
+				// 	const [key, value] = paramsRaw[idx].split('=');
+				// 	config[key] = value;
+				// }
+
+				const p1 = String(p?.shift());
+				const scenarioKey = p0 === 'scenario' ? p1 : (p0 ?? name);
+				const scenarioName = p0 === 'scenario' ? `${name}.${p1}` : (p0 ? `${name}.${p0}` : name);
+				if (!playbookData?.scenario[scenarioKey])
+					throw new Error(`Use '${scopeRaw}'; Scenario key not found '${scenarioKey}'`);
+
+				const newData: PlaybookStructure = {
+					scenario: {
+						[scenarioName]: {
+							...playbookData?.scenario[scenarioKey],
+							name: scenarioName,
+							// analysis: playbookData.analysis[playbookData.analysis.],
+							// config: config,
+						}
+					}
+				};
+
+				return newData;
+			}
+
+			return playbookData;
+
+		case 'analysis':
+			// TODO: Use keyof on configFields
+			const analysisType = String(p?.shift()).toUpperCase();
+			YATAB.log(`analysisType: ${analysisType}`, Log.Warn);
+
+			if (!configFields[analysisType])
+				throw new Error(`Use '${scopeRaw}'; Analysis type is invalid '${analysisType}'`);
+
+			let config = {
+				...configFields[analysisType],
+			};
+
+			// Apply named parameters to analysis config
+			// TODO: Apply params by `idx` against order in `configFields[analysisType]`
+			for (let idx in params) {
+				if (params[idx].indexOf('=') < 0) continue;
+				const [key, value] = params[idx].split('=');
+				config[key] = value;
+			}
+
+			const newData: PlaybookStructure = {
+				analysis: {
+					[name]: {
+						name: name,
+						config: config,
+						type: analysisType,
+					}
+				}
+			};
+			console.log(`analysis`);
+			console.log(newData);
+
+			return newData;
+
+			break;
+	}
+};
 
 (async () => {
 	const playbookName = process.argv[2].toLocaleLowerCase();
@@ -111,19 +297,6 @@ export type ItemIndexType = {
 	const playbookStateName = `playbookState.${playbookName}`;
 	const playbookTemplate = `${playbookPath}/${playbookName}.yml`;
 	// console.log(`playbookPath: ${playbookPath}`);
-
-	if (!existsSync(playbookTemplate))
-		throw new Error(`Playbook '${playbookName}' not found '${playbookTemplate}'`);
-
-	// Attempt to read YAML file
-	let playbookFile: string = readFileSync(
-		playbookTemplate,
-		'utf8',
-	);
-	// console.log(`playbookFile: ${playbookFile}`);
-
-	if (!playbookFile.length)
-		throw new Error(`Playbook is empty '${playbookName}'`);
 
 	// Types to be processed in order of component dependencies
 	// TODO: Type
@@ -192,13 +365,23 @@ export type ItemIndexType = {
 		},
 	};
 
-	let playbookObject: PlaybookStructure = parse(playbookFile);
-	
-	// Check playbook version
-	if (!playbookObject.hasOwnProperty('version'))
-		throw(`Missing required 'version' key`);
-	if (playbookObject.version > 1)
-		throw(`Unsupported schema version`);
+	if (!existsSync(playbookTemplate))
+		throw new Error(`Playbook '${playbookName}' not found '${playbookTemplate}'`);
+
+	// Attempt to read YAML file
+	let playbookContent: string = readFileSync(
+		playbookTemplate,
+		'utf8',
+	);
+	// console.log(`playbookContent: ${playbookContent}`);
+
+	if (!playbookContent.length)
+		throw new Error(`Playbook is empty '${playbookName}'`);
+
+	// Validate playbook data
+	let playbookObject = await parsePlaybook(playbookContent);
+	if (!playbookObject)
+		throw new Error(`Playbook is invalid '${playbookName}'`);
 
 	// Default to `Memory` storage interface, if none are defined
 	if (
@@ -211,6 +394,8 @@ export type ItemIndexType = {
 			}
 		};
 	}
+
+	// console.error(playbookObject);
 
 	// Initialize bot
 	YATAB.init({

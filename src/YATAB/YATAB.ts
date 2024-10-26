@@ -87,6 +87,7 @@ export type YATABData = {
 };
 
 export const YATAB_VERSION = 10000;
+export const YATAB_SCHEMA = 1;
 export const YATAB_LABEL = '1.0.0-dev';
 
 export const YATAB: YATABData = {
@@ -174,7 +175,7 @@ export const YATAB: YATABData = {
 			YATAB.playbook.nextState
 		);
 		if (setItemResult) {
-			YATAB.log(`Updated playback state: '${YATAB.playbook.name}'`);
+			YATAB.log(`Updated playbook state: '${YATAB.playbook.name}'`);
 		}
 		// YATAB.log(`setItemResult`, Log.Verbose);
 		// YATAB.log(setItemResult, Log.Verbose);
