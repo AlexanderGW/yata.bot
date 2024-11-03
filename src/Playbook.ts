@@ -1,6 +1,6 @@
 import { parse } from 'yaml'
 
-import { YATAB, Log } from './YATAB/YATAB';
+import { YATAB, Log, YATAB_VERSION, YATAB_SCHEMA } from './YATAB/YATAB';
 import { Strategy, StrategyData, StrategyItem } from './YATAB/Strategy';
 import { Asset, AssetData } from './YATAB/Asset';
 import { Pair, PairData, PairItem } from './YATAB/Pair';
@@ -15,8 +15,17 @@ import { Subscription, SubscriptionData, SubscriptionEvent } from './YATAB/Subsc
 
 import { existsSync, readFileSync } from 'node:fs';
 
+import axios from 'axios';
+
 import * as dotenv from 'dotenv';
+import { configFields } from './Helper/Analysis';
 dotenv.config();
+
+export const REPO_URL = 'https://repo.yata.bot/';
+
+export interface PlaybookRawData {
+	[index: string]: any,
+};
 
 export interface PlaybookItemData {
 	storage?: {
@@ -90,11 +99,11 @@ export type PlaybookItems = {
 	[key in PlaybookItemKeys]?: PlaybookItemData[key];
 };
 
-export type PlaybookStructure = {
+export type PlaybookState = {
 	[index: string]: any,
 	backtest?: boolean;
 	dryrun?: boolean;
-	version: number;
+	version?: number;
 } & PlaybookItems;
 
 export type ItemIndexType = {
@@ -102,7 +111,172 @@ export type ItemIndexType = {
 	item: string[],
 };
 
+const mergePlaybook = (
+	target: PlaybookRawData,
+	source: PlaybookRawData
+): PlaybookRawData => {
+	for (const key in source) {
+		// If both the target and source have the same key and
+		// both values are objects, recursively merge them
+		if (source.hasOwnProperty(key)) {
+			if (
+				source[key] && 
+				typeof source[key] === 'object' &&
+				!Array.isArray(source[key])
+			) {
+				if (!target[key])
+					target[key] = {};
 
+				target[key] = mergePlaybook(target[key], source[key]);
+			} else {
+				// Otherwise, just assign the source value to the target
+				target[key] = source[key];
+			}
+		}
+	}
+
+	return target;
+}
+
+const parsePlaybook = async (
+	data: string,
+): Promise<PlaybookRawData | undefined> => {
+	let playbookData: PlaybookRawData = parse(data);
+
+	// Check playbook version
+	if (!playbookData.hasOwnProperty('version'))
+		throw new Error(`Missing required 'version' key`);
+	if (Number(playbookData.version) > YATAB_SCHEMA)
+		throw new Error(`Unsupported schema version`);
+
+	// Fetch use references
+	if (playbookData.hasOwnProperty('use')) {
+		for (let key in playbookData.use) {
+			const playbookObject = await use(playbookData.use[key]);
+			if (!playbookObject) continue;
+
+			playbookData = mergePlaybook(playbookData, playbookObject);
+
+			// TODO: Storage item, verify hash?
+		}
+	}
+
+	return playbookData;
+};
+
+const use = async (
+	scopeRaw: string
+): Promise<PlaybookRawData | undefined> => {
+	const [type, name, ...params] = scopeRaw.split(':');
+	if (!type)
+			throw new Error(`Use '${scopeRaw}'; Missing 'type'`);
+	if (!name)
+			throw new Error(`Use '${scopeRaw}'; Missing 'name'`);
+	
+	let p = params;
+
+	// TODO: Lookup existing data, avoid recursion loops
+	let playbookData: PlaybookRawData | undefined = {};
+
+	switch (type) {
+		case 'playbook':
+		case 'scenario':
+			const endpointUrl = `${REPO_URL}${type}/raw?name=${name}`;
+			YATAB.log(`Use '${scopeRaw}'; Endpoint '${endpointUrl}'`, Log.Verbose);
+
+			const response = await axios.get(
+				endpointUrl,
+				{
+					headers: {
+						'Accept': `text/yaml`,
+						'YATAB-Schema': YATAB_SCHEMA,
+					}
+				}
+			);
+
+			if (response.status !== 200)
+				throw new Error(`Use '${scopeRaw}'; HTTP${response.status}; ${response.statusText}`);
+
+			playbookData = await parsePlaybook(response.data);
+			if (!playbookData)
+				throw new Error(`Use '${scopeRaw}'; Data is invalid`);
+
+			const p0 = String(p?.shift());
+
+			if (type === 'scenario' || p0 === 'scenario') {
+				if (!playbookData?.scenario || playbookData?.scenario?.hasOwnProperty(name))
+					throw new Error(`Use '${scopeRaw}'; Scenario data is invalid`);
+
+				const p1 = String(p?.shift());
+				const scenarioKey = p0 === 'scenario' ? p1 : (p0 ?? name);
+				const scenarioName = p0 === 'scenario' ? `${name}.${p1}` : (p0 ? `${name}.${p0}` : name);
+				if (!playbookData?.scenario[scenarioKey])
+					throw new Error(`Use '${scopeRaw}'; Scenario key not found '${scenarioKey}'`);
+
+				let data: {
+					[index: string]: any,
+				} = {
+					...playbookData?.scenario[scenarioKey],
+				};
+
+				// Apply named parameters to analysis config
+				// TODO: Apply params by `idx` against order in `configFields[analysisType]`
+				for (let idx in params) {
+					if (params[idx].indexOf('=') < 0) continue;
+					const [key, value] = params[idx].split('=');
+					data[key] = value;
+				}
+
+				const newData: PlaybookRawData = {
+					scenario: {
+						[scenarioName]: {
+							...data
+						}
+					}
+				};
+
+				// return newData;
+				playbookData = mergePlaybook(playbookData, newData);
+			}
+
+			break;
+
+		case 'analysis':
+			// TODO: Use keyof on configFields
+			const analysisType = String(p?.shift()).toUpperCase();
+
+			if (!configFields[analysisType])
+				throw new Error(`Use '${scopeRaw}'; Analysis type is invalid '${analysisType}'`);
+
+			let config = {
+				...configFields[analysisType],
+			};
+
+			// Apply named parameters to analysis config
+			// TODO: Apply params by `idx` against order in `configFields[analysisType]`
+			for (let idx in params) {
+				if (params[idx].indexOf('=') < 0) continue;
+				const [key, value] = params[idx].split('=');
+				config[key] = value;
+			}
+
+			const newData: PlaybookRawData = {
+				analysis: {
+					[name]: {
+						config: config,
+						type: analysisType,
+					}
+				}
+			};
+
+			// return newData;
+			playbookData = mergePlaybook(playbookData, newData);
+
+			break;
+	}
+
+	return playbookData;
+};
 
 (async () => {
 	const playbookName = process.argv[2].toLocaleLowerCase();
@@ -111,19 +285,6 @@ export type ItemIndexType = {
 	const playbookStateName = `playbookState.${playbookName}`;
 	const playbookTemplate = `${playbookPath}/${playbookName}.yml`;
 	// console.log(`playbookPath: ${playbookPath}`);
-
-	if (!existsSync(playbookTemplate))
-		throw new Error(`Playbook '${playbookName}' not found '${playbookTemplate}'`);
-
-	// Attempt to read YAML file
-	let playbookFile: string = readFileSync(
-		playbookTemplate,
-		'utf8',
-	);
-	// console.log(`playbookFile: ${playbookFile}`);
-
-	if (!playbookFile.length)
-		throw new Error(`Playbook is empty '${playbookName}'`);
 
 	// Types to be processed in order of component dependencies
 	// TODO: Type
@@ -192,20 +353,30 @@ export type ItemIndexType = {
 		},
 	};
 
-	let playbookObject: PlaybookStructure = parse(playbookFile);
-	
-	// Check playbook version
-	if (!playbookObject.hasOwnProperty('version'))
-		throw(`Missing required 'version' key`);
-	if (playbookObject.version > 1)
-		throw(`Unsupported schema version`);
+	if (!existsSync(playbookTemplate))
+		throw new Error(`Playbook '${playbookName}' not found '${playbookTemplate}'`);
+
+	// Attempt to read YAML file
+	let playbookContent: string = readFileSync(
+		playbookTemplate,
+		'utf8',
+	);
+	// console.log(`playbookContent: ${playbookContent}`);
+
+	if (!playbookContent.length)
+		throw new Error(`Playbook is empty '${playbookName}'`);
+
+	// Validate playbook data
+	let playbookState = await parsePlaybook(playbookContent) as PlaybookState;
+	if (!playbookState)
+		throw new Error(`Playbook is invalid '${playbookName}'`);
 
 	// Default to `Memory` storage interface, if none are defined
 	if (
-		!playbookObject.hasOwnProperty('storage')
-		|| playbookObject.storage === null
+		!playbookState.hasOwnProperty('storage')
+		|| playbookState.storage === null
 	) {
-		playbookObject.storage = {
+		playbookState.storage = {
 			memory: {
 				class: 'Memory'
 			}
@@ -217,20 +388,20 @@ export type ItemIndexType = {
 
 		// Backtesting
 		backtest:
-			playbookObject.hasOwnProperty('backtest')
+			playbookState.hasOwnProperty('backtest')
 
 				// Defined in playbook
-				? playbookObject.backtest
+				? playbookState.backtest
 
 				// Default to FALSE, if not defined
 				: (process.env.BOT_BACKTEST === '1' ? true : false),
 		
 		// Dry-run
 		dryrun:
-			playbookObject.hasOwnProperty('dryrun')
+			playbookState.hasOwnProperty('dryrun')
 
 				// Defined in playbook
-				? playbookObject.dryrun
+				? playbookState.dryrun
 
 				// Default to TRUE, if not defined
 				: (process.env?.BOT_DRYRUN === '0' ? false : true),
@@ -242,20 +413,21 @@ export type ItemIndexType = {
 		// console.log(`key: ${typeKey}`);
 		// console.log(`${typeObject}`);
 	
-		if (typeKey in playbookObject) {
+		if (typeKey in playbookState) {
 			// console.log(`typeKey: ${typeKey}`);
-			// console.log(playbookObject[typeKey]);
+			// console.log(playbookState[typeKey]);
 
-			for (let itemName in playbookObject[typeKey]) {
+			for (let itemName in playbookState[typeKey]) {
 				// console.log(`itemName: ${itemName}`);
 				// console.log(object);
 
 				let finalItemData: any = {
-					...playbookObject[typeKey][itemName] as object,
+					...playbookState[typeKey][itemName] as object,
 
 					// Allow custom `name` values, or default to type scope prefixed names
-					name: playbookObject[typeKey][itemName].name ?? `yatab:playbook:${playbookName}:${typeKey}:${itemName}`
+					name: playbookState[typeKey][itemName].name ?? `yatab:playbook:${playbookName}:${typeKey}:${itemName}`
 				};
+				// console.warn(finalItemData);
 
 				for (let key in finalItemData) {
 					// console.log(`finalKey: ${key}`);
@@ -284,13 +456,14 @@ export type ItemIndexType = {
 							) {
 								let finalValue: Array<AnalysisItem | StrategyItem> = [];
 								for (let valueIdx in value) {
+									const itemNameTEMP = `${value[valueIdx]}`;
 									let itemLookup: any = false;
-									let cacheIdx = playbookCache[key].itemIndex.findIndex((x: string) => x === value[valueIdx]);
+									let cacheIdx = playbookCache[key].itemIndex.findIndex((x: string) => x === itemNameTEMP);
 									if (cacheIdx >= 0)
 										itemLookup = YATAB.getItem(playbookCache[key].item[cacheIdx]);
 
 									if (cacheIdx < 0 || itemLookup === false)
-										throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value[valueIdx]}' not found`);
+										throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${itemNameTEMP}' not found`);
 									
 									finalValue.push(itemLookup);
 								}

@@ -31,7 +31,7 @@ Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.
 
 ## Setup
 First, you'll need to install NPM packages.
-```
+```bash
 npm install
 ```
 
@@ -45,7 +45,7 @@ In this example; A `subscription` callback `action` function will be imported fr
 ### Running templates
 Without the YML file extension.
 
-```
+```bash
 # NPM
 npm run playbook <name>
 
@@ -53,7 +53,7 @@ npm run playbook <name>
 pnpm playbook <name>
 ```
 
-See [`~/playbook/eth-btc-mockup/eth-btc-mockup.yml`](playbook/eth-btc-mockup/eth-btc-mockup.yml) for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions of ETH/BTC, on Kraken.
+See [`~/playbook/sample-eth-btc/sample-eth-btc.yml`](playbook/sample-eth-btc/sample-eth-btc.yml) for a very simple example playbook, which would sell bearish overbought and buy bullish oversold RSI conditions of ETH/BTC, on Kraken.
 
 ## Items
 The concept of items, refers to all core components of the bot.
@@ -73,7 +73,43 @@ Items are listed in order of dependency.
 | `Subscription` | Collection of `Timeframe`, awaiting a set of signal conditions, to do actions (callbacks) |
 
 ### Subscription actions (callbacks)
-See [`~/playbook/eth-btc-mockup/eth-btc-mockup.ts`](playbook/eth-btc-mockup/eth-btc-mockup.ts) for an example set of callbacks, reference in the `eth-btc-mockup` playbook above
+See [`~/playbook/sample-eth-btc/sample-eth-btc.ts`](playbook/sample-eth-btc/sample-eth-btc.ts) for an example set of callbacks, reference in the `sample-eth-btc` playbook above
+
+### `use` references
+
+#### Examples
+```yaml
+use:
+ # Use playbook, local file or https://repo.yata.bot/playbook?name=sample-eth-btc
+ - playbook:sample-eth-btc
+
+ # Similar to above, just using the playbook's scenario `foobar`
+ - playbook:sample-eth-btc:scenario:foobar
+
+ # Use scenario `bearish-cross` from `bull-market-support-band`, local file or https://repo.yata.bot/scenario?name=bull-market-support-band
+ - scenario:bull-market-support-band:bearish-cross
+
+ # Alternative way to define and use analysis; RSI, overriding `optInTimePeriod` (default `14`) with `28`, and `inRealField` (default `candle.close`) with `candle.open`
+ - analysis:rsi28:RSI:optInTimePeriod=28:inRealField=candle.open
+
+ # To use default RSI configuration
+ - analysis:rsi14:RSI
+```
+
+#### Format
+```yaml
+<type>:<name>:<param0>:<param1>:...
+```
+- Supported `type` (required) values are; `playbook`, `scenario`, and `analysis`
+- The `name` (required) value can be any alphanumeric string, with hyphens `-` or underscores `_`
+- All remaining, unlimited `param` values are optional, depending on requirements.
+- When `type` is `analysis`, `param0` is always the analysis type, i.e; `RSI`, `SMA`, `MACD`, etc.
+- All analysis config fields and default values are defined in [`~/src/Helper/Analysis.ts`](`src/Helper/Analysis.ts`)
+- Analysis config fields can be passed as `param` values, i.e. `inRealField=candle.close`
+
+#### Notes
+- Whenever referencing a `playbook` or `scenario`, all `use` references within that source, will be added to your playbook.
+- A `use` reference will always update a previously defined `use` reference, with the same `type` and `name`.
 
 ### Timings
 All time values are in milliseconds, with the following exceptions;
