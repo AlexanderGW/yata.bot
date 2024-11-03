@@ -23,6 +23,10 @@ dotenv.config();
 
 export const REPO_URL = 'https://repo.yata.bot/';
 
+export interface PlaybookRawData {
+	[index: string]: any,
+};
+
 export interface PlaybookItemData {
 	storage?: {
 		[index: string]: StorageData,
@@ -95,7 +99,7 @@ export type PlaybookItems = {
 	[key in PlaybookItemKeys]?: PlaybookItemData[key];
 };
 
-export type PlaybookStructure = {
+export type PlaybookState = {
 	[index: string]: any,
 	backtest?: boolean;
 	dryrun?: boolean;
@@ -108,9 +112,9 @@ export type ItemIndexType = {
 };
 
 const mergePlaybook = (
-	target: PlaybookStructure,
-	source: PlaybookStructure
-): PlaybookStructure => {
+	target: PlaybookRawData,
+	source: PlaybookRawData
+): PlaybookRawData => {
 	for (const key in source) {
 		// If both the target and source have the same key and
 		// both values are objects, recursively merge them
@@ -136,8 +140,8 @@ const mergePlaybook = (
 
 const parsePlaybook = async (
 	data: string,
-): Promise<PlaybookStructure | undefined> => {
-	let playbookData: PlaybookStructure = parse(data);
+): Promise<PlaybookRawData | undefined> => {
+	let playbookData: PlaybookRawData = parse(data);
 
 	// Check playbook version
 	if (!playbookData.hasOwnProperty('version'))
@@ -147,16 +151,12 @@ const parsePlaybook = async (
 
 	// Fetch use references
 	if (playbookData.hasOwnProperty('use')) {
-		// YATAB.log(playbookData.use, Log.Warn);
-		for (let typeKey in playbookData.use) {
-			const playbookObject = await use(playbookData.use[typeKey]);
-			// YATAB.log(`use(${playbookData.use[typeKey]})`, Log.Warn);
+		for (let key in playbookData.use) {
+			const playbookObject = await use(playbookData.use[key]);
 			if (!playbookObject) continue;
 
 			playbookData = mergePlaybook(playbookData, playbookObject);
 
-			// console.warn(`playbookData`);
-			// console.warn(playbookData);
 			// TODO: Storage item, verify hash?
 		}
 	}
@@ -164,37 +164,25 @@ const parsePlaybook = async (
 	return playbookData;
 };
 
-export type PlaybookUseScopeData = {
-	type: string,
-	name: string,
-	params?: string[],
-}
-
 const use = async (
 	scopeRaw: string
-): Promise<PlaybookStructure | undefined> => {
-	const [type, name, ...params] = scopeRaw.toLocaleLowerCase().split(':');
-	// const scope: PlaybookUseScopeData = {
-	// 	type,
-	// 	name,
-	// 	params
-	// };
+): Promise<PlaybookRawData | undefined> => {
+	const [type, name, ...params] = scopeRaw.split(':');
 	if (!type)
 			throw new Error(`Use '${scopeRaw}'; Missing 'type'`);
 	if (!name)
 			throw new Error(`Use '${scopeRaw}'; Missing 'name'`);
 	
-  // TODO: Apply `params`
 	let p = params;
-	// console.log(`params`, params);
 
 	// TODO: Lookup existing data, avoid recursion loops
+	let playbookData: PlaybookRawData | undefined = {};
 
 	switch (type) {
 		case 'playbook':
 		case 'scenario':
 			const endpointUrl = `${REPO_URL}${type}/raw?name=${name}`;
-			YATAB.log(`Use '${scopeRaw}'; Request '${endpointUrl}'`, Log.Warn);
+			YATAB.log(`Use '${scopeRaw}'; Endpoint '${endpointUrl}'`, Log.Verbose);
 
 			const response = await axios.get(
 				endpointUrl,
@@ -209,26 +197,15 @@ const use = async (
 			if (response.status !== 200)
 				throw new Error(`Use '${scopeRaw}'; HTTP${response.status}; ${response.statusText}`);
 
-			const playbookData = await parsePlaybook(response.data);
+			playbookData = await parsePlaybook(response.data);
 			if (!playbookData)
 				throw new Error(`Use '${scopeRaw}'; Data is invalid`);
 
 			const p0 = String(p?.shift());
 
 			if (type === 'scenario' || p0 === 'scenario') {
-				// console.log(`playbookData.scenario`, playbookData?.scenario);
 				if (!playbookData?.scenario || playbookData?.scenario?.hasOwnProperty(name))
 					throw new Error(`Use '${scopeRaw}'; Scenario data is invalid`);
-
-				// let config = {};
-
-				// Apply named parameters to analysis config
-				// TODO: Apply params by `idx` against order in `configFields[analysisType]`
-				// for (let idx in paramsRaw) {
-				// 	if (paramsRaw[idx].indexOf('=') < 0) continue;
-				// 	const [key, value] = paramsRaw[idx].split('=');
-				// 	config[key] = value;
-				// }
 
 				const p1 = String(p?.shift());
 				const scenarioKey = p0 === 'scenario' ? p1 : (p0 ?? name);
@@ -236,26 +213,37 @@ const use = async (
 				if (!playbookData?.scenario[scenarioKey])
 					throw new Error(`Use '${scopeRaw}'; Scenario key not found '${scenarioKey}'`);
 
-				const newData: PlaybookStructure = {
+				let data: {
+					[index: string]: any,
+				} = {
+					...playbookData?.scenario[scenarioKey],
+				};
+
+				// Apply named parameters to analysis config
+				// TODO: Apply params by `idx` against order in `configFields[analysisType]`
+				for (let idx in params) {
+					if (params[idx].indexOf('=') < 0) continue;
+					const [key, value] = params[idx].split('=');
+					data[key] = value;
+				}
+
+				const newData: PlaybookRawData = {
 					scenario: {
 						[scenarioName]: {
-							...playbookData?.scenario[scenarioKey],
-							name: scenarioName,
-							// analysis: playbookData.analysis[playbookData.analysis.],
-							// config: config,
+							...data
 						}
 					}
 				};
 
-				return newData;
+				// return newData;
+				playbookData = mergePlaybook(playbookData, newData);
 			}
 
-			return playbookData;
+			break;
 
 		case 'analysis':
 			// TODO: Use keyof on configFields
 			const analysisType = String(p?.shift()).toUpperCase();
-			YATAB.log(`analysisType: ${analysisType}`, Log.Warn);
 
 			if (!configFields[analysisType])
 				throw new Error(`Use '${scopeRaw}'; Analysis type is invalid '${analysisType}'`);
@@ -272,22 +260,22 @@ const use = async (
 				config[key] = value;
 			}
 
-			const newData: PlaybookStructure = {
+			const newData: PlaybookRawData = {
 				analysis: {
 					[name]: {
-						name: name,
 						config: config,
 						type: analysisType,
 					}
 				}
 			};
-			console.log(`analysis`);
-			console.log(newData);
 
-			return newData;
+			// return newData;
+			playbookData = mergePlaybook(playbookData, newData);
 
 			break;
 	}
+
+	return playbookData;
 };
 
 (async () => {
@@ -379,43 +367,41 @@ const use = async (
 		throw new Error(`Playbook is empty '${playbookName}'`);
 
 	// Validate playbook data
-	let playbookObject = await parsePlaybook(playbookContent);
-	if (!playbookObject)
+	let playbookState = await parsePlaybook(playbookContent) as PlaybookState;
+	if (!playbookState)
 		throw new Error(`Playbook is invalid '${playbookName}'`);
 
 	// Default to `Memory` storage interface, if none are defined
 	if (
-		!playbookObject.hasOwnProperty('storage')
-		|| playbookObject.storage === null
+		!playbookState.hasOwnProperty('storage')
+		|| playbookState.storage === null
 	) {
-		playbookObject.storage = {
+		playbookState.storage = {
 			memory: {
 				class: 'Memory'
 			}
 		};
 	}
 
-	// console.error(playbookObject);
-
 	// Initialize bot
 	YATAB.init({
 
 		// Backtesting
 		backtest:
-			playbookObject.hasOwnProperty('backtest')
+			playbookState.hasOwnProperty('backtest')
 
 				// Defined in playbook
-				? playbookObject.backtest
+				? playbookState.backtest
 
 				// Default to FALSE, if not defined
 				: (process.env.BOT_BACKTEST === '1' ? true : false),
 		
 		// Dry-run
 		dryrun:
-			playbookObject.hasOwnProperty('dryrun')
+			playbookState.hasOwnProperty('dryrun')
 
 				// Defined in playbook
-				? playbookObject.dryrun
+				? playbookState.dryrun
 
 				// Default to TRUE, if not defined
 				: (process.env?.BOT_DRYRUN === '0' ? false : true),
@@ -427,20 +413,21 @@ const use = async (
 		// console.log(`key: ${typeKey}`);
 		// console.log(`${typeObject}`);
 	
-		if (typeKey in playbookObject) {
+		if (typeKey in playbookState) {
 			// console.log(`typeKey: ${typeKey}`);
-			// console.log(playbookObject[typeKey]);
+			// console.log(playbookState[typeKey]);
 
-			for (let itemName in playbookObject[typeKey]) {
+			for (let itemName in playbookState[typeKey]) {
 				// console.log(`itemName: ${itemName}`);
 				// console.log(object);
 
 				let finalItemData: any = {
-					...playbookObject[typeKey][itemName] as object,
+					...playbookState[typeKey][itemName] as object,
 
 					// Allow custom `name` values, or default to type scope prefixed names
-					name: playbookObject[typeKey][itemName].name ?? `yatab:playbook:${playbookName}:${typeKey}:${itemName}`
+					name: playbookState[typeKey][itemName].name ?? `yatab:playbook:${playbookName}:${typeKey}:${itemName}`
 				};
+				// console.warn(finalItemData);
 
 				for (let key in finalItemData) {
 					// console.log(`finalKey: ${key}`);
@@ -469,13 +456,14 @@ const use = async (
 							) {
 								let finalValue: Array<AnalysisItem | StrategyItem> = [];
 								for (let valueIdx in value) {
+									const itemNameTEMP = `${value[valueIdx]}`;
 									let itemLookup: any = false;
-									let cacheIdx = playbookCache[key].itemIndex.findIndex((x: string) => x === value[valueIdx]);
+									let cacheIdx = playbookCache[key].itemIndex.findIndex((x: string) => x === itemNameTEMP);
 									if (cacheIdx >= 0)
 										itemLookup = YATAB.getItem(playbookCache[key].item[cacheIdx]);
 
 									if (cacheIdx < 0 || itemLookup === false)
-										throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${value[valueIdx]}' not found`);
+										throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' referenced item '${itemNameTEMP}' not found`);
 									
 									finalValue.push(itemLookup);
 								}
