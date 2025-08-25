@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
-import { YATAB, YATABStateDataIndexType, YATABStateType, Log } from './YATAB';
-import { ChartCandleData, ChartItem } from './Chart';
-import { OrderItem } from './Order';
+import { YATAB, Log } from './YATAB';
+import { ChartItem } from './Chart';
 import { StrategyItem } from "./Strategy";
 import { TimeframeItem } from './Timeframe';
+import { scenarioConditionOperators } from './Scenario';
 
 /**
  * Event types
@@ -228,19 +228,15 @@ export const Subscription: SubscriptionInterface = {
 
 					let conditionMatch: Array<SubscriptionConditionData> = [];
 
-					let valueA: string;
-					let valueAReal: number;
-					let operator: string;
-					let valueB: string;
-					let valueBReal: number;
-
 					for (let j = 0; j < item.condition.length; j++) {
-						valueA = item.condition[j][0];
-						operator = item.condition[j][1];
-						valueB = item.condition[j][2];
+						const operator: string = item.condition[j][1];
+						if (scenarioConditionOperators.indexOf(operator) < 0)
+							throw new Error(`Invalid condition operator '${operator}'`);
 
-						valueAReal = signalResult[valueA as keyof SubscriptionSignalData] ?? valueA;
-						valueBReal = signalResult[valueB as keyof SubscriptionSignalData] ?? valueB;
+						const valueA: string = item.condition[j][0];
+						const valueAReal: number = signalResult[valueA as keyof SubscriptionSignalData] ?? valueA;
+						const valueB: string = item.condition[j][2];
+						const valueBReal: number = signalResult[valueB as keyof SubscriptionSignalData] ?? valueB;
 
 						if (valueAReal) {
 							let matched = false;
