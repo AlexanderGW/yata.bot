@@ -181,7 +181,7 @@ const use = async (
 	switch (type) {
 		case 'playbook':
 		case 'scenario':
-			const endpointUrl = `${REPO_URL}${type}/raw?name=${name}`;
+			const endpointUrl = `${REPO_URL}${type}/raw`;
 			YATAB.log(`Use '${scopeRaw}'; Endpoint '${endpointUrl}'`, Log.Verbose);
 
 			const response = await axios.get(
@@ -189,6 +189,7 @@ const use = async (
 				{
 					headers: {
 						'Accept': `text/yaml`,
+						'YATAB-Name': name,
 						'YATAB-Schema': YATAB_SCHEMA,
 					}
 				}
