@@ -181,7 +181,7 @@ const use = async (
 	switch (type) {
 		case 'playbook':
 		case 'scenario':
-			const endpointUrl = `${REPO_URL}${type}/raw?name=${name}`;
+			const endpointUrl = `${REPO_URL}${type}/raw`;
 			YATAB.log(`Use '${scopeRaw}'; Endpoint '${endpointUrl}'`, Log.Verbose);
 
 			const response = await axios.get(
@@ -189,6 +189,7 @@ const use = async (
 				{
 					headers: {
 						'Accept': `text/yaml`,
+						'YATAB-Name': name,
 						'YATAB-Schema': YATAB_SCHEMA,
 					}
 				}
@@ -425,13 +426,13 @@ const use = async (
 					...playbookState[typeKey][itemName] as object,
 
 					// Allow custom `name` values, or default to type scope prefixed names
-					name: playbookState[typeKey][itemName].name ?? `yatab:playbook:${playbookName}:${typeKey}:${itemName}`
+					name: playbookState[typeKey][itemName]?.name ?? `yatab:playbook:${playbookName}:${typeKey}:${itemName}`
 				};
 				// console.warn(finalItemData);
 
 				for (let key in finalItemData) {
 					// console.log(`finalKey: ${key}`);
-					let value = finalItemData[key];
+					let value: any = finalItemData[key];
 
 					// Property matches a playbook item key, attempt to link existing reference
 					if (playbookTypeKeys.indexOf(key) >= 0) {
@@ -560,45 +561,67 @@ const use = async (
 					// Validate scenario and subscription `condition` sets
 					else if (key === 'condition') {
 						// console.log(`typeKey: ${typeKey}, key: ${key}`);
-						// console.log(finalItemData[key]);
+						// console.log(`finalItemData[key]`, finalItemData[key]);
 
 						// Handle scenario `condition`
 						if (typeKey === 'scenario') {
-							for (let valueIdx in value) {
-								for (let setIdx in value[valueIdx]) {
-									// console.log(`value[valueIdx][setIdx]`);
-									// console.log(value[valueIdx][setIdx]);
+							for (let valueKey in value) {
+								const valueIdx = Number(valueKey);
+								for (let _setIdx in value[valueIdx]) {
+									const setIdx = Number(_setIdx);
+									const condition = value[valueIdx][setIdx];
+									const conditionParts
+										= Array.isArray(condition)
+										? condition
+										: condition.split(' ');
+
+									if (conditionParts.length !== 3)
+										throw new Error(`Invalid condition properties: ${condition}`);
+
+									const operator: string = conditionParts[1];
+									if (scenarioConditionOperators.indexOf(operator) < 0)
+										throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${operator}'`);
+									
+									let valueA: string = conditionParts[0];
+									let valueB: string = conditionParts[2];
 
 									// If `valueA` condition field contains a full-stop (.), and isn't prefixed `candle.`, add the `analysis` prefix, for Playbook name prefixing compatibility.
 									if (
-										value[valueIdx][setIdx][0].lastIndexOf('.') > 0
-										&& value[valueIdx][setIdx][0].indexOf('candle.') !== 0
+										isNaN(Number(valueA))
+										&& valueA.lastIndexOf('.') > 0
+										&& valueA.indexOf('candle.') !== 0
 									) {
-										value[valueIdx][setIdx][0] = `yatab:playbook:${playbookName}:analysis:${value[valueIdx][setIdx][0]}`;
+										valueA = `yatab:playbook:${playbookName}:analysis:${valueA}`;
 									}
 									// If `valueB` condition field contains a full-stop (.), and isn't prefixed `candle.`, add the `analysis` prefix, for Playbook name prefixing compatibility.
 									if (
-										typeof value[valueIdx][setIdx][2] === 'string'
-										&& value[valueIdx][setIdx][2].lastIndexOf('.') > 0
-										&& value[valueIdx][setIdx][2].indexOf('candle.') !== 0
+										typeof valueB === 'string'
+										&& isNaN(Number(valueB))
+										&& valueB.lastIndexOf('.') > 0
+										&& valueB.indexOf('candle.') !== 0
 									) {
-										value[valueIdx][setIdx][2] = `yatab:playbook:${playbookName}:analysis:${value[valueIdx][setIdx][2]}`;
+										valueB = `yatab:playbook:${playbookName}:analysis:${valueB}`;
 									}
 
-									let operator = value[valueIdx][setIdx][1];
-									if (scenarioConditionOperators.indexOf(operator) < 0)
-										throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${operator}'`);
+									finalItemData[key][valueIdx][setIdx] = [valueA, operator, valueB];
 								}
 							}
 						
 						// Handle subscription `condition`
 						} else if (typeKey === 'subscription') {
 							for (let valueIdx in value) {
-								let operator = value[valueIdx][1];
-								// console.log(value[valueIdx]);
-								// console.log(operator);
-								if (scenarioConditionOperators.indexOf(operator) < 0)
-									throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${operator}'`);
+								const condition = value[valueIdx];
+									const conditionParts
+										= Array.isArray(condition)
+										? condition
+										: condition.split(' ');
+								if (conditionParts.length !== 3)
+									throw new Error(`Invalid condition properties: ${condition}`);
+
+								if (scenarioConditionOperators.indexOf(conditionParts[1]) < 0)
+									throw new Error(`Type '${typeKey}' item '${itemName}' key '${key}' has invalid operator '${conditionParts[1]}'`);
+
+								finalItemData[key][valueIdx] = [...conditionParts];
 							}
 						}
 					}

@@ -78,17 +78,17 @@ scenario:
       - rsi14
     condition:
       - # Previous candle
-        - [rsi14.outReal, '>=', 70]
+        - rsi14.outReal >= 70
       - # Latest candle
-        - [rsi14.outReal, '<=', 70]
+        - rsi14.outReal <= 70
   rsi14BullishOversold:
     analysis:
       - rsi14
     condition:
       - # Previous candle
-        - [rsi14.outReal, '<=', 30]
+        - rsi14.outReal <= 30
       - # Latest candle
-        - [rsi14.outReal, '>=', 30]
+        - rsi14.outReal >= 30
 
 # Storage
 storage:
@@ -129,7 +129,7 @@ subscription:
     # match: all # Action everytime seen
     match: new # Default, action once when first seen
     condition:
-      - [total, '>=', 1]
+      - total > 0
     timeframeAny:
       - rsi14BullishOversold
   ethBtcKrakenSell:
@@ -137,7 +137,7 @@ subscription:
       - actionEthBtcSell
     chart: ethBtcKraken4h
     condition:
-      - [total, '>=', 1]
+      - total > 0
     timeframeAny:
       - rsi14BearishOverbought
 

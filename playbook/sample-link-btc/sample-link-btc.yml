@@ -69,9 +69,9 @@ scenario:
       - rsi14
     condition:
       - # Previous candle
-        - [rsi14.outReal, '>=', 70]
+        - rsi14.outReal >= 70
       - # Latest candle
-        - [rsi14.outReal, '<=', 70]
+        - rsi14.outReal <= 70
     # Optional extension on how far back from the leading edge, can this scenario be triggered; default is the number of condition candles above.
     windowTime: 14d
 
@@ -80,9 +80,9 @@ scenario:
       - rsi14
     condition:
       - # Previous candle
-        - [rsi14.outReal, '<=', 30]
+        - rsi14.outReal <= 30
       - # Latest candle
-        - [rsi14.outReal, '>=', 30]
+        - rsi14.outReal >= 30
     windowTime: 14d
 
 # Storage
@@ -123,7 +123,7 @@ subscription:
     match: all # Action everytime seen
     # match: new # Default, action once when first seen
     condition:
-      - [total, '>=', 1]
+      - total > 0
     timeframeAny:
       - rsi14BullishOversold_linkBtcKraken4h
   linkBtcKrakenSell:
@@ -131,7 +131,7 @@ subscription:
       - actionLinkBtcSell # Exported function in the `.ts` file of this directory
     chart: linkBtcKraken4h
     condition:
-      - [total, '>=', 1]
+      - total > 0
     timeframeAny:
       - rsi14BearishOverbought_linkBtcKraken4h
 

@@ -11,7 +11,6 @@ Following a concept of timeframes with strategies (which can be chained together
 Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.com/package/talib).
 
 ## Project status
-- Planning a candidate release towards the end of 2024
 - Implemented: [YAML playbook templates](#playbooks-yaml-templates)
 - Spot trading only (could expand on this later)
 - Storage; `File`, `Memory`, `Redis`
@@ -20,6 +19,8 @@ Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.
 ### In development
 - Storage; `S3`, `DynamoDB`
 - Exchanges; `UniswapV3`, `GeckoTerminalV2`
+- Playbooks, helpers repo: `repo.yata.bot`
+- Planning a candidate release
 
 ### Backlog
 - `talib@1.1.6`
@@ -27,12 +28,16 @@ Leveraging the `talib` library, via [the NPM `talib` wrapper](https://www.npmjs.
 - Exchanges; `UniswapV2`
 - Testing; Mock JSON
 - D3 UI
-- Playbooks, helpers repo: `repo.yata.bot`
+- Generate YAML playbooks with natural language
 
 ## Setup
-First, you'll need to install NPM packages.
+First, you'll need to install necessary packages.
 ```bash
+# NPM
 npm install
+
+# PNPM
+pnpm install
 ```
 
 Then choose to use [Playbooks](#playbooks-yaml-templates), or write your own scripts using the examples shown in the [Structure](#structure) section, below.
@@ -200,15 +205,15 @@ scenario:
       # Previous candle
       -
         # Condition 1 - RSI was below 30
-        - [rsi14.outReal, '<', 30]
+        - rsi14.outReal < 30
       # Latest candle
       -
         # Condition 1 - RSI is now 30 or higher
-        - [rsi14.outReal, '>=', 30]
+        - rsi14.outReal >= 30
         # Condition 2 - price is also 5% higher than the previous candle close
-        - [candle.close, '>=', 5%]
+        - candle.close >= 5%
         # Or a fixed price, when the price is 42K or higher
-        # - [candle.close, '>=', 42000]
+        # - candle.close >= 42000
 ```
 
 ### Scenario condition field names
@@ -240,9 +245,9 @@ scenario:
       - sma20
     condition:
       - # Previous candle - TIP: If this candle is removed, then the scenario could be used to indicate and trigger other strategies, while bullish, instead of a cross
-        - [ema21.outReal, '>=', sma20.outReal]
+        - ema21.outReal >= sma20.outReal
       - # Latest candle
-        - [ema21.outReal, '<', sma20.outReal]
+        - ema21.outReal < sma20.outReal
     windowTime: 4w
   # EMA21 crossing above SMA20
   bullishCrossBullMarketSupportBand:
@@ -251,8 +256,8 @@ scenario:
       - sma20
     condition:
       - # Previous candle
-        - [ema21.outReal, '<', sma20.outReal]
-      - # Latest candle
+        - ema21.outReal < sma20.outReal
+      - # Latest candle - You can also pass conditions as an array of three properties
         - [ema21.outReal, '>=', sma20.outReal]
     windowTime: 4w
 ```

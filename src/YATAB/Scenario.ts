@@ -12,20 +12,14 @@ export type ScenarioConditionValueName = string | undefined;
 
 export const scenarioConditionOperators = [
 	'<', '<=', '>', '>=', '==', '!='
-] as const;
+];
 
 export type ScenarioConditionOperator = typeof scenarioConditionOperators[number];
 
 // TODO: Type
 export type ScenarioConditionValueB = number | string | undefined;
 
-export type ScenarioCondition = [
-	ScenarioConditionValueA,
-	ScenarioConditionOperator,
-	ScenarioConditionValueB
-]
-
-export type ScenarioConditionSet = ScenarioCondition[]
+export type ScenarioConditionSet = string[];
 
 export type ScenarioConditionCandle = ScenarioConditionSet[];
 
@@ -126,9 +120,11 @@ export class ScenarioItem implements ScenarioData {
 			conditionSetIdx++
 		) {
 			let condition: ScenarioConditionSet = this.condition[conditionSetIdx];
+			if (!condition)
+				throw new Error(`Scenario '${this.name}'; Missing candle conditions`);
 			let conditionIdx: number = 0;
 
-			// Walk conditions within the set, and validate fields exists 
+			// Walk conditions within the set, and validate fields exist 
 			// within at least one of the datasets
 			for (
 				conditionIdx = 0;
@@ -138,6 +134,9 @@ export class ScenarioItem implements ScenarioData {
 				valueA = condition[conditionIdx][0];
 				operator = condition[conditionIdx][1];
 				valueB = condition[conditionIdx][2];
+
+				if (scenarioConditionOperators.indexOf(operator) < 0)
+					throw new Error(`Invalid condition operator '${operator}'`);
 
 				let valueAClass: ScenarioConditionValueClass;
 				let valueAName: ScenarioConditionValueName;
@@ -149,7 +148,8 @@ export class ScenarioItem implements ScenarioData {
 				
 				// Check Value A in chart
 				if (
-					(
+					!isNaN(Number(valueA))
+					|| (
 						!valueAClass?.length
 						&& _.chart.dataset?.hasOwnProperty(valueA)
 					)
@@ -203,7 +203,7 @@ export class ScenarioItem implements ScenarioData {
 					}
 				}
 
-				if (typeof valueB === 'string') {
+				if (typeof valueB === 'string' && isNaN(Number(valueB))) {
 					let valueBClass: ScenarioConditionValueClass;
 					let valueBName: ScenarioConditionValueName;
 					const valueBPos = valueB.lastIndexOf('.');
@@ -264,6 +264,10 @@ export class ScenarioItem implements ScenarioData {
 							}
 						}
 					}
+				} else if (!isNaN(Number(valueB))) {
+					conditionMatch.push({
+						valueB: valueB,
+					});
 				}
 			}
 		}
@@ -345,6 +349,9 @@ export class ScenarioItem implements ScenarioData {
 					valueA = condition[conditionIdx][0];
 					operator = condition[conditionIdx][1];
 					valueB = condition[conditionIdx][2];
+
+					if (scenarioConditionOperators.indexOf(operator) < 0)
+						throw new Error(`Invalid condition operator '${operator}'`);
 
 					let valueAClass: ScenarioConditionValueClass;
 					let valueAName: ScenarioConditionValueName;
@@ -430,7 +437,7 @@ export class ScenarioItem implements ScenarioData {
 						}
 
 						// TODO: Check is analysis or not-chart etc
-						if (typeof valueB === 'string') {
+						if (typeof valueB === 'string' && isNaN(Number(valueB))) {
 							for (
 								let i: number = 0;
 								i < _.analysisData.length;
@@ -497,7 +504,7 @@ export class ScenarioItem implements ScenarioData {
 								}
 
 								if (!datasetResultField) //continue;
-									throw new Error(`Scenario '${this.name}'; Condition field not found in chart/analysis data`);
+									throw new Error(`Scenario '${this.name}'; Condition field '${valueB}' not found in chart/analysis data`);
 
 								if (valueBIsPercentage) {
 									if (analysisOffset <= 0) continue;
