@@ -123,7 +123,7 @@ subscription:
     match: all # Action everytime seen
     # match: new # Default, action once when first seen
     condition:
-      - total >= 1
+      - total > 0
     timeframeAny:
       - rsi14BullishOversold_linkBtcKraken4h
   linkBtcKrakenSell:
@@ -131,7 +131,7 @@ subscription:
       - actionLinkBtcSell # Exported function in the `.ts` file of this directory
     chart: linkBtcKraken4h
     condition:
-      - total >= 1
+      - total > 0
     timeframeAny:
       - rsi14BearishOverbought_linkBtcKraken4h
 
