@@ -60,7 +60,7 @@ export class FileStorage implements StorageApiInterface {
 		const storagePath = `./storage/json`;
 		const storageFile = `${storagePath}/${id}.json`;
 
-		YATAB.log(`Storage '${this.name}'; setItem; '${storageFile}'`, Log.Verbose);
+		YATAB.log(`Storage '${this.name}'; setItem; Output to file: '${storageFile}'`, Log.Verbose);
 		
 		try {
 
